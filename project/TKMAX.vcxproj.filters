@@ -157,7 +157,7 @@
     <ClCompile Include="engine\effect\post\MotionBlurEffect.cpp" />
     <ClCompile Include="engine\effect\post\SpeedLineEffect.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
-    <ClCompile Include="application\actor\player.cpp" />
+    <ClCompile Include="application\actor\Player.cpp" />
     <ClCompile Include="engine\io\ObjectSave.cpp" />
     <ClCompile Include="engine\imgui\ObjectEditor.cpp" />
     <ClCompile Include="application\controller\ObjectSettings.cpp" />
@@ -355,7 +355,7 @@
     <ClInclude Include="application\catalog\AudioCatalog.h" />
     <ClInclude Include="engine\effect\post\MotionBlurEffect.h" />
     <ClInclude Include="engine\effect\post\SpeedLineEffect.h" />
-    <ClInclude Include="application\actor\player.h" />
+    <ClInclude Include="application\actor\Player.h" />
     <ClInclude Include="engine\io\ObjectSave.h" />
     <ClInclude Include="engine\imgui\ObjectEditor.h" />
     <ClInclude Include="application\controller\ObjectSettings.h" />
