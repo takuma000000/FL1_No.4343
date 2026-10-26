@@ -2,6 +2,7 @@
 #include "MyMath.h"
 #include "WindowsAPI.h"
 #include "Transform.h"
+#include <string>
 
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -28,6 +29,17 @@ namespace TKM {
 		/// ImGuiデバッグ表示。
 		/// </summary>
 		void ImGuiDebug();
+
+		/// <summary>
+		/// 現在のカメラ設定を保存します。
+		/// </summary>
+		/// <returns>保存できた場合はtrue</returns>
+		bool SaveSettings();
+		/// <summary>
+		/// 保存したカメラ設定を読み込みます。
+		/// </summary>
+		/// <returns>読み込めた場合はtrue</returns>
+		bool LoadSettings();
 
 		// Setter=====================================
 		/// <summary>
@@ -65,6 +77,12 @@ namespace TKM {
 		/// </summary>
 		/// <param name="farClip"></param>
 		void SetFarClip(float farClip) { this->farClip_ = farClip; }
+		/// <summary>
+		/// 設定ファイルの保存先を指定します。
+		/// </summary>
+		/// <param name="filePath">設定ファイルのパス</param>
+		void SetSettingsPath(const std::string& filePath) { settingsPath_ = filePath; }
+		// ===========================================
 		// Getter=====================================
 		/// <summary>
 		/// ワールド行列の取得。
@@ -125,5 +143,10 @@ namespace TKM {
 		// ViewProjection（最終描画用）
 		//======================================================================
 		Matrix4x4 viewProjectionMatrix_; // ビュー射影行列
+		//======================================================================
+		// 設定ファイル
+		//======================================================================
+		std::string settingsPath_; // 設定ファイルの保存先
+		std::string settingsMessage_; // 保存・読込の結果
 	};
 } // namespace TKM

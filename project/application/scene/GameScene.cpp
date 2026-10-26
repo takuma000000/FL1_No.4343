@@ -132,8 +132,10 @@ void GameScene::InitializeCamera() {
 
 	/// ──────────────── カメラマネージャー初期化 ───────────────
 	TKM::CameraManager::GetInstance()->Initialize(mainRot, mainPos, debugTarget);
-	// 行列を即更新して、1フレームだけ古いカメラになるのを防ぐ
+	// メインカメラの設定を読み込み、更新する
 	if (TKM::CameraManager::GetInstance()->GetMainCamera()) {
+		TKM::CameraManager::GetInstance()->GetMainCamera()->SetSettingsPath("resources/data/mainCamera.json");
+		TKM::CameraManager::GetInstance()->GetMainCamera()->LoadSettings();
 		TKM::CameraManager::GetInstance()->GetMainCamera()->Update();
 	}
 

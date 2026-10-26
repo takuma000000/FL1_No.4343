@@ -1,5 +1,57 @@
 #include "Camera.h"
 
+#include "json.hpp"
+
+#include <array>
+#include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <stdexcept>
+
+/// カメラの設定を保存・読み込みする
+namespace {
+	// JSONの配列をVector3に変換する
+	Vector3 ReadCameraVector3(const nlohmann::json& value) {
+		if (!value.is_array() || value.size() != 3) {
+			throw std::runtime_error("Expected three numbers");
+		}
+
+		const auto numbers = value.get<std::array<float, 3>>();
+
+		for (float number : numbers) {
+			if (!std::isfinite(number)) {
+				throw std::runtime_error("Invalid numeric value");
+			}
+		}
+
+		return { numbers[0], numbers[1], numbers[2] };
+	}
+
+	// カメラ設定として使用できる数値か確認する
+	void ValidateCameraSettings(
+		const Vector3& position,
+		const Vector3& rotation,
+		const Vector3& scale
+	) {
+		auto isFinite = [](const Vector3& value) {
+			return std::isfinite(value.x)
+				&& std::isfinite(value.y)
+				&& std::isfinite(value.z);
+			};
+
+		if (!isFinite(position)
+			|| !isFinite(rotation)
+			|| !isFinite(scale)) {
+			throw std::runtime_error("Invalid numeric value");
+		}
+
+		// スケール0では逆行列を計算できない
+		if (scale.x == 0.0f || scale.y == 0.0f || scale.z == 0.0f) {
+			throw std::runtime_error("Camera scale must not be zero");
+		}
+	}
+}
+
 namespace TKM {
 	Camera::Camera()
 		//初期化
@@ -32,7 +84,147 @@ namespace TKM {
 		ImGui::DragFloat3("位置", &transform_.translate_.x, 0.01f);
 		ImGui::DragFloat3("回転", &transform_.rotate_.x, 0.01f);
 		ImGui::DragFloat3("拡縮", &transform_.scale_.x, 0.01f);
+
+		// 保存・読込
+		ImGui::Separator();
+
+		if (ImGui::Button("保存")) {
+			SaveSettings();
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("読み込み")) {
+			LoadSettings();
+		}
+
+		if (!settingsMessage_.empty()) {
+			ImGui::TextWrapped("%s", settingsMessage_.c_str());
+		}
+
 		ImGui::End();
 #endif
+	}
+
+	bool Camera::SaveSettings() {
+		try {
+			if (settingsPath_.empty()) {
+				throw std::runtime_error("Settings path is not set");
+			}
+
+			ValidateCameraSettings(
+				transform_.translate_,
+				transform_.rotate_,
+				transform_.scale_
+			);
+
+			nlohmann::json data = {
+				{ "version", 1 },
+				{ "position", {
+					transform_.translate_.x,
+					transform_.translate_.y,
+					transform_.translate_.z
+				}},
+				{ "rotation", {
+					transform_.rotate_.x,
+					transform_.rotate_.y,
+					transform_.rotate_.z
+				}},
+				{ "scale", {
+					transform_.scale_.x,
+					transform_.scale_.y,
+					transform_.scale_.z
+				}}
+			};
+
+			const std::filesystem::path path(settingsPath_);
+
+			// 保存先フォルダがなければ作成する
+			if (!path.parent_path().empty()) {
+				std::filesystem::create_directories(path.parent_path());
+			}
+
+			// 一時ファイルに書き込んでから保存先を置き換える
+			auto temporaryPath = path;
+			temporaryPath += ".tmp";
+
+			std::ofstream file(temporaryPath, std::ios::trunc);
+			if (!file) {
+				throw std::runtime_error("Cannot open temporary file");
+			}
+
+			file << data.dump(4);
+			file.close();
+
+			if (!file) {
+				throw std::runtime_error("Failed to write settings");
+			}
+
+			if (!MoveFileExW(
+				temporaryPath.c_str(),
+				path.c_str(),
+				MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH
+			)) {
+				throw std::runtime_error(
+					"Cannot replace settings file. Windows error: "
+					+ std::to_string(GetLastError())
+				);
+			}
+
+			settingsMessage_ = "保存しました: " + settingsPath_;
+			return true;
+		}
+		catch (const std::exception& error) {
+			settingsMessage_ =
+				"保存失敗: " + settingsPath_ + "\n" + error.what();
+			return false;
+		}
+	}
+
+	bool Camera::LoadSettings() {
+		try {
+			if (settingsPath_.empty()) {
+				throw std::runtime_error("Settings path is not set");
+			}
+
+			// ファイルがなければ現在の初期値を使用する
+			if (!std::filesystem::exists(settingsPath_)) {
+				settingsMessage_ = "保存ファイルなし: 初期値を使用します";
+				return false;
+			}
+
+			std::ifstream file(settingsPath_);
+			if (!file) {
+				throw std::runtime_error("Cannot open settings file");
+			}
+
+			nlohmann::json data;
+			file >> data;
+
+			if (data.at("version").get<int>() != 1) {
+				throw std::runtime_error("Unsupported settings version");
+			}
+
+			// 全項目を確認してからカメラに反映する
+			const Vector3 position = ReadCameraVector3(data.at("position"));
+			const Vector3 rotation = ReadCameraVector3(data.at("rotation"));
+			const Vector3 scale = ReadCameraVector3(data.at("scale"));
+
+			ValidateCameraSettings(position, rotation, scale);
+
+			transform_.translate_ = position;
+			transform_.rotate_ = rotation;
+			transform_.scale_ = scale;
+
+			Update();
+
+			settingsMessage_ = "読み込みました: " + settingsPath_;
+			return true;
+		}
+		catch (const std::exception& error) {
+			settingsMessage_ =
+				"読込失敗: " + settingsPath_ + "\n" + error.what();
+			return false;
+		}
 	}
 }
