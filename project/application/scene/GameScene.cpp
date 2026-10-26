@@ -73,7 +73,6 @@ void GameScene::Draw3D() {
 
 	/// ──────────────── 3Dオブジェクト描画 ───────────────
 	Object3dCommon::GetInstance()->DrawSetCommon();
-
 	// テスト用Sphere描画
 	sphere_->Draw(dxCommon_);
 
