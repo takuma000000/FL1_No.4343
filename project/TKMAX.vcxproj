@@ -195,6 +195,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\effect\post\NoiseEffect.cpp" />
     <ClCompile Include="engine\effect\post\MotionBlurEffect.cpp" />
     <ClCompile Include="engine\effect\post\SpeedLineEffect.cpp" />
+    <ClCompile Include="engine\io\ObjectSave.cpp" />
     <ClCompile Include="player.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -272,6 +273,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\nlohmann\json.hpp" />
     <ClInclude Include="engine\effect\post\NoiseEffect.h" />
     <ClInclude Include="engine\effect\post\MotionBlurEffect.h" />
+    <ClInclude Include="engine\io\ObjectSave.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="application\catalog\TextureCatalog.h" />
