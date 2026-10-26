@@ -3,7 +3,7 @@
 #include "ObjectEditor.h"
 #include "ObjectSave.h"
 
-#include "../../player.h"
+#include "player.h"
 
 //=============================================================
 // ObjectSettingsクラス
