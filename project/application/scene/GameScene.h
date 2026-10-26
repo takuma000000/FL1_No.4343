@@ -4,6 +4,8 @@
 #include "Object3d.h"
 #include <memory>
 
+#include "../../player.h"
+
 //=============================================================
 // GameSceneクラス
 // ゲーム本編を管理するシーンクラス。
@@ -82,4 +84,7 @@ private:
 	// テスト用3Dオブジェクト
 	//======================================================================
 	std::unique_ptr<TKM::Object3d> sphere_ = nullptr; // 球体
+
+	std::unique_ptr<Player> player_ = nullptr;
+
 };

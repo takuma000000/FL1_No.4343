@@ -7,6 +7,7 @@ void ModelCatalog::LoadModelCatalogs(TKM::DirectXCommon* dxCommon) {
 	// ロードするモデルファイルのリスト
 	static constexpr const char* kFiles[] = {
 		"sphere.obj",
+		"plane.obj",
 	};
 
 	auto* mm = TKM::ModelManager::GetInstance();
