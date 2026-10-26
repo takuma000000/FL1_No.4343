@@ -26,7 +26,7 @@ void GameScene::Initialize() {
 	InitializeCamera();
 
 	/// ──────────────── パーティクル初期化 ───────────────
-	auto* particleManager = TKM::ParticleManager::GetInstance();
+	auto particleManager = TKM::ParticleManager::GetInstance();
 	particleManager->Initialize(dxCommon_, srvManager_, TKM::CameraManager::GetInstance()->GetMainCamera());
 
 	/// ──────────────── ライトの初期化 ───────────────
@@ -45,28 +45,34 @@ void GameScene::Finalize() {
 }
 
 void GameScene::Update() {
+
 	/// ──────────────── カメラ更新 ───────────────
 	UpdateActiveCamera();
 
 	/// ──────────────── 3Dオブジェクト更新 ───────────────
 	// テスト用Sphere更新
-	sphere_->Update();
+	if (sphere_) {
+		sphere_->Update();
+	}
 	if (player_) {
 		player_->Update();
 	}
 
 	/// ──────────────── ライト更新 ───────────────
-	directionalLight_->Update();
+	if (directionalLight_) {
+		directionalLight_->Update();
+	}
 
 	/// ──────────────── パーティクル更新 ───────────────
 	constexpr float deltaTime = 1.0f / 60.0f;
 	TKM::ParticleManager::GetInstance()->Update(deltaTime);
 
 #ifdef USE_IMGUI
-	if (player_) {
-		player_->ShowImGui();
-	}
-#endif
+
+	ImGuiDebug();
+
+#endif // 
+
 }
 
 void GameScene::Draw() {
@@ -75,14 +81,16 @@ void GameScene::Draw() {
 }
 
 void GameScene::Draw3D() {
-
 	/// ──────────────── 3Dオブジェクト描画 ───────────────
 	Object3dCommon::GetInstance()->DrawSetCommon();
+
 	// テスト用Sphere描画
-	sphere_->Draw(dxCommon_);
+	if (sphere_) {
+		sphere_->Draw(dxCommon_);
+	}
 
 	if (player_) {
-		player_->Draw(dxCommon_); // dxCommon_ を渡す
+		player_->Draw(dxCommon_);
 	}
 
 	/// ──────────────── パーティクル描画 ───────────────
@@ -95,8 +103,7 @@ void GameScene::DrawSprite() {
 }
 
 TKM::Camera* GameScene::UpdateActiveCamera() {
-	auto* activeCamera =
-		TKM::CameraManager::GetInstance()->Update();
+	auto activeCamera = TKM::CameraManager::GetInstance()->Update();
 
 	if (activeCamera) {
 		TKM::ParticleManager::GetInstance()->SetCamera(activeCamera);
@@ -129,9 +136,9 @@ void GameScene::InitializeObjects() {
 	sphere_->SetTranslate(kSpherePosition);
 	sphere_->SetScale(kSphereScale);
 
+	// プレイヤー生成・初期化
 	player_ = std::make_unique<Player>();
 	player_->Initialize(dxCommon_);
-
 }
 
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
@@ -153,23 +160,27 @@ void GameScene::InitializeCamera() {
 	}
 
 	/// ───────────────── Objectカメラ設定 ───────────────
-	// Sphereにカメラを設定
-	sphere_->SetCamera(TKM::CameraManager::GetInstance()->GetMainCamera());
+	if (sphere_) {
+		sphere_->SetCamera(TKM::CameraManager::GetInstance()->GetMainCamera());
+	}
 
 	if (player_) {
 		player_->SetCamera(TKM::CameraManager::GetInstance()->GetMainCamera());
 	}
-
 }
 
 void GameScene::ImGuiDebug() {
 #ifdef USE_IMGUI
 
 	// ──────────────── カメラ表示 ───────────────
-	if (auto* camera = TKM::CameraManager::GetInstance()->GetMainCamera()) {
+	if (auto camera = TKM::CameraManager::GetInstance()->GetMainCamera()) {
 		camera->ImGuiDebug(); // メインカメラのデバッグ表示
+	}
+
+	// ──────────────── プレイヤー表示 ───────────────
+	if (player_) {
+		player_->ShowImGui();
 	}
 
 #endif
 }
-
