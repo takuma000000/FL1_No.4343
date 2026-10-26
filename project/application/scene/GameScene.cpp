@@ -224,6 +224,9 @@ void GameScene::InitializeObjectSave() {
 			}
 		}
 	);
+
+	// 保存したオブジェクト設定を読み込む
+	objectSave_.LoadSettings();
 }
 
 void GameScene::ImGuiDebug() {
