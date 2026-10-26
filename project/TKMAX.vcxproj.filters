@@ -159,6 +159,7 @@
     <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="engine\io\ObjectSave.cpp" />
+    <ClCompile Include="engine\imgui\ObjectEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\2d\Sprite.h">
@@ -355,6 +356,7 @@
     <ClInclude Include="engine\effect\post\SpeedLineEffect.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="engine\io\ObjectSave.h" />
+    <ClInclude Include="engine\imgui\ObjectEditor.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

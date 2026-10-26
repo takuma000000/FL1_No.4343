@@ -3,6 +3,7 @@
 
 #include "Object3d.h"
 #include "ObjectSave.h"
+#include "ObjectEditor.h"
 
 #include <memory>
 
@@ -70,6 +71,10 @@ public:
 	/// オブジェクトの保存設定を初期化します。
 	/// </summary>
 	void InitializeObjectSave();
+	/// <summary>
+	/// オブジェクト編集画面を初期化します。
+	/// </summary>
+	void InitializeObjectEditor();
 
 	/// <summary>
 	/// アクティブなカメラを更新します。
@@ -99,15 +104,8 @@ private:
 	//======================================================================
 	TKM::ObjectSave objectSave_; // オブジェクトの保存設定
 
-private:
 	//======================================================================
-	// ImGuiオブジェクト選択
+	// オブジェクト編集
 	//======================================================================
-	enum class SelectedObject {
-		None,   // 選択なし
-		Player, // Player
-		Sphere  // Sphere
-	};
-	// ImGuiで選択されているオブジェクト
-	SelectedObject selectedObject_ = SelectedObject::None;
+	TKM::ObjectEditor objectEditor_; // ImGuiオブジェクト編集
 };

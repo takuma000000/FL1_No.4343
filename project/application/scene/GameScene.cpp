@@ -6,10 +6,6 @@
 #include "CameraManager.h"
 #include "ParticleManager.h"
 
-#ifdef USE_IMGUI
-#include "imgui.h"
-#endif
-
 using namespace TKM;
 
 void GameScene::Initialize() {
@@ -23,6 +19,7 @@ void GameScene::Initialize() {
 	ModelCatalog::LoadModelCatalogs(dxCommon_);
 	InitializeObjects();
 	InitializeObjectSave();
+	InitializeObjectEditor();
 	InitializeSprite();
 	InitializeCamera();
 
@@ -37,6 +34,8 @@ void GameScene::Initialize() {
 
 void GameScene::Finalize() {
 
+	/// ──────────────── オブジェクト編集終了 ───────────────
+	objectEditor_.Clear();
 	/// ──────────────── オブジェクト保存終了 ───────────────
 	objectSave_.Clear();
 
@@ -229,79 +228,49 @@ void GameScene::InitializeObjectSave() {
 	objectSave_.LoadSettings();
 }
 
+// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+// オブジェクト編集画面を初期化する
+// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+void GameScene::InitializeObjectEditor() {
+#ifdef USE_IMGUI
+
+	// 保存機能を設定
+	objectEditor_.SetObjectSave(&objectSave_);
+
+	// Playerを登録
+	objectEditor_.RegisterObject(
+		"Player",
+		[this]() {
+			if (player_) {
+				player_->ImGuiDebug();
+			}
+		}
+	);
+
+	// テスト用Sphereを登録
+	objectEditor_.RegisterObject(
+		"Sphere",
+		[this]() {
+			if (sphere_) {
+				sphere_->ImGuiDebug();
+			}
+		}
+	);
+
+#endif
+}
+
 void GameScene::ImGuiDebug() {
 #ifdef USE_IMGUI
 
 	// ──────────────── カメラ表示 ───────────────
-	if (auto camera = TKM::CameraManager::GetInstance()->GetMainCamera()) {
+	if (auto camera =
+		TKM::CameraManager::GetInstance()->GetMainCamera()) {
 		camera->ImGuiDebug(); // メインカメラのデバッグ表示
 	}
 
 	// ──────────────── オブジェクト編集 ───────────────
-	ImGui::Begin("オブジェクト編集");
-
-	// ──────────────── オブジェクト保存 ───────────────
-	ImGui::Separator();
-
-	if (ImGui::Button("全オブジェクトを保存")) {
-		objectSave_.SaveSettings();
-	}
-
-	ImGui::SameLine();
-
-	if (ImGui::Button("最後の保存状態に戻す")) {
-		objectSave_.LoadSettings();
-	}
-
-	const std::string& message =
-		objectSave_.GetSettingsMessage();
-
-	if (!message.empty()) {
-		ImGui::TextWrapped("%s", message.c_str());
-	}
-
-	// 選択
-	const char* objectNames[] = {
-		"None",
-		"Player",
-		"Sphere"
-	};
-
-	int selectedIndex = static_cast<int>(selectedObject_);
-
-	if (ImGui::Combo(
-		"編集対象",
-		&selectedIndex,
-		objectNames,
-		IM_ARRAYSIZE(objectNames)
-	)) {
-		selectedObject_ =
-			static_cast<SelectedObject>(selectedIndex);
-	}
-
-	ImGui::Separator();
-
-	switch (selectedObject_) {
-	case SelectedObject::None:
-		ImGui::Text("編集するオブジェクトを選択してください");
-		break;
-
-	case SelectedObject::Player:
-		if (player_) {
-			ImGui::Text("[Player]");
-			player_->ImGuiDebug();
-		}
-		break;
-
-	case SelectedObject::Sphere:
-		if (sphere_) {
-			ImGui::Text("[Sphere]");
-			sphere_->ImGuiDebug();
-		}
-		break;
-	}
-
-	ImGui::End();
+	objectEditor_.ImGuiDebug();
 
 #endif
 }
