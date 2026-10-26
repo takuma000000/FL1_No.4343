@@ -12,6 +12,11 @@ public:
     void Update();
     void Draw(TKM::DirectXCommon* dxCommon);
 
+#ifdef USE_IMGUI
+    // ImGui描画処理（GameScene等から呼び出す）
+    void ShowImGui();
+#endif
+
     void SetCamera(TKM::Camera* camera);
 
     // ──────────────── ゲッター / セッター ────────────────
