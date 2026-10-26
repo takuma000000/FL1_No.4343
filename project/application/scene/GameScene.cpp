@@ -48,6 +48,10 @@ void GameScene::Update() {
 	/// ──────────────── カメラ更新 ───────────────
 	UpdateActiveCamera();
 
+	/// ──────────────── 3Dオブジェクト更新 ───────────────
+	// テスト用Sphere更新
+	sphere_->Update();
+
 	/// ──────────────── ライト更新 ───────────────
 	directionalLight_->Update();
 
@@ -69,6 +73,9 @@ void GameScene::Draw3D() {
 
 	/// ──────────────── 3Dオブジェクト描画 ───────────────
 	Object3dCommon::GetInstance()->DrawSetCommon();
+
+	// テスト用Sphere描画
+	sphere_->Draw(dxCommon_);
 
 	/// ──────────────── パーティクル描画 ───────────────
 	ParticleManager::GetInstance()->Draw();
@@ -98,24 +105,42 @@ void GameScene::InitializeSprite() {}
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 // 3Dオブジェクトを作成し、初期化する
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-void GameScene::InitializeObjects() {}
+void GameScene::InitializeObjects() {
+
+	// テスト用Sphere生成
+	sphere_ = std::make_unique<TKM::Object3d>();
+	sphere_->Initialize(
+		TKM::Object3dCommon::GetInstance(),
+		dxCommon_
+	);
+	// モデル設定
+	sphere_->SetModel("sphere.obj");
+	// 座標・スケール設定
+	constexpr Vector3 kSpherePosition = { 0.0f, 0.0f, 0.0f };
+	constexpr Vector3 kSphereScale = { 3.0f, 3.0f, 3.0f };
+	sphere_->SetTranslate(kSpherePosition);
+	sphere_->SetScale(kSphereScale);
+}
 
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 // カメラを作成し、各オブジェクトに適用する
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 void GameScene::InitializeCamera() {
 	/// ──────────────── カメラ初期値 ───────────────
-	Vector3 mainRot = { 0.12f, -1.2f, 0.0f };
-	Vector3 mainPos = { 0.0f, 0.0f, -30.0f };
+	Vector3 mainRot = { 0.0f, 0.0f, 0.0f };
+	Vector3 mainPos = { 0.0f, 0.0f, -60.0f };
 	Vector3 debugTarget = { 0.0f, 0.0f, 0.0f };
 
 	/// ──────────────── カメラマネージャー初期化 ───────────────
 	TKM::CameraManager::GetInstance()->Initialize(mainRot, mainPos, debugTarget);
-
 	// 行列を即更新して、1フレームだけ古いカメラになるのを防ぐ
 	if (TKM::CameraManager::GetInstance()->GetMainCamera()) {
 		TKM::CameraManager::GetInstance()->GetMainCamera()->Update();
 	}
+
+	/// ───────────────── Objectカメラ設定 ───────────────
+	// Sphereにカメラを設定
+	sphere_->SetCamera(TKM::CameraManager::GetInstance()->GetMainCamera());
 }
 
 void GameScene::ImGuiDebug() {
