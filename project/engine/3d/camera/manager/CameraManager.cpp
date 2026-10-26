@@ -1,5 +1,9 @@
 #include "CameraManager.h"
 
+#ifdef USE_IMGUI
+#include "imgui.h"
+#endif
+
 namespace TKM {
 	CameraManager* CameraManager::GetInstance() {
 		static CameraManager instance;
@@ -35,6 +39,33 @@ namespace TKM {
 
 		// 条件分岐してどちらかを返すのは微妙なので、キャッシュしておいた active_ を返す
 		return active_;
+	}
+
+	void CameraManager::ImGuiDebug() {
+#ifdef USE_IMGUI
+		ImGui::Begin("デバッグカメラ");
+
+		bool useDebugCamera = useDebug_;
+
+		if (ImGui::Checkbox(
+			"デバッグカメラを使用",
+			&useDebugCamera
+		)) {
+			SetUseDebugCamera(useDebugCamera);
+		}
+
+		ImGui::Separator();
+
+		if (useDebug_) {
+			ImGui::Text("右ドラッグ : 視点回転");
+			ImGui::Text("左ドラッグ : 平行移動");
+			ImGui::Text("ホイール   : 前後移動");
+		} else {
+			ImGui::Text("メインカメラを使用中");
+		}
+
+		ImGui::End();
+#endif
 	}
 
 	Camera* CameraManager::GetActiveCamera() const { return active_; } // Updateのたびに条件分岐してどちらかを返すのは微妙なので、キャッシュしておいた active_ を返す

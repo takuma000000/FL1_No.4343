@@ -153,6 +153,7 @@ void GameScene::InitializeCamera() {
 
 	/// ──────────────── カメラマネージャー初期化 ───────────────
 	TKM::CameraManager::GetInstance()->Initialize(mainRot, mainPos, debugTarget);
+
 	// メインカメラの設定を読み込み、更新する
 	if (TKM::CameraManager::GetInstance()->GetMainCamera()) {
 		TKM::CameraManager::GetInstance()->GetMainCamera()->SetSettingsPath("resources/data/mainCamera.json");
@@ -174,6 +175,9 @@ void GameScene::ImGuiDebug() {
 #ifdef USE_IMGUI
 
 	// ──────────────── カメラ表示 ───────────────
+	// デバッグカメラの切り替え表示
+	TKM::CameraManager::GetInstance()->ImGuiDebug();
+	// メインカメラのデバッグ表示
 	if (auto camera =
 		TKM::CameraManager::GetInstance()->GetMainCamera()) {
 		camera->ImGuiDebug(); // メインカメラのデバッグ表示
