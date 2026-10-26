@@ -56,12 +56,51 @@ namespace TKM {
 
 		ImGui::Separator();
 
-		if (useDebug_) {
-			ImGui::Text("右ドラッグ : 視点回転");
-			ImGui::Text("左ドラッグ : 平行移動");
-			ImGui::Text("ホイール   : 前後移動");
+		if (useDebug_ && debug_) {
+			// 操作中は緑、停止中は灰色で表示する
+			auto ShowControlState = [](
+				const char* text,
+				bool isActive
+				) {
+					const ImVec4 activeColor = {
+						0.2f,
+						1.0f,
+						0.2f,
+						1.0f
+					};
+
+					const ImVec4 inactiveColor =
+						ImGui::GetStyleColorVec4(
+							ImGuiCol_TextDisabled
+						);
+
+					ImGui::TextColored(
+						isActive
+						? activeColor
+						: inactiveColor,
+						"%s",
+						text
+					);
+				};
+
+			ShowControlState(
+				"右ドラッグ : 視点回転",
+				debug_->IsRotating()
+			);
+
+			ShowControlState(
+				"左ドラッグ : 平行移動",
+				debug_->IsPanning()
+			);
+
+			ShowControlState(
+				"ホイール   : 前後移動",
+				debug_->IsZooming()
+			);
 		} else {
-			ImGui::Text("メインカメラを使用中");
+			ImGui::TextDisabled(
+				"メインカメラを使用中"
+			);
 		}
 
 		ImGui::End();
