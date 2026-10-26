@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <cassert>
+#include <filesystem>
 #include "TextureManager.h"
 
 namespace TKM {
@@ -39,8 +40,16 @@ namespace TKM {
 		std::string currentMtl = "";
 		int32_t currentSubmesh = -1;
 
+		// OBJファイルのパスを作成する
+		const std::filesystem::path objectPath =
+			std::filesystem::path(directoryPath) / filename;
+
+		// OBJファイルが配置されているフォルダを取得する
+		const std::string objectDirectory =
+			objectPath.parent_path().generic_string();
+
 		// ファイルを開く
-		std::ifstream file(directoryPath + "/" + filename);
+		std::ifstream file(objectPath);
 		assert(file.is_open());
 
 		std::string line; // 1行読み込み
@@ -106,7 +115,10 @@ namespace TKM {
 				// マテリアルファイル名を取得して読み込む
 				std::string materialFilename;
 				s >> materialFilename;
-				mtlMap = LoadMaterialTemplateFileMulti(directoryPath, materialFilename);
+				mtlMap = LoadMaterialTemplateFileMulti(
+					objectDirectory,
+					materialFilename
+				);
 			} else if (identifier == "usemtl") {
 				std::string mtlName;
 				s >> mtlName;
