@@ -43,8 +43,11 @@ namespace TKM {
 		//イチゴ色
 		//SetColorStrawberry();
 
-		//ホワイトタイガー色
-		SetColorWhiteTiger();
+		// ホワイトタイガー色
+		//SetColorWhiteTiger();
+
+		// クリスタルガラス
+		SetColorCrystalGlass();
 
 		//レインボー キラキラ✨
 		//SetColorRainbow();
@@ -265,6 +268,220 @@ namespace TKM {
 		colors[ImGuiCol_TabActive] = ImVec4(0.0f, 0.5f, 1.0f, 1.0f);
 
 		colors[ImGuiCol_PopupBg] = ImVec4(1.0f, 0.5f, 1.0f, 0.95f);
+#endif
+	}
+	void ImGuiManager::SetColorCrystalGlass() {
+#ifdef USE_IMGUI
+		ImGuiStyle& style = ImGui::GetStyle();
+
+		//=============================================================
+		// Crystal Glass
+		// 透明なガラス、黒い凹凸、銀色の反射をイメージ
+		//=============================================================
+
+		// レイアウト
+		style.WindowRounding = 7.0f;
+		style.ChildRounding = 5.0f;
+		style.FrameRounding = 4.0f;
+		style.PopupRounding = 5.0f;
+		style.ScrollbarRounding = 5.0f;
+		style.GrabRounding = 3.0f;
+		style.TabRounding = 4.0f;
+
+		style.WindowBorderSize = 1.0f;
+		style.ChildBorderSize = 1.0f;
+		style.FrameBorderSize = 1.0f;
+		style.PopupBorderSize = 1.0f;
+
+		style.WindowPadding = ImVec2(14.0f, 12.0f);
+		style.FramePadding = ImVec2(9.0f, 6.0f);
+		style.ItemSpacing = ImVec2(9.0f, 8.0f);
+		style.ItemInnerSpacing = ImVec2(7.0f, 5.0f);
+		style.GrabMinSize = 12.0f;
+
+		//=============================================================
+		// カラーパレット
+		//=============================================================
+
+		const ImVec4 kBlackGlass = ImVec4(0.055f, 0.060f, 0.070f, 0.96f);
+		const ImVec4 kSmokeGlass = ImVec4(0.105f, 0.115f, 0.130f, 0.97f);
+		const ImVec4 kDarkSilver = ImVec4(0.190f, 0.205f, 0.225f, 1.00f);
+		const ImVec4 kSilver = ImVec4(0.650f, 0.700f, 0.735f, 1.00f);
+		const ImVec4 kIceWhite = ImVec4(0.900f, 0.940f, 0.965f, 1.00f);
+		const ImVec4 kReflection = ImVec4(0.760f, 0.865f, 0.920f, 1.00f);
+
+		ImVec4* colors = style.Colors;
+
+		//=============================================================
+		// テキスト
+		//=============================================================
+
+		colors[ImGuiCol_Text] = kIceWhite;
+		colors[ImGuiCol_TextDisabled] =
+			ImVec4(0.430f, 0.470f, 0.500f, 1.00f);
+
+		//=============================================================
+		// 背景
+		//=============================================================
+
+		colors[ImGuiCol_WindowBg] = kBlackGlass;
+
+		colors[ImGuiCol_ChildBg] =
+			ImVec4(0.085f, 0.095f, 0.110f, 0.92f);
+
+		colors[ImGuiCol_PopupBg] = kSmokeGlass;
+
+		//=============================================================
+		// 枠線
+		//=============================================================
+
+		colors[ImGuiCol_Border] =
+			ImVec4(0.540f, 0.600f, 0.640f, 0.55f);
+
+		colors[ImGuiCol_BorderShadow] =
+			ImVec4(0.000f, 0.000f, 0.000f, 0.00f);
+
+		//=============================================================
+		// タイトルバー
+		//=============================================================
+
+		colors[ImGuiCol_TitleBg] =
+			ImVec4(0.090f, 0.100f, 0.115f, 1.00f);
+
+		colors[ImGuiCol_TitleBgActive] =
+			ImVec4(0.205f, 0.230f, 0.255f, 1.00f);
+
+		colors[ImGuiCol_TitleBgCollapsed] =
+			ImVec4(0.075f, 0.085f, 0.100f, 0.85f);
+
+		//=============================================================
+		// メニューバー
+		//=============================================================
+
+		colors[ImGuiCol_MenuBarBg] =
+			ImVec4(0.115f, 0.130f, 0.145f, 0.98f);
+
+		//=============================================================
+		// 入力欄
+		//=============================================================
+
+		colors[ImGuiCol_FrameBg] =
+			ImVec4(0.155f, 0.170f, 0.190f, 0.92f);
+
+		colors[ImGuiCol_FrameBgHovered] =
+			ImVec4(0.260f, 0.300f, 0.330f, 0.95f);
+
+		colors[ImGuiCol_FrameBgActive] =
+			ImVec4(0.350f, 0.410f, 0.455f, 0.98f);
+
+		//=============================================================
+		// ボタン
+		//=============================================================
+
+		colors[ImGuiCol_Button] = kDarkSilver;
+
+		colors[ImGuiCol_ButtonHovered] =
+			ImVec4(0.420f, 0.490f, 0.530f, 1.00f);
+
+		colors[ImGuiCol_ButtonActive] = kSilver;
+
+		//=============================================================
+		// チェックボックス・スライダー
+		//=============================================================
+
+		colors[ImGuiCol_CheckMark] = kIceWhite;
+
+		colors[ImGuiCol_SliderGrab] = kSilver;
+		colors[ImGuiCol_SliderGrabActive] = kReflection;
+
+		//=============================================================
+		// ヘッダー・選択項目
+		//=============================================================
+
+		colors[ImGuiCol_Header] =
+			ImVec4(0.240f, 0.270f, 0.300f, 0.85f);
+
+		colors[ImGuiCol_HeaderHovered] =
+			ImVec4(0.390f, 0.455f, 0.495f, 0.95f);
+
+		colors[ImGuiCol_HeaderActive] =
+			ImVec4(0.520f, 0.590f, 0.630f, 1.00f);
+
+		//=============================================================
+		// セパレーター
+		//=============================================================
+
+		colors[ImGuiCol_Separator] =
+			ImVec4(0.490f, 0.540f, 0.570f, 0.50f);
+
+		colors[ImGuiCol_SeparatorHovered] = kSilver;
+		colors[ImGuiCol_SeparatorActive] = kIceWhite;
+
+		//=============================================================
+		// タブ
+		//=============================================================
+
+		colors[ImGuiCol_Tab] =
+			ImVec4(0.130f, 0.150f, 0.170f, 1.00f);
+
+		colors[ImGuiCol_TabHovered] =
+			ImVec4(0.390f, 0.450f, 0.490f, 1.00f);
+
+		colors[ImGuiCol_TabActive] =
+			ImVec4(0.285f, 0.330f, 0.365f, 1.00f);
+
+		colors[ImGuiCol_TabUnfocused] =
+			ImVec4(0.100f, 0.115f, 0.130f, 1.00f);
+
+		colors[ImGuiCol_TabUnfocusedActive] =
+			ImVec4(0.195f, 0.225f, 0.250f, 1.00f);
+
+		//=============================================================
+		// スクロールバー
+		//=============================================================
+
+		colors[ImGuiCol_ScrollbarBg] =
+			ImVec4(0.065f, 0.075f, 0.085f, 0.90f);
+
+		colors[ImGuiCol_ScrollbarGrab] =
+			ImVec4(0.300f, 0.335f, 0.360f, 0.90f);
+
+		colors[ImGuiCol_ScrollbarGrabHovered] = kSilver;
+		colors[ImGuiCol_ScrollbarGrabActive] = kReflection;
+
+		//=============================================================
+		// その他
+		//=============================================================
+
+		colors[ImGuiCol_ResizeGrip] =
+			ImVec4(0.570f, 0.640f, 0.690f, 0.35f);
+
+		colors[ImGuiCol_ResizeGripHovered] =
+			ImVec4(0.700f, 0.780f, 0.825f, 0.75f);
+
+		colors[ImGuiCol_ResizeGripActive] = kIceWhite;
+
+		colors[ImGuiCol_PlotLines] = kSilver;
+		colors[ImGuiCol_PlotLinesHovered] = kIceWhite;
+
+		colors[ImGuiCol_PlotHistogram] = kSilver;
+		colors[ImGuiCol_PlotHistogramHovered] = kReflection;
+
+		colors[ImGuiCol_TextSelectedBg] =
+			ImVec4(0.540f, 0.650f, 0.720f, 0.38f);
+
+		colors[ImGuiCol_DragDropTarget] = kReflection;
+		colors[ImGuiCol_NavHighlight] = kReflection;
+
+		colors[ImGuiCol_DockingPreview] =
+			ImVec4(0.650f, 0.760f, 0.820f, 0.38f);
+
+		colors[ImGuiCol_DockingEmptyBg] =
+			ImVec4(0.045f, 0.050f, 0.060f, 1.00f);
+
+		colors[ImGuiCol_ModalWindowDimBg] =
+			ImVec4(0.000f, 0.000f, 0.000f, 0.65f);
+
 #endif
 	}
 }
