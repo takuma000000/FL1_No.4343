@@ -51,6 +51,7 @@ void GameScene::Update() {
 	/// ──────────────── 3Dオブジェクト更新 ───────────────
 	// テスト用Sphere更新
 	sphere_->Update();
+	player_->Update();
 
 	/// ──────────────── ライト更新 ───────────────
 	directionalLight_->Update();
@@ -74,7 +75,11 @@ void GameScene::Draw3D() {
 	/// ──────────────── 3Dオブジェクト描画 ───────────────
 	Object3dCommon::GetInstance()->DrawSetCommon();
 	// テスト用Sphere描画
-	sphere_->Draw(dxCommon_);
+	//sphere_->Draw(dxCommon_);
+
+	if (player_) {
+		player_->Draw(dxCommon_); // dxCommon_ を渡す
+	}
 
 	/// ──────────────── パーティクル描画 ───────────────
 	ParticleManager::GetInstance()->Draw();
@@ -119,6 +124,10 @@ void GameScene::InitializeObjects() {
 	constexpr Vector3 kSphereScale = { 3.0f, 3.0f, 3.0f };
 	sphere_->SetTranslate(kSpherePosition);
 	sphere_->SetScale(kSphereScale);
+
+	player_ = std::make_unique<Player>();
+	player_->Initialize(dxCommon_);
+
 }
 
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
@@ -139,7 +148,12 @@ void GameScene::InitializeCamera() {
 
 	/// ───────────────── Objectカメラ設定 ───────────────
 	// Sphereにカメラを設定
-	sphere_->SetCamera(TKM::CameraManager::GetInstance()->GetMainCamera());
+	//sphere_->SetCamera(TKM::CameraManager::GetInstance()->GetMainCamera());
+
+	if (player_) {
+		player_->SetCamera(TKM::CameraManager::GetInstance()->GetMainCamera());
+	}
+
 }
 
 void GameScene::ImGuiDebug() {
