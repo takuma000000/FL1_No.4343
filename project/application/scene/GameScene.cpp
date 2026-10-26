@@ -18,8 +18,7 @@ void GameScene::Initialize() {
 	TextureCatalog::LoadTextureCatalogs();
 	ModelCatalog::LoadModelCatalogs(dxCommon_);
 	InitializeObjects();
-	InitializeObjectSave();
-	InitializeObjectEditor();
+	objectSettings_.Initialize(sphere_.get(), player_.get());
 	InitializeSprite();
 	InitializeCamera();
 
@@ -34,10 +33,8 @@ void GameScene::Initialize() {
 
 void GameScene::Finalize() {
 
-	/// ──────────────── オブジェクト編集終了 ───────────────
-	objectEditor_.Clear();
-	/// ──────────────── オブジェクト保存終了 ───────────────
-	objectSave_.Clear();
+	/// ──────────────── オブジェクト設定終了 ───────────────
+	objectSettings_.Finalize();
 
 	/// ──────────────── 各種終了処理 ───────────────
 	TextureManager::GetInstance()->Finalize();
@@ -173,93 +170,6 @@ void GameScene::InitializeCamera() {
 	}
 }
 
-// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-// オブジェクトの保存設定を初期化する
-// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-void GameScene::InitializeObjectSave() {
-	// 保存先を設定
-	objectSave_.SetSettingsPath("resources/data/GAME.json");
-
-	// テスト用Sphereを登録
-	objectSave_.RegisterObject(
-		"Sphere",
-		[this]() {
-			TKM::ObjectSave::Values values{};
-
-			values.position_ = sphere_->GetTranslate();
-			values.rotation_ = sphere_->GetRotate();
-			values.scale_ = sphere_->GetScale();
-			values.visible_ = std::nullopt;
-
-			return values;
-		},
-		[this](const TKM::ObjectSave::Values& values) {
-			sphere_->SetTranslate(values.position_);
-			sphere_->SetRotate(values.rotation_);
-			sphere_->SetScale(values.scale_);
-		}
-	);
-
-	// Playerを登録
-	objectSave_.RegisterObject(
-		"Player",
-		[this]() {
-			TKM::ObjectSave::Values values{};
-
-			values.position_ = player_->GetPos();
-			values.rotation_ = player_->GetRotation();
-			values.scale_ = player_->GetScale();
-			values.visible_ = player_->IsVisible();
-
-			return values;
-		},
-		[this](const TKM::ObjectSave::Values& values) {
-			player_->SetPos(values.position_);
-			player_->SetRotation(values.rotation_);
-			player_->SetScale(values.scale_);
-
-			if (values.visible_.has_value()) {
-				player_->SetVisible(values.visible_.value());
-			}
-		}
-	);
-
-	// 保存したオブジェクト設定を読み込む
-	objectSave_.LoadSettings();
-}
-
-// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-// オブジェクト編集画面を初期化する
-// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-void GameScene::InitializeObjectEditor() {
-#ifdef USE_IMGUI
-
-	// 保存機能を設定
-	objectEditor_.SetObjectSave(&objectSave_);
-
-	// Playerを登録
-	objectEditor_.RegisterObject(
-		"Player",
-		[this]() {
-			if (player_) {
-				player_->ImGuiDebug();
-			}
-		}
-	);
-
-	// テスト用Sphereを登録
-	objectEditor_.RegisterObject(
-		"Sphere",
-		[this]() {
-			if (sphere_) {
-				sphere_->ImGuiDebug();
-			}
-		}
-	);
-
-#endif
-}
-
 void GameScene::ImGuiDebug() {
 #ifdef USE_IMGUI
 
@@ -270,7 +180,7 @@ void GameScene::ImGuiDebug() {
 	}
 
 	// ──────────────── オブジェクト編集 ───────────────
-	objectEditor_.ImGuiDebug();
+	objectSettings_.ImGuiDebug();
 
 #endif
 }
