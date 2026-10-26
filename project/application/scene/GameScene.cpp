@@ -234,23 +234,70 @@ void GameScene::ImGuiDebug() {
 		camera->ImGuiDebug(); // メインカメラのデバッグ表示
 	}
 
-	// ──────────────── プレイヤー表示 ───────────────
-	if (player_) {
-		player_->ShowImGui();
-	}
+	// ──────────────── オブジェクト編集 ───────────────
+	ImGui::Begin("オブジェクト編集");
 
 	// ──────────────── オブジェクト保存 ───────────────
-	ImGui::Begin("オブジェクト保存");
+	ImGui::Separator();
 
 	if (ImGui::Button("全オブジェクトを保存")) {
 		objectSave_.SaveSettings();
 	}
 
-	const std::string& message = objectSave_.GetSettingsMessage();
+	ImGui::SameLine();
+
+	if (ImGui::Button("最後の保存状態に戻す")) {
+		objectSave_.LoadSettings();
+	}
+
+	const std::string& message =
+		objectSave_.GetSettingsMessage();
+
 	if (!message.empty()) {
 		ImGui::TextWrapped("%s", message.c_str());
 	}
-	
+
+	// 選択
+	const char* objectNames[] = {
+		"None",
+		"Player",
+		"Sphere"
+	};
+
+	int selectedIndex = static_cast<int>(selectedObject_);
+
+	if (ImGui::Combo(
+		"編集対象",
+		&selectedIndex,
+		objectNames,
+		IM_ARRAYSIZE(objectNames)
+	)) {
+		selectedObject_ =
+			static_cast<SelectedObject>(selectedIndex);
+	}
+
+	ImGui::Separator();
+
+	switch (selectedObject_) {
+	case SelectedObject::None:
+		ImGui::Text("編集するオブジェクトを選択してください");
+		break;
+
+	case SelectedObject::Player:
+		if (player_) {
+			ImGui::Text("[Player]");
+			player_->ImGuiDebug();
+		}
+		break;
+
+	case SelectedObject::Sphere:
+		if (sphere_) {
+			ImGui::Text("[Sphere]");
+			sphere_->ImGuiDebug();
+		}
+		break;
+	}
+
 	ImGui::End();
 
 #endif

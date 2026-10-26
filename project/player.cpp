@@ -59,9 +59,7 @@ void Player::Draw(TKM::DirectXCommon* dxCommon) {
 }
 
 #ifdef USE_IMGUI
-void Player::ShowImGui() {
-    ImGui::Begin("Player Control Panel");
-
+void Player::ImGuiDebug() {
     // 1. 描画切り替え（Visible）
     ImGui::Checkbox("Visible", &isVisible_);
 
@@ -75,13 +73,20 @@ void Player::ShowImGui() {
 
     // 3. 回転（Rotation）
     float r[3] = { rotation_.x, rotation_.y, rotation_.z };
-    if (ImGui::DragFloat3("Rotation", r, 1.0f, -360.0f, 360.0f)) {
+    if (ImGui::DragFloat3("Rotation", r, 0.01f)) {
         rotation_ = { r[0], r[1], r[2] };
     }
 
     // 4. 拡大縮小（Scale）
     float s[3] = { size_.x, size_.y, size_.z };
-    if (ImGui::DragFloat3("Scale", s, 0.01f, 0.001f, 10.0f, "%.3f")) {
+    if (ImGui::DragFloat3(
+        "Scale",
+        s,
+        0.01f,
+        0.001f,
+        10.0f,
+        "%.3f"
+    )) {
         size_ = { s[0], s[1], s[2] };
     }
 
@@ -94,7 +99,5 @@ void Player::ShowImGui() {
         size_ = { 0.5f, 0.5f, 0.5f };
         isVisible_ = true;
     }
-
-    ImGui::End();
 }
 #endif

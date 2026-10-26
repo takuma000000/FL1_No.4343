@@ -132,6 +132,34 @@ namespace TKM {
 		}
 	}
 
+#ifdef USE_IMGUI
+	void Object3d::ImGuiDebug() {
+		// 位置
+		ImGui::DragFloat3(
+			"位置",
+			&transform_.translate_.x,
+			0.1f
+		);
+
+		// 回転
+		ImGui::DragFloat3(
+			"回転",
+			&transform_.rotate_.x,
+			0.01f
+		);
+
+		// 拡大縮小
+		ImGui::DragFloat3(
+			"拡縮",
+			&transform_.scale_.x,
+			0.01f,
+			0.001f,
+			100.0f,
+			"%.3f"
+		);
+	}
+#endif
+
 	void Object3d::SetModel(const std::string& filePath) {
 		//モデルを検索してセットする
 		model_ = ModelManager::GetInstance()->FindModel(filePath);

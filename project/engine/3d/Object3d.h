@@ -99,6 +99,14 @@ namespace TKM {
 		/// </summary>
 		void Draw(TKM::DirectXCommon* dxCommon);
 
+#ifdef USE_IMGUI
+		/// <summary>
+		/// 3DオブジェクトのImGui編集項目を表示します。
+		/// 呼び出し側でImGui::BeginとImGui::Endを行います。
+		/// </summary>
+		void ImGuiDebug();
+#endif
+
 		/// <summary>
 		/// 親オブジェクトを解除します。
 		/// </summary>

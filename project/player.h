@@ -14,7 +14,7 @@ public:
 
 #ifdef USE_IMGUI
     // ImGui描画処理（GameScene等から呼び出す）
-    void ShowImGui();
+    void ImGuiDebug();
 #endif
 
     void SetCamera(TKM::Camera* camera);

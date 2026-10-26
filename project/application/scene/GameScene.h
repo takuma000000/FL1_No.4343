@@ -98,4 +98,16 @@ private:
 	// オブジェクトの保存設定
 	//======================================================================
 	TKM::ObjectSave objectSave_; // オブジェクトの保存設定
+
+private:
+	//======================================================================
+	// ImGuiオブジェクト選択
+	//======================================================================
+	enum class SelectedObject {
+		None,   // 選択なし
+		Player, // Player
+		Sphere  // Sphere
+	};
+	// ImGuiで選択されているオブジェクト
+	SelectedObject selectedObject_ = SelectedObject::None;
 };
