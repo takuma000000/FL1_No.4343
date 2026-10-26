@@ -63,9 +63,7 @@ namespace TKM {
 		, worldMatrix_(MyMath::MakeAffineMatrix(transform_.scale_, transform_.rotate_, transform_.translate_))
 		, viewMatrix_(MyMath::Inverse4x4(worldMatrix_))
 		, projectionMatrix_(MyMath::MakePerspectiveFovMatrix(fovY_, aspectRatio_, nearClip_, farClip_))
-		, viewProjectionMatrix_(MyMath::Multiply(viewMatrix_, projectionMatrix_))
-	{
-	}
+		, viewProjectionMatrix_(MyMath::Multiply(viewMatrix_, projectionMatrix_)) {}
 
 	void Camera::Update() {
 		//cameraTransformからcameraMatrixを作る
@@ -94,7 +92,7 @@ namespace TKM {
 
 		ImGui::SameLine();
 
-		if (ImGui::Button("読み込み")) {
+		if (ImGui::Button("最後の保存状態に戻す")) {
 			LoadSettings();
 		}
 
@@ -171,7 +169,7 @@ namespace TKM {
 				);
 			}
 
-			settingsMessage_ = "保存しました: " + settingsPath_;
+			settingsMessage_ = "保存したよ！！！！！: " + settingsPath_;
 			return true;
 		}
 		catch (const std::exception& error) {
@@ -218,7 +216,7 @@ namespace TKM {
 
 			Update();
 
-			settingsMessage_ = "読み込みました: " + settingsPath_;
+			settingsMessage_ = "最後の保存状態に戻したよ！！！: " + settingsPath_;
 			return true;
 		}
 		catch (const std::exception& error) {
