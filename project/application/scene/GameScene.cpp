@@ -146,6 +146,11 @@ void GameScene::InitializeCamera() {
 void GameScene::ImGuiDebug() {
 #ifdef USE_IMGUI
 
+	// ──────────────── カメラ表示 ───────────────
+	if (auto* camera = TKM::CameraManager::GetInstance()->GetMainCamera()) {
+		camera->ImGuiDebug(); // メインカメラのデバッグ表示
+	}
+
 #endif
 }
 
