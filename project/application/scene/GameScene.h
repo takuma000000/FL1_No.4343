@@ -2,6 +2,8 @@
 #include "BaseScene.h"
 
 #include "Object3d.h"
+#include "ObjectSave.h"
+
 #include <memory>
 
 #include "../../player.h"
@@ -65,6 +67,11 @@ public:
 	void InitializeCamera();
 
 	/// <summary>
+	/// オブジェクトの保存設定を初期化します。
+	/// </summary>
+	void InitializeObjectSave();
+
+	/// <summary>
 	/// アクティブなカメラを更新します。
 	/// </summary>
 	/// <returns></returns>
@@ -87,4 +94,8 @@ private:
 
 	std::unique_ptr<Player> player_ = nullptr;
 
+	//======================================================================
+	// オブジェクトの保存設定
+	//======================================================================
+	TKM::ObjectSave objectSave_; // オブジェクトの保存設定
 };

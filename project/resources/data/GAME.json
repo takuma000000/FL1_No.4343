@@ -1,0 +1,40 @@
+{
+    "objects": {
+        "Player": {
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "visible": true
+        },
+        "Sphere": {
+            "position": [
+                0.0,
+                5.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                3.0,
+                3.0,
+                3.0
+            ]
+        }
+    },
+    "version": 1
+}

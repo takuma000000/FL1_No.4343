@@ -22,6 +22,7 @@ void GameScene::Initialize() {
 	TextureCatalog::LoadTextureCatalogs();
 	ModelCatalog::LoadModelCatalogs(dxCommon_);
 	InitializeObjects();
+	InitializeObjectSave();
 	InitializeSprite();
 	InitializeCamera();
 
@@ -35,6 +36,10 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Finalize() {
+
+	/// ──────────────── オブジェクト保存終了 ───────────────
+	objectSave_.Clear();
+
 	/// ──────────────── 各種終了処理 ───────────────
 	TextureManager::GetInstance()->Finalize();
 	AudioManager::GetInstance()->Finalize();
@@ -169,6 +174,58 @@ void GameScene::InitializeCamera() {
 	}
 }
 
+// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+// オブジェクトの保存設定を初期化する
+// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+void GameScene::InitializeObjectSave() {
+	// 保存先を設定
+	objectSave_.SetSettingsPath("resources/data/GAME.json");
+
+	// テスト用Sphereを登録
+	objectSave_.RegisterObject(
+		"Sphere",
+		[this]() {
+			TKM::ObjectSave::Values values{};
+
+			values.position_ = sphere_->GetTranslate();
+			values.rotation_ = sphere_->GetRotate();
+			values.scale_ = sphere_->GetScale();
+			values.visible_ = std::nullopt;
+
+			return values;
+		},
+		[this](const TKM::ObjectSave::Values& values) {
+			sphere_->SetTranslate(values.position_);
+			sphere_->SetRotate(values.rotation_);
+			sphere_->SetScale(values.scale_);
+		}
+	);
+
+	// Playerを登録
+	objectSave_.RegisterObject(
+		"Player",
+		[this]() {
+			TKM::ObjectSave::Values values{};
+
+			values.position_ = player_->GetPos();
+			values.rotation_ = player_->GetRotation();
+			values.scale_ = player_->GetScale();
+			values.visible_ = player_->IsVisible();
+
+			return values;
+		},
+		[this](const TKM::ObjectSave::Values& values) {
+			player_->SetPos(values.position_);
+			player_->SetRotation(values.rotation_);
+			player_->SetScale(values.scale_);
+
+			if (values.visible_.has_value()) {
+				player_->SetVisible(values.visible_.value());
+			}
+		}
+	);
+}
+
 void GameScene::ImGuiDebug() {
 #ifdef USE_IMGUI
 
@@ -181,6 +238,20 @@ void GameScene::ImGuiDebug() {
 	if (player_) {
 		player_->ShowImGui();
 	}
+
+	// ──────────────── オブジェクト保存 ───────────────
+	ImGui::Begin("オブジェクト保存");
+
+	if (ImGui::Button("全オブジェクトを保存")) {
+		objectSave_.SaveSettings();
+	}
+
+	const std::string& message = objectSave_.GetSettingsMessage();
+	if (!message.empty()) {
+		ImGui::TextWrapped("%s", message.c_str());
+	}
+	
+	ImGui::End();
 
 #endif
 }
