@@ -46,8 +46,6 @@ void GameScene::Finalize() {
 
 void GameScene::Update() {
 
-	ImGuiDebug();
-
 	/// ──────────────── カメラ更新 ───────────────
 	UpdateActiveCamera();
 
@@ -68,6 +66,13 @@ void GameScene::Update() {
 	/// ──────────────── パーティクル更新 ───────────────
 	constexpr float deltaTime = 1.0f / 60.0f;
 	TKM::ParticleManager::GetInstance()->Update(deltaTime);
+
+#ifdef USE_IMGUI
+
+	ImGuiDebug();
+
+#endif // 
+
 }
 
 void GameScene::Draw() {
