@@ -22,7 +22,7 @@ void Player::Initialize(TKM::DirectXCommon* dxCommon) {
         dxCommon
     );
 
-    object_->SetModel("sphere.obj");
+    object_->SetModel("player/player.obj");
 
     // トランスフォーム適用
     object_->SetTranslate(pos_);
