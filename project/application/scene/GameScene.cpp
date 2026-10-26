@@ -108,6 +108,9 @@ TKM::Camera* GameScene::UpdateActiveCamera() {
 
 	if (activeCamera) {
 		TKM::ParticleManager::GetInstance()->SetCamera(activeCamera);
+
+		sphere_->SetCamera(activeCamera); // テスト用Sphereにカメラを設定
+		player_->SetCamera(activeCamera); // プレイヤーにカメラを設定
 	}
 
 	return activeCamera;
