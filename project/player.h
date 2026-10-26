@@ -24,10 +24,16 @@ public:
     const Vector3& GetScale() const { return size_; }
     void SetScale(const Vector3& scale) { size_ = scale; }
 
+    // 描画フラグのゲッター / セッター
+    bool IsVisible() const { return isVisible_; }
+    void SetVisible(bool isVisible) { isVisible_ = isVisible; }
+
 private:
     Vector3 pos_;
     Vector3 rotation_;
     Vector3 size_;
+
+    bool isVisible_ = true;
 
     std::unique_ptr<TKM::Object3d> object_ = nullptr;
 };

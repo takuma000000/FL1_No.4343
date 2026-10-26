@@ -48,6 +48,11 @@ void Player::Update() {
 }
 
 void Player::Draw(TKM::DirectXCommon* dxCommon) {
+
+    if (!isVisible_) {
+        return;
+    }
+
     if (object_) {
         object_->Draw(dxCommon);
     }
