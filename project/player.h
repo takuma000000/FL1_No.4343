@@ -3,6 +3,8 @@
 #include "Object3d.h"
 #include <memory>
 
+class Input;
+
 class Player {
 public:
     Player();
@@ -33,11 +35,15 @@ public:
     bool IsVisible() const { return isVisible_; }
     void SetVisible(bool isVisible) { isVisible_ = isVisible; }
 
+    float GetMoveSpeed() const { return moveSpeed_; }
+    void SetMoveSpeed(float speed) { moveSpeed_ = speed; }
+
 private:
     Vector3 pos_;
     Vector3 rotation_;
     Vector3 size_;
 
+    float moveSpeed_ = 0.3f;
     bool isVisible_ = true;
 
     std::unique_ptr<TKM::Object3d> object_ = nullptr;
