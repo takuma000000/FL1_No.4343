@@ -45,6 +45,49 @@ void GameScene::Finalize() {
 }
 
 void GameScene::Update() {
+
+	// 1. Player の更新
+	if (player_) {
+		player_->Update();
+	}
+
+	// 2. ImGui による Player Transform 操作 UI
+	if (player_) {
+		ImGui::Begin("Player Transform Inspector");
+
+		// ──────────────── 位置（Position） ────────────────
+		Vector3 pos = player_->GetPos();
+		float p[3] = { pos.x, pos.y, pos.z };
+		if (ImGui::DragFloat3("Position", p, 0.1f)) {
+			player_->SetPos({ p[0], p[1], p[2] });
+		}
+
+		// ──────────────── 回転（Rotation: 0 ~ 360度） ────────────────
+		Vector3 rot = player_->GetRotation();
+		float r[3] = { rot.x, rot.y, rot.z };
+		if (ImGui::DragFloat3("Rotation", r, 1.0f, -360.0f, 360.0f)) {
+			player_->SetRotation({ r[0], r[1], r[2] });
+		}
+
+		// ──────────────── 拡大縮小（Scale: 0.001 ~ 10.0） ────────────────
+		Vector3 scale = player_->GetScale();
+		float s[3] = { scale.x, scale.y, scale.z };
+		if (ImGui::DragFloat3("Scale", s, 0.01f, 0.001f, 10.0f, "%.3f")) {
+			player_->SetScale({ s[0], s[1], s[2] });
+		}
+
+		ImGui::Separator();
+
+		// ──────────────── 一括リセットボタン ────────────────
+		if (ImGui::Button("Reset Transform")) {
+			player_->SetPos({ 0.0f, 0.0f, 0.0f });
+			player_->SetRotation({ 0.0f, 0.0f, 0.0f });
+			player_->SetScale({ 0.5f, 0.5f, 0.5f }); // 現在表示できている適正スケール
+		}
+
+		ImGui::End();
+	}
+
 	/// ──────────────── カメラ更新 ───────────────
 	UpdateActiveCamera();
 
