@@ -3,6 +3,7 @@
 #include <exception>
 #include <fstream>
 #include <string>
+#include <cmath>
 
 #include "../EnemyAttribute.h"
 #include "../EnemyType.h"
@@ -188,6 +189,13 @@ bool EnemyDataLoader::LoadFromFile(
 			scale.at(2).get<float>()
 		};
 
+        //=========================================================
+        // 読み込み値の検証
+        //=========================================================
+		if (!Validate(loadedData, errorMessage)) {
+			return false;
+		}      
+
 		// すべての読み込みに成功した場合のみ、
 		// 呼び出し側のEnemyDataへ結果を反映する。
 		outputData = loadedData;
@@ -208,4 +216,155 @@ bool EnemyDataLoader::LoadFromFile(
 
 		return false;
 	}
+}
+
+bool EnemyDataLoader::Validate(
+	const EnemyData& data,
+	std::string& errorMessage
+) {
+	//=========================================================
+	// 基本文字列
+	//=========================================================
+	if (data.id.empty()) {
+		errorMessage =
+			"敵データのidが空です。";
+
+		return false;
+	}
+
+	if (data.displayName.empty()) {
+		errorMessage =
+			"敵データのdisplayNameが空です: " +
+			data.id;
+
+		return false;
+	}
+
+	if (data.modelName.empty()) {
+		errorMessage =
+			"敵データのmodelNameが空です: " +
+			data.id;
+
+		return false;
+	}
+
+	//=========================================================
+	// ステータス
+	//=========================================================
+	if (data.maxHp <= 0) {
+		errorMessage =
+			"maxHpは1以上である必要があります: " +
+			data.id;
+
+		return false;
+	}
+
+	if (
+		!std::isfinite(data.moveSpeed) ||
+		data.moveSpeed < 0.0f
+		) {
+		errorMessage =
+			"moveSpeedは0以上の有限値である必要があります: " +
+			data.id;
+
+		return false;
+	}
+
+	if (
+		!std::isfinite(data.attackPower) ||
+		data.attackPower < 0.0f
+		) {
+		errorMessage =
+			"attackPowerは0以上の有限値である必要があります: " +
+			data.id;
+
+		return false;
+	}
+
+	//=========================================================
+	// 戦闘パラメータ
+	//=========================================================
+	if (
+		!std::isfinite(data.detectionRange) ||
+		data.detectionRange < 0.0f
+		) {
+		errorMessage =
+			"detectionRangeは0以上の有限値である必要があります: " +
+			data.id;
+
+		return false;
+	}
+
+	if (
+		!std::isfinite(data.attackRange) ||
+		data.attackRange < 0.0f
+		) {
+		errorMessage =
+			"attackRangeは0以上の有限値である必要があります: " +
+			data.id;
+
+		return false;
+	}
+
+	if (data.detectionRange < data.attackRange) {
+		errorMessage =
+			"detectionRangeはattackRange以上である必要があります: " +
+			data.id;
+
+		return false;
+	}
+
+	if (
+		!std::isfinite(data.attackInterval) ||
+		data.attackInterval <= 0.0f
+		) {
+		errorMessage =
+			"attackIntervalは0より大きい有限値である必要があります: " +
+			data.id;
+
+		return false;
+	}
+
+	if (
+		!std::isfinite(data.collisionRadius) ||
+		data.collisionRadius <= 0.0f
+		) {
+		errorMessage =
+			"collisionRadiusは0より大きい有限値である必要があります: " +
+			data.id;
+
+		return false;
+	}
+
+	//=========================================================
+	// Transform
+	//=========================================================
+	const bool isScaleValid =
+		std::isfinite(data.scale.x) &&
+		std::isfinite(data.scale.y) &&
+		std::isfinite(data.scale.z) &&
+		data.scale.x > 0.0f &&
+		data.scale.y > 0.0f &&
+		data.scale.z > 0.0f;
+
+	if (!isScaleValid) {
+		errorMessage =
+			"scaleの各要素は0より大きい有限値である必要があります: " +
+			data.id;
+
+		return false;
+	}
+
+	//=========================================================
+	// 報酬
+	//=========================================================
+	if (data.antibodyPoint < 0) {
+		errorMessage =
+			"antibodyPointは0以上である必要があります: " +
+			data.id;
+
+		return false;
+	}
+
+	return true;
 }

@@ -23,4 +23,17 @@ public:
 		EnemyData& outputData,
 		std::string& errorMessage
 	);
+
+private:
+	/// <summary>
+	/// 読み込んだ敵データが使用可能か検証する
+	/// </summary>
+	/// <param name="data">検証するデータ</param>
+	/// <param name="errorMessage">検証に失敗した理由</param>
+	/// <returns>すべての値が有効な場合はtrue</returns>
+	static bool Validate(
+		const EnemyData& data,
+		std::string& errorMessage
+	);
+
 };
