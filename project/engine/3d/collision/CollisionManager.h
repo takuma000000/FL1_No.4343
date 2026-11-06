@@ -1,43 +1,63 @@
 #pragma once
-#include "Collider.h"
+#include "AABBCollider.h"
 
+#include <functional>
+#include <map>
+#include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 namespace TKM {
 
 	//=============================================================
 	// CollisionManagerクラス
-	// 登録されたコライダー同士の当たり判定を管理するクラス。
+	// コライダーの生成・更新・当たり判定を管理するクラス。
 	//=============================================================
 	class CollisionManager {
 	public:
+		// オブジェクトの現在位置を取得する処理
+		using PositionGetter = std::function<Vector3()>;
+
 		/// <summary>
 		/// CollisionManagerのインスタンスを取得します。
 		/// </summary>
 		static CollisionManager* GetInstance();
 
 		/// <summary>
-		/// 判定対象のコライダーを登録します。
+		/// AABBコライダーを登録します。
 		/// </summary>
-		/// <returns>登録できた場合はtrue</returns>
-		bool Register(Collider* collider);
+		/// <param name="id">コライダーの識別名</param>
+		/// <param name="positionGetter">現在位置を取得する処理</param>
+		/// <param name="size">コライダーの全体サイズ</param>
+		/// <returns>登録したコライダー</returns>
+		AABBCollider* RegisterAABB(
+			const std::string& id,
+			PositionGetter positionGetter,
+			const Vector3& size
+		);
 
 		/// <summary>
-		/// コライダーの登録を解除します。
-		/// コライダーを破棄する前に呼び出してください。
+		/// 指定したコライダーを登録解除します。
 		/// </summary>
-		void Unregister(Collider* collider);
+		void Unregister(const std::string& id);
 
 		/// <summary>
-		/// 登録されたすべてのコライダーを判定します。
+		/// 全コライダーの位置更新と当たり判定を行います。
 		/// </summary>
-		void CheckAllCollisions();
+		void Update();
 
 		/// <summary>
-		/// すべての登録を解除します。
+		/// すべてのコライダーを登録解除します。
 		/// </summary>
 		void Clear();
+
+		/// <summary>
+		/// 登録済みのAABBコライダーを取得します。
+		/// </summary>
+		AABBCollider* GetAABBCollider(
+			const std::string& id
+		);
 
 	private:
 		CollisionManager() = default;
@@ -52,6 +72,14 @@ namespace TKM {
 			) = delete;
 
 		//=============================================================
+		// 登録情報
+		//=============================================================
+		struct Entry {
+			std::unique_ptr<AABBCollider> collider_;
+			PositionGetter positionGetter_;
+		};
+
+		//=============================================================
 		// 衝突ペア
 		//=============================================================
 		struct CollisionPair {
@@ -64,25 +92,29 @@ namespace TKM {
 		};
 
 		/// <summary>
-		/// 2つのコライダーから順序が一定のペアを作成します。
+		/// 全コライダーの位置を更新します。
 		/// </summary>
+		void UpdateColliderPositions();
+
+		/// <summary>
+		/// 全コライダーの当たり判定を行います。
+		/// </summary>
+		void CheckAllCollisions();
+
 		static CollisionPair MakePair(
 			Collider* first,
 			Collider* second
 		);
 
-		/// <summary>
-		/// レイヤー設定上、判定対象になるか確認します。
-		/// </summary>
 		static bool CanCollide(
 			const Collider& first,
 			const Collider& second
 		);
 
 		//======================================================================
-		// 登録情報
+		// 登録コライダー
 		//======================================================================
-		std::vector<Collider*> colliders_;
+		std::map<std::string, Entry> entries_;
 
 		//======================================================================
 		// 前フレームの衝突情報

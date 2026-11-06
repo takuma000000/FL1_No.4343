@@ -1,7 +1,6 @@
 #include "CollisionManager.h"
 
 #include <algorithm>
-#include <functional>
 #include <utility>
 
 namespace TKM {
@@ -11,39 +10,58 @@ namespace TKM {
 		return &instance;
 	}
 
-	bool CollisionManager::Register(
-		Collider* collider
+	AABBCollider* CollisionManager::RegisterAABB(
+		const std::string& id,
+		PositionGetter positionGetter,
+		const Vector3& size
 	) {
-		if (!collider) {
-			return false;
+		if (id.empty() || !positionGetter) {
+			return nullptr;
 		}
 
-		// 同じコライダーが登録済みなら追加しない
-		const auto iterator = std::find(
-			colliders_.begin(),
-			colliders_.end(),
-			collider
+		// 同じ名前が登録済みなら追加しない
+		if (entries_.contains(id)) {
+			return nullptr;
+		}
+
+		const Vector3 position = positionGetter();
+
+		auto collider =
+			std::make_unique<AABBCollider>(
+				position,
+				size
+			);
+
+		// 識別名を初期タグとして設定する
+		collider->SetTag(id);
+
+		AABBCollider* colliderPointer =
+			collider.get();
+
+		entries_.emplace(
+			id,
+			Entry{
+				std::move(collider),
+				std::move(positionGetter)
+			}
 		);
 
-		if (iterator != colliders_.end()) {
-			return false;
-		}
-
-		colliders_.push_back(collider);
-		return true;
+		return colliderPointer;
 	}
 
 	void CollisionManager::Unregister(
-		Collider* collider
+		const std::string& id
 	) {
-		if (!collider) {
+		const auto iterator = entries_.find(id);
+
+		if (iterator == entries_.end()) {
 			return;
 		}
 
-		// 登録一覧から削除する
-		std::erase(colliders_, collider);
+		Collider* collider =
+			iterator->second.collider_.get();
 
-		// 削除対象を含む衝突ペアも削除する
+		// 削除するColliderを含む衝突ペアを削除する
 		std::erase_if(
 			previousPairs_,
 			[collider](const CollisionPair& pair) {
@@ -51,17 +69,64 @@ namespace TKM {
 					|| pair.second_ == collider;
 			}
 		);
+
+		entries_.erase(iterator);
+	}
+
+	void CollisionManager::Update() {
+		UpdateColliderPositions();
+		CheckAllCollisions();
+	}
+
+	void CollisionManager::Clear() {
+		previousPairs_.clear();
+		entries_.clear();
+	}
+
+	AABBCollider* CollisionManager::GetAABBCollider(
+		const std::string& id
+	) {
+		const auto iterator = entries_.find(id);
+
+		if (iterator == entries_.end()) {
+			return nullptr;
+		}
+
+		return iterator->second.collider_.get();
+	}
+
+	void CollisionManager::UpdateColliderPositions() {
+		for (auto& [id, entry] : entries_) {
+			if (!entry.positionGetter_) {
+				continue;
+			}
+
+			entry.collider_->SetCenter(
+				entry.positionGetter_()
+			);
+		}
 	}
 
 	void CollisionManager::CheckAllCollisions() {
+		std::vector<Collider*> colliders;
+		colliders.reserve(entries_.size());
+
+		for (auto& [id, entry] : entries_) {
+			if (entry.collider_) {
+				colliders.push_back(
+					entry.collider_.get()
+				);
+			}
+		}
+
 		std::set<CollisionPair> currentPairs;
 
 		for (
 			size_t firstIndex = 0;
-			firstIndex < colliders_.size();
+			firstIndex < colliders.size();
 			++firstIndex
 			) {
-			Collider* first = colliders_[firstIndex];
+			Collider* first = colliders[firstIndex];
 
 			if (!first || !first->IsActive()) {
 				continue;
@@ -69,22 +134,20 @@ namespace TKM {
 
 			for (
 				size_t secondIndex = firstIndex + 1;
-				secondIndex < colliders_.size();
+				secondIndex < colliders.size();
 				++secondIndex
 				) {
 				Collider* second =
-					colliders_[secondIndex];
+					colliders[secondIndex];
 
 				if (!second || !second->IsActive()) {
 					continue;
 				}
 
-				// レイヤー設定上、判定対象でなければ飛ばす
 				if (!CanCollide(*first, *second)) {
 					continue;
 				}
 
-				// 実際に接触していなければ飛ばす
 				if (!first->IsColliding(*second)) {
 					continue;
 				}
@@ -94,20 +157,16 @@ namespace TKM {
 
 				currentPairs.insert(pair);
 
-				// 前フレームにも接触していた場合
 				if (previousPairs_.contains(pair)) {
 					first->NotifyCollisionStay(second);
 					second->NotifyCollisionStay(first);
-				}
-				// 今フレームから接触した場合
-				else {
+				} else {
 					first->NotifyCollisionEnter(second);
 					second->NotifyCollisionEnter(first);
 				}
 			}
 		}
 
-		// 前フレームには存在し、今フレームには存在しないペアを探す
 		for (const CollisionPair& pair : previousPairs_) {
 			if (!currentPairs.contains(pair)) {
 				pair.first_->NotifyCollisionExit(
@@ -121,11 +180,6 @@ namespace TKM {
 		}
 
 		previousPairs_ = std::move(currentPairs);
-	}
-
-	void CollisionManager::Clear() {
-		previousPairs_.clear();
-		colliders_.clear();
 	}
 
 	bool CollisionManager::CollisionPair::operator<(
@@ -147,7 +201,6 @@ namespace TKM {
 		) {
 		const std::less<Collider*> less;
 
-		// ポインタの並び順を統一する
 		if (less(second, first)) {
 			std::swap(first, second);
 		}

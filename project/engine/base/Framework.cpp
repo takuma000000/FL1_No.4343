@@ -10,6 +10,7 @@
 #include <Object3dCommon.h>
 #include <SpriteCommon.h>
 #include "DeltaTimeManager.h"
+#include "CollisionManager.h"
 
 using TKM::TextureManager;
 using TKM::ModelManager;
@@ -73,10 +74,10 @@ namespace TKM {
 		DeltaTimeManager::GetInstance()->Update();
 		// 入力状態を更新
 		Input::GetInstance()->Update();
-
-		//シーンマネージャーの更新
+		// シーンマネージャーの更新
 		sceneManager_->Update();
-
+		// 全コライダーの位置更新と当たり判定
+		CollisionManager::GetInstance()->Update();
 		// シーン側から「アプリ終了要求」が来たら、Frameworkの終了フラグを立てる
 		if (sceneManager_ && sceneManager_->IsQuitRequested()) {
 			endRequest_ = true;
