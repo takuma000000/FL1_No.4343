@@ -1,0 +1,96 @@
+#include "Enemy.h"
+
+#include <algorithm>
+
+#include "Camera.h"
+#include "DirectXCommon.h"
+#include "MyMath.h"
+#include "Object3d.h"
+#include "Object3dCommon.h"
+
+// Object3dの完全な型が見えているこのファイルで、
+// コンストラクターとデストラクターを定義する。
+Enemy::Enemy() = default;
+Enemy::~Enemy() = default;
+
+void Enemy::Initialize(
+	EnemyType type,
+	const EnemyData& data,
+	const Vector3& position,
+	TKM::Object3dCommon* object3dCommon,
+	TKM::DirectXCommon* dxCommon,
+	TKM::Camera* camera
+) {
+	type_ = type;
+	data_ = data;
+	position_ = position;
+	currentHp_ = data_.maxHp;
+
+	// Object3dは描画だけを担当し、ゲームの値はEnemy側で管理する。
+	object3d_ = std::make_unique<TKM::Object3d>();
+	object3d_->Initialize(object3dCommon, dxCommon);
+	object3d_->SetModel(data_.modelName);
+	object3d_->SetScale(data_.scale);
+	object3d_->SetTranslate(position_);
+	object3d_->SetCamera(camera);
+	object3d_->Update();
+}
+
+void Enemy::Update(float deltaTime, const Vector3& targetPosition) {
+	// 死亡後は移動やObject3dの更新を行わない。
+	if (!IsAlive() || !object3d_) {
+		return;
+	}
+
+	UpdateMovement(deltaTime, targetPosition);
+
+	// ゲーム上の座標を描画用Object3dへ反映する。
+	object3d_->SetTranslate(position_);
+	object3d_->Update();
+}
+
+void Enemy::Draw(TKM::DirectXCommon* dxCommon) {
+	if (!IsAlive() || !object3d_) {
+		return;
+	}
+
+	object3d_->Draw(dxCommon);
+}
+
+void Enemy::TakeDamage(int damage) {
+	// 0以下のダメージや、死亡後のダメージは無視する。
+	if (damage <= 0 || !IsAlive()) {
+		return;
+	}
+
+	currentHp_ = (std::max)(0, currentHp_ - damage);
+}
+
+bool Enemy::IsWithinAttackRange(const Vector3& targetPosition) const {
+	const Vector3 difference = targetPosition - position_;
+	const float attackRangeSquared = data_.attackRange * data_.attackRange;
+
+	// 平方根を使わず、距離の二乗同士で判定する。
+	return difference.lengthSquared() <= attackRangeSquared;
+}
+
+void Enemy::UpdateMovement(float deltaTime, const Vector3& targetPosition) {
+	Vector3 difference = targetPosition - position_;
+
+	// 地上敵は高さ方向へ追尾せず、XZ平面上だけを移動する。
+	if (type_ != EnemyType::Flying) {
+		difference.y = 0.0f;
+	}
+
+	// 射撃型は攻撃範囲内に入ったら、その場で停止する。
+	if (type_ == EnemyType::Shooter && IsWithinAttackRange(targetPosition)) {
+		return;
+	}
+
+	const Vector3 direction = MyMath::SafeNormalize(
+		difference,
+		{ 0.0f, 0.0f, 0.0f }
+	);
+
+	position_ += direction * data_.moveSpeed * deltaTime;
+}
