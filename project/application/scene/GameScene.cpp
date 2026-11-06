@@ -65,8 +65,7 @@ void GameScene::Update() {
 	}
 
 	/// ──────────────── パーティクル更新 ───────────────
-	constexpr float deltaTime = 1.0f / 60.0f;
-	TKM::ParticleManager::GetInstance()->Update(deltaTime);
+	TKM::ParticleManager::GetInstance()->Update();
 
 #ifdef USE_IMGUI
 

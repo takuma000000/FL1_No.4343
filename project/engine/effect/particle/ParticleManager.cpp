@@ -2,6 +2,7 @@
 #include "ParticleManager.h"
 #include "TextureManager.h"
 #include "ParticleSpawner.h"
+#include "DeltaTimeManager.h"
 #include "MyMath.h"
 #include <numbers>
 #include <algorithm>
@@ -59,7 +60,11 @@ namespace TKM {
 		WriteResource();    // 頂点データをGPUリソースへ書き込む
 	}
 
-	void ParticleManager::Update(float dt) {
+	void ParticleManager::Update() {
+		// 共通のDeltaTimeを取得
+		const float deltaTime =
+			DeltaTimeManager::GetInstance()->GetDeltaTime();
+
 		//=============================================================
 		// ビルボード行列更新
 		//=============================================================
@@ -131,17 +136,17 @@ namespace TKM {
 					//=================================================
 					// 指定範囲内にいるパーティクルだけ加速度を加える
 					if (IsCollision(acc.area_, (*particleIterator).transform_.translate_)) {
-						(*particleIterator).velocity_ += acc.acc_ * kDeltaTime_;
+						(*particleIterator).velocity_ += acc.acc_ * deltaTime;
 					}
 
 					//=================================================
 					// 位置・時間更新
 					//=================================================
 					// 速度をもとに位置を更新する
-					(*particleIterator).transform_.translate_ += (*particleIterator).velocity_ * kDeltaTime_;
+					(*particleIterator).transform_.translate_ += (*particleIterator).velocity_ * deltaTime;
 
 					// 生存時間の経過を進める
-					(*particleIterator).currentTime_ += kDeltaTime_;
+					(*particleIterator).currentTime_ += deltaTime;
 
 					//=================================================
 					// インスタンスデータ書き込み

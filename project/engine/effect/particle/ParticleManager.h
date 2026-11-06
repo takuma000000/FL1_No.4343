@@ -107,7 +107,7 @@ namespace TKM {
 		/// ParticleManagerを更新します。
 		/// </summary>
 		/// <param name="dt">経過時間</param>
-		void Update(float dt);
+		void Update();
 
 		/// <summary>
 		/// ParticleManagerを描画します。
@@ -332,7 +332,6 @@ namespace TKM {
 
 		const int32_t kClientWidth_ = 1280;   // クライアント幅
 		const int32_t kClientHeight_ = 720;   // クライアント高さ
-		const float kDeltaTime_ = 1.0f / 60.0f; // Δt
 
 		uint32_t numInstance_ = 0; // 描画するインスタンス数
 
