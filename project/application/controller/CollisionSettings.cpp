@@ -4,6 +4,29 @@
 
 using namespace TKM;
 
+namespace {
+	// OBJファイルに保存されているPlayerモデル本来のサイズ
+	constexpr Vector3 kPlayerBaseColliderSize = {
+		5.047712f,
+		8.648966f,
+		5.047712f
+	};
+
+	// OBJファイルに保存されているPlaneモデル本来のサイズ
+	constexpr Vector3 kPlaneBaseColliderSize = {
+		2.0f,
+		2.0f,
+		0.0f
+	};
+
+	// Playerモデルの原点から、見た目の中心までの差
+	constexpr Vector3 kPlayerColliderCenterOffset = {
+		0.0f,
+		1.324479f,
+		0.0f
+	};
+}
+
 //=============================================================================
 // 新しいオブジェクトの当たり判定を追加する手順
 //=============================================================================
@@ -36,15 +59,28 @@ void CollisionSettings::Initialize(
 	//======================================================================
 
 	// 1. Playerのコライダーを登録する
-	// 位置とサイズはPlayerから毎フレーム自動取得する
+	// Playerの位置とScaleから、見た目に合う中心とサイズを取得する
 	auto* playerCollider =
 		CollisionManager::GetInstance()->RegisterAABB(
 			"Player",
 			[player]() {
-				return player->GetPos();
+				const Vector3& position = player->GetPos();
+				const Vector3& scale = player->GetScale();
+
+				return Vector3{
+					position.x + kPlayerColliderCenterOffset.x * scale.x,
+					position.y + kPlayerColliderCenterOffset.y * scale.y,
+					position.z + kPlayerColliderCenterOffset.z * scale.z
+				};
 			},
 			[player]() {
-				return player->GetScale();
+				const Vector3& scale = player->GetScale();
+
+				return Vector3{
+					kPlayerBaseColliderSize.x * scale.x,
+					kPlayerBaseColliderSize.y * scale.y,
+					kPlayerBaseColliderSize.z * scale.z
+				};
 			}
 		);
 
@@ -66,7 +102,7 @@ void CollisionSettings::Initialize(
 	//======================================================================
 
 	// 1. Planeのコライダーを登録する
-	// 位置とサイズはObject3dから毎フレーム自動取得する
+	// Planeの位置とScaleから、見た目に合うサイズを取得する
 	auto* planeCollider =
 		CollisionManager::GetInstance()->RegisterAABB(
 			"Plane",
@@ -74,7 +110,13 @@ void CollisionSettings::Initialize(
 				return plane->GetTranslate();
 			},
 			[plane]() {
-				return plane->GetScale();
+				const Vector3& scale = plane->GetScale();
+
+				return Vector3{
+					kPlaneBaseColliderSize.x * scale.x,
+					kPlaneBaseColliderSize.y * scale.y,
+					kPlaneBaseColliderSize.z * scale.z
+				};
 			}
 		);
 
