@@ -1,5 +1,6 @@
 #include "CollisionManager.h"
 #include "LineRenderer.h"
+#include "Object3d.h"
 
 #include <algorithm>
 #include <utility>
@@ -50,6 +51,27 @@ namespace TKM {
 		);
 
 		return colliderPointer;
+	}
+
+	AABBCollider* CollisionManager::RegisterAABB(
+		const std::string& id,
+		const Object3d* object
+	) {
+		// 1. Object3dが存在しない場合は登録できない
+		if (!object) {
+			return nullptr;
+		}
+
+		// 2. Object3dから中心とサイズを自動取得する形で登録する
+		return RegisterAABB(
+			id,
+			[object]() {
+				return object->GetWorldBoundsCenter();
+			},
+			[object]() {
+				return object->GetWorldBoundsSize();
+			}
+		);
 	}
 
 	void CollisionManager::Unregister(

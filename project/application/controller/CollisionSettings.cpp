@@ -4,38 +4,13 @@
 
 using namespace TKM;
 
-namespace {
-	// OBJファイルに保存されているPlayerモデル本来のサイズ
-	constexpr Vector3 kPlayerBaseColliderSize = {
-		5.047712f,
-		8.648966f,
-		5.047712f
-	};
-
-	// OBJファイルに保存されているPlaneモデル本来のサイズ
-	constexpr Vector3 kPlaneBaseColliderSize = {
-		2.0f,
-		2.0f,
-		0.0f
-	};
-
-	// Playerモデルの原点から、見た目の中心までの差
-	constexpr Vector3 kPlayerColliderCenterOffset = {
-		0.0f,
-		1.324479f,
-		0.0f
-	};
-}
-
 //=============================================================================
 // 新しいオブジェクトの当たり判定を追加する手順
 //=============================================================================
 // 1. CollisionCategory.hに、新しいオブジェクトの種類を追加する
 //
-// 2. RegisterAABB()でコライダーを登録する
-//    第1引数：登録名
-//    第2引数：現在位置を返す処理
-//    第3引数：現在サイズを返す処理
+// 2. RegisterAABB()へ登録名とObject3dを渡す
+//    モデルの中心とサイズは自動で計算される
 //
 // 3. SetCategory()で、このコライダー自身の種類を設定する
 //
@@ -58,30 +33,12 @@ void CollisionSettings::Initialize(
 	// Playerの当たり判定設定
 	//======================================================================
 
-	// 1. Playerのコライダーを登録する
-	// Playerの位置とScaleから、見た目に合う中心とサイズを取得する
+	// 1. Playerが使用しているObject3dを登録する
+	// モデルの中心とサイズは頂点情報から自動計算される
 	auto* playerCollider =
 		CollisionManager::GetInstance()->RegisterAABB(
 			"Player",
-			[player]() {
-				const Vector3& position = player->GetPos();
-				const Vector3& scale = player->GetScale();
-
-				return Vector3{
-					position.x + kPlayerColliderCenterOffset.x * scale.x,
-					position.y + kPlayerColliderCenterOffset.y * scale.y,
-					position.z + kPlayerColliderCenterOffset.z * scale.z
-				};
-			},
-			[player]() {
-				const Vector3& scale = player->GetScale();
-
-				return Vector3{
-					kPlayerBaseColliderSize.x * scale.x,
-					kPlayerBaseColliderSize.y * scale.y,
-					kPlayerBaseColliderSize.z * scale.z
-				};
-			}
+			player->GetObject3d()
 		);
 
 	// 登録に成功した場合だけ、残りの設定を行う
@@ -101,23 +58,12 @@ void CollisionSettings::Initialize(
 	// Planeの当たり判定設定
 	//======================================================================
 
-	// 1. Planeのコライダーを登録する
-	// Planeの位置とScaleから、見た目に合うサイズを取得する
+	// 1. PlaneのObject3dを登録する
+	// モデルの中心とサイズは頂点情報から自動計算される
 	auto* planeCollider =
 		CollisionManager::GetInstance()->RegisterAABB(
 			"Plane",
-			[plane]() {
-				return plane->GetTranslate();
-			},
-			[plane]() {
-				const Vector3& scale = plane->GetScale();
-
-				return Vector3{
-					kPlaneBaseColliderSize.x * scale.x,
-					kPlaneBaseColliderSize.y * scale.y,
-					kPlaneBaseColliderSize.z * scale.z
-				};
-			}
+			plane
 		);
 
 	// 登録に成功した場合だけ、残りの設定を行う

@@ -31,6 +31,12 @@ public:
     const Vector3& GetScale() const { return size_; }
     void SetScale(const Vector3& scale) { size_ = scale; }
 
+	/// <summary>
+	/// Playerが使用している3Dオブジェクトを取得します。
+	/// 当たり判定の自動生成などで使用します。
+	/// </summary>
+	const TKM::Object3d* GetObject3d() const { return object_.get(); }
+
     // 描画フラグのゲッター / セッター
     bool IsVisible() const { return isVisible_; }
     void SetVisible(bool isVisible) { isVisible_ = isVisible; }

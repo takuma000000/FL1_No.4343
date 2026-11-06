@@ -9,6 +9,7 @@
 #include <vector>
 
 namespace TKM {
+	class Object3d;
 
 	//=============================================================
 	// CollisionManagerクラス
@@ -37,6 +38,18 @@ namespace TKM {
 			const std::string& id,
 			PositionGetter positionGetter,
 			SizeGetter sizeGetter
+		);
+
+		/// <summary>
+		/// Object3dのモデル範囲からAABBコライダーを自動生成します。
+		/// 位置・回転・Scaleの変更も毎フレーム反映されます。
+		/// </summary>
+		/// <param name="id">コライダーの識別名</param>
+		/// <param name="object">判定対象の3Dオブジェクト</param>
+		/// <returns>登録したコライダー</returns>
+		AABBCollider* RegisterAABB(
+			const std::string& id,
+			const Object3d* object
 		);
 
 		/// <summary>

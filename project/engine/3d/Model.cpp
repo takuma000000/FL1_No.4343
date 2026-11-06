@@ -4,6 +4,8 @@
 #include <sstream>
 #include <cassert>
 #include <filesystem>
+#include <algorithm>
+#include <limits>
 #include "TextureManager.h"
 
 namespace TKM {
@@ -207,6 +209,9 @@ namespace TKM {
 
 		modelData_ = std::move(LoadObjFile(directorypath, filename));
 
+		// 読み込んだモデルの中心とサイズを自動計算する
+		CalculateLocalBounds();
+
 		VertexResource(dxCommon_);
 		MaterialResource(dxCommon_);
 
@@ -228,6 +233,53 @@ namespace TKM {
 			modelData_.material_.textureIndex_ =
 				TextureManager::GetInstance()->GetTextureIndexByFilePath(modelData_.material_.textureFilePath_);
 		}
+	}
+
+	void Model::CalculateLocalBounds() {
+		// 1. 頂点が存在しない場合は計算できない
+		if (modelData_.vertices_.empty()) {
+			localBoundsCenter_ = {};
+			localBoundsSize_ = {};
+			hasLocalBounds_ = false;
+			return;
+		}
+
+		// 2. 最小座標と最大座標の初期値を用意する
+		const float largest =
+			std::numeric_limits<float>::max();
+
+		Vector3 minimum = { largest, largest, largest };
+		Vector3 maximum = { -largest, -largest, -largest };
+
+		// 3. 全頂点から各軸の最小値と最大値を求める
+		for (const VertexData& vertex : modelData_.vertices_) {
+			const Vector4& position = vertex.position_;
+
+			minimum.x = std::min(minimum.x, position.x);
+			minimum.y = std::min(minimum.y, position.y);
+			minimum.z = std::min(minimum.z, position.z);
+
+			maximum.x = std::max(maximum.x, position.x);
+			maximum.y = std::max(maximum.y, position.y);
+			maximum.z = std::max(maximum.z, position.z);
+		}
+
+		// 4. 最小座標と最大座標の中間を中心にする
+		localBoundsCenter_ = {
+			(minimum.x + maximum.x) * 0.5f,
+			(minimum.y + maximum.y) * 0.5f,
+			(minimum.z + maximum.z) * 0.5f
+		};
+
+		// 5. 最大座標から最小座標を引いて全体サイズを求める
+		localBoundsSize_ = {
+			maximum.x - minimum.x,
+			maximum.y - minimum.y,
+			maximum.z - minimum.z
+		};
+
+		// 6. 計算に成功したことを記録する
+		hasLocalBounds_ = true;
 	}
 
 	void Model::Draw() {
