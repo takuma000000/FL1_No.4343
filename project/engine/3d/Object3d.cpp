@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "Object3d.h"
 #include "Object3dCommon.h"
 #include <fstream>

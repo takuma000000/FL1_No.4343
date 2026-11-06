@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "Model.h"
 #include "ModelCommon.h"
 #include <fstream>
