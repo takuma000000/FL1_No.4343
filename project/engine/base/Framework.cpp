@@ -10,7 +10,7 @@
 #include <Object3dCommon.h>
 #include <SpriteCommon.h>
 #include "DeltaTimeManager.h"
-#include "CollisionManager.h"
+#include "LineRenderer.h"
 
 using TKM::TextureManager;
 using TKM::ModelManager;
@@ -58,6 +58,8 @@ namespace TKM {
 		Object3dCommon::GetInstance()->Initialize(dxCommon_.get()); 
 		// SpriteCommonを初期化
 		TKM::SpriteCommon::GetInstance()->Initialize(dxCommon_.get());
+		// デバッグ用ライン描画を初期化
+		LineRenderer::GetInstance()->Initialize(dxCommon_.get());
 
 		// DeltaTimeの計測を初期化
 		DeltaTimeManager::GetInstance()->Initialize();
@@ -76,8 +78,6 @@ namespace TKM {
 		Input::GetInstance()->Update();
 		// シーンマネージャーの更新
 		sceneManager_->Update();
-		// 全コライダーの位置更新と当たり判定
-		CollisionManager::GetInstance()->Update();
 		// シーン側から「アプリ終了要求」が来たら、Frameworkの終了フラグを立てる
 		if (sceneManager_ && sceneManager_->IsQuitRequested()) {
 			endRequest_ = true;

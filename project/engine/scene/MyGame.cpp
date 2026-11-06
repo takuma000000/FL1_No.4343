@@ -5,6 +5,8 @@
 #include <dxgi1_6.h>
 
 #include "ImGuiManager.h"
+#include "CameraManager.h"
+#include "CollisionManager.h"
 
 namespace TKM {
 	void MyGame::Initialize() {
@@ -59,6 +61,10 @@ namespace TKM {
 		//シーンマネージャーの更新
 		sceneManager_->Update();
 
+		// シーン内オブジェクトの更新後に当たり判定を行う
+		// 最新の位置とサイズを使って判定するため、この位置で呼び出す
+		CollisionManager::GetInstance()->Update();
+
 		// ウィンドウメッセージの処理
 		if (windowsAPI_->ProcessMessage()) {
 			SetEndRequest(true); // Frameworkの終了フラグを設定
@@ -78,6 +84,14 @@ namespace TKM {
 		dxCommon_->PreDraw();
 		srvManager_->PreDraw();
 		sceneManager_->Draw3D();
+
+		// 登録されているコライダーをラインで表示する
+		if (auto* activeCamera =
+			CameraManager::GetInstance()->GetActiveCamera()) {
+			CollisionManager::GetInstance()->DrawDebug(
+				activeCamera->GetViewProjectionMatrix()
+			);
+		}
 
 		// ② Swapchain に切り替え
 		dxCommon_->BeginDrawToSwapchain();

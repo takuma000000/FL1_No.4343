@@ -55,6 +55,15 @@ namespace TKM {
 		void Clear();
 
 		/// <summary>
+		/// 登録されているAABBコライダーをラインで表示します。
+		/// 通常時は緑、接触中は赤で表示します。
+		/// </summary>
+		/// <param name="viewProjection">描画に使用するビュー射影行列</param>
+		void DrawDebug(
+			const Matrix4x4& viewProjection
+		);
+
+		/// <summary>
 		/// 登録済みのAABBコライダーを取得します。
 		/// </summary>
 		AABBCollider* GetAABBCollider(
@@ -123,6 +132,12 @@ namespace TKM {
 		// 前フレームの衝突情報
 		//======================================================================
 		std::set<CollisionPair> previousPairs_;
+
+		//======================================================================
+		// 現在接触しているコライダー
+		//======================================================================
+		// デバッグ表示で、接触中のAABBを赤色にするために使用する。
+		std::set<Collider*> collidingColliders_;
 	};
 
 } // namespace TKM

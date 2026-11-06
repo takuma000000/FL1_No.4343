@@ -1,4 +1,5 @@
 #include "CollisionManager.h"
+#include "LineRenderer.h"
 
 #include <algorithm>
 #include <utility>
@@ -72,6 +73,9 @@ namespace TKM {
 			}
 		);
 
+		// デバッグ表示用の接触一覧からも削除する
+		collidingColliders_.erase(collider);
+
 		entries_.erase(iterator);
 	}
 
@@ -82,7 +86,45 @@ namespace TKM {
 
 	void CollisionManager::Clear() {
 		previousPairs_.clear();
+		collidingColliders_.clear();
 		entries_.clear();
+	}
+
+	void CollisionManager::DrawDebug(
+		const Matrix4x4& viewProjection
+	) {
+		auto* lineRenderer =
+			LineRenderer::GetInstance();
+
+		// 1. 前フレームに登録したラインを消去する
+		lineRenderer->BeginFrame();
+
+		// 2. 登録されているすべてのAABBをラインへ追加する
+		for (const auto& [id, entry] : entries_) {
+			if (!entry.collider_ || !entry.collider_->IsActive()) {
+				continue;
+			}
+
+			const bool isColliding =
+				collidingColliders_.contains(
+					entry.collider_.get()
+				);
+
+			// 通常時は緑、接触中は赤で表示する
+			const LineRenderer::Color color =
+				isColliding
+				? LineRenderer::Color{ 1.0f, 0.0f, 0.0f, 1.0f }
+				: LineRenderer::Color{ 0.0f, 1.0f, 0.0f, 1.0f };
+
+			lineRenderer->AddAABB(
+				entry.collider_->GetCenter(),
+				entry.collider_->GetSize(),
+				color
+			);
+		}
+
+		// 3. 追加したAABBラインをまとめて描画する
+		lineRenderer->Draw(viewProjection);
 	}
 
 	AABBCollider* CollisionManager::GetAABBCollider(
@@ -126,6 +168,7 @@ namespace TKM {
 		}
 
 		std::set<CollisionPair> currentPairs;
+		std::set<Collider*> currentCollidingColliders;
 
 		for (
 			size_t firstIndex = 0;
@@ -162,6 +205,8 @@ namespace TKM {
 					MakePair(first, second);
 
 				currentPairs.insert(pair);
+				currentCollidingColliders.insert(first);
+				currentCollidingColliders.insert(second);
 
 				if (previousPairs_.contains(pair)) {
 					first->NotifyCollisionStay(second);
@@ -186,6 +231,8 @@ namespace TKM {
 		}
 
 		previousPairs_ = std::move(currentPairs);
+		collidingColliders_ =
+			std::move(currentCollidingColliders);
 	}
 
 	bool CollisionManager::CollisionPair::operator<(
