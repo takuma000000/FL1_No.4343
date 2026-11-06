@@ -113,7 +113,7 @@ namespace TKM {
 			// 通常時は緑、接触中は赤で表示する
 			const LineRenderer::Color color =
 				isColliding
-				? LineRenderer::Color{ 1.0f, 0.0f, 0.0f, 1.0f }
+				? LineRenderer::Color{ 0.0f, 0.0f, 1.0f, 1.0f }
 				: LineRenderer::Color{ 0.0f, 1.0f, 0.0f, 1.0f };
 
 			lineRenderer->AddAABB(
