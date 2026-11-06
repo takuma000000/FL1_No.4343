@@ -1,0 +1,33 @@
+{
+  "id": "BasicVirus",
+  "type": "Normal",
+  "displayName": "ベーシックウイルス",
+  "modelName": "sphere.obj",
+
+  "status": {
+    "maxHp": 3,
+    "moveSpeed": 3.0,
+    "attackPower": 1.0
+  },
+
+  "combat": {
+    "detectionRange": 12.0,
+    "attackRange": 1.5,
+    "attackInterval": 1.5,
+    "collisionRadius": 1.0
+  },
+
+  "attribute": {
+    "type": "Natural",
+    "weakness": "None",
+    "resistance": "None"
+  },
+
+  "reward": {
+    "antibodyPoint": 1
+  },
+
+  "transform": {
+    "scale": [1.0, 1.0, 1.0]
+  }
+}
