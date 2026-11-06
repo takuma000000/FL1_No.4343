@@ -176,7 +176,6 @@ void GameScene::InitializeCamera() {
 
 void GameScene::ImGuiDebug() {
 #ifdef USE_IMGUI
-
 	// ──────────────── カメラ表示 ───────────────
 	// デバッグカメラの切り替え表示
 	TKM::CameraManager::GetInstance()->ImGuiDebug();
@@ -185,9 +184,7 @@ void GameScene::ImGuiDebug() {
 		TKM::CameraManager::GetInstance()->GetMainCamera()) {
 		camera->ImGuiDebug(); // メインカメラのデバッグ表示
 	}
-
 	// ──────────────── オブジェクト編集 ───────────────
 	objectSettings_.ImGuiDebug();
-
 #endif
 }

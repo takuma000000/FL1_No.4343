@@ -62,6 +62,9 @@ namespace TKM {
 	}
 
 	void Framework::Update() {
+		// 入力状態を更新
+		Input::GetInstance()->Update();
+
 		//シーンマネージャーの更新
 		sceneManager_->Update();
 

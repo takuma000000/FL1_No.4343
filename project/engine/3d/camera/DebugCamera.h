@@ -24,6 +24,24 @@ namespace TKM {
 		/// デバッグカメラを更新します。
 		/// </summary>
 		void Update();
+
+		// Getter=====================================
+		/// <summary>
+		/// 右ドラッグで回転操作中か取得します。
+		/// </summary>
+		bool IsRotating() const { return isRotating_; }
+
+		/// <summary>
+		/// 左ドラッグで平行移動中か取得します。
+		/// </summary>
+		bool IsPanning() const { return isPanning_; }
+
+		/// <summary>
+		/// ホイールで前後移動中か取得します。
+		/// </summary>
+		bool IsZooming() const { return isZooming_; }
+		// ===========================================
+
 	private:
 		//======================================================================
 		// Transform（カメラの位置）
@@ -39,5 +57,12 @@ namespace TKM {
 		//======================================================================
 		POINT prevMouse_{};  // 前回のマウス座標
 		bool firstMouse_ = true; // 最初のフレームかどうか
+
+		//======================================================================
+		// 操作状態
+		//======================================================================
+		bool isRotating_ = false; // 右ドラッグで回転中
+		bool isPanning_ = false;  // 左ドラッグで平行移動中
+		bool isZooming_ = false;  // ホイールで前後移動中
 	};
 }
