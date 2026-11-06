@@ -2,9 +2,15 @@
 #include "MyMath.h"
 
 #include <cstdint>
+#include <functional>
 #include <string>
+#include <utility>
 
 namespace TKM {
+
+	// 前方前言==============================
+	class CollisionManager; // CollisionManagerクラス
+	//　====================================
 
 	//=============================================================
 	// Colliderクラス
@@ -13,6 +19,9 @@ namespace TKM {
 	class Collider {
 	public:
 		virtual ~Collider() = default;
+
+		// 衝突時に実行する処理
+		using CollisionCallback = std::function<void(Collider*)>;
 
 		/// <summary>
 		/// 別のコライダーと接触しているか判定します。
@@ -60,6 +69,33 @@ namespace TKM {
 		/// </summary>
 		void SetActive(bool active) {
 			isActive_ = active;
+		}
+
+		/// <summary>
+		/// 接触開始時に実行する処理を設定します。
+		/// </summary>
+		void SetOnCollisionEnter(
+			CollisionCallback callback
+		) {
+			onCollisionEnter_ = std::move(callback);
+		}
+
+		/// <summary>
+		/// 接触中に実行する処理を設定します。
+		/// </summary>
+		void SetOnCollisionStay(
+			CollisionCallback callback
+		) {
+			onCollisionStay_ = std::move(callback);
+		}
+
+		/// <summary>
+		/// 接触終了時に実行する処理を設定します。
+		/// </summary>
+		void SetOnCollisionExit(
+			CollisionCallback callback
+		) {
+			onCollisionExit_ = std::move(callback);
 		}
 		// ===========================================
 
@@ -109,6 +145,46 @@ namespace TKM {
 		// 状態
 		//======================================================================
 		bool isActive_ = true; // 当たり判定を有効にするか
+
+		//======================================================================
+		// 衝突通知
+		//======================================================================
+		CollisionCallback onCollisionEnter_; // 接触開始
+		CollisionCallback onCollisionStay_;  // 接触中
+		CollisionCallback onCollisionExit_;  // 接触終了
+
+		//======================================================================
+		// 衝突時のコールバック
+		//======================================================================
+		friend class CollisionManager; // CollisionManagerクラスがアクセスできるようにする
+
+		/// <summary>
+		/// 接触開始時のコールバックを呼び出します。
+		/// </summary>
+		/// <param name="other">接触した相手のコライダー</param>
+		void NotifyCollisionEnter(Collider* other) {
+			if (onCollisionEnter_) {
+				onCollisionEnter_(other);
+			}
+		}
+		/// <summary>
+		/// 接触中のコールバックを呼び出します。
+		/// </summary>
+		/// <param name="other">接触している相手のコライダー</param>
+		void NotifyCollisionStay(Collider* other) {
+			if (onCollisionStay_) {
+				onCollisionStay_(other);
+			}
+		}
+		/// <summary>
+		/// 接触終了時のコールバックを呼び出します。
+		/// </summary>
+		/// <param name="other">接触が終了した相手のコライダー</param>
+		void NotifyCollisionExit(Collider* other) {
+			if (onCollisionExit_) {
+				onCollisionExit_(other);
+			}
+		}
 	};
 
 } // namespace TKM
