@@ -1,7 +1,9 @@
 #pragma once
 
 #include <string>
+
 #include "Vector3.h"
+#include "EnemyAttribute.h"
 
 //=============================================================
 // 敵データ構造体
@@ -27,4 +29,11 @@ struct EnemyData {
 	float detectionRange = 0.0f;        // プレイヤーを発見する距離
     float attackInterval = 1.0f;        // 攻撃時の待ち時間（秒）
     int antibodyPoint = 0;              // 撃破時に獲得する抗体ポイント
+
+    //============================================================
+    // 属性・弱点・耐性
+    //============================================================
+    EnemyAttribute attribute = EnemyAttribute::Neutral; // 敵の属性
+    EnemyAttribute weakness = EnemyAttribute::None;   // 弱点属性
+    EnemyAttribute resistance = EnemyAttribute::None; // 耐性属性
 };
