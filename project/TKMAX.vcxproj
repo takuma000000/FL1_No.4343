@@ -113,6 +113,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="engine\3d\collision\CollisionManager.cpp" />
     <ClCompile Include="engine\3d\collision\AABBCollider.cpp" />
     <ClCompile Include="application\catalog\AudioCatalog.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
@@ -203,6 +204,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\actor\player.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engine\3d\collision\CollisionManager.h" />
     <ClInclude Include="engine\3d\collision\AABBCollider.h" />
     <ClInclude Include="application\catalog\AudioCatalog.h" />
     <ClInclude Include="engine\3d\collision\Collider.h" />
