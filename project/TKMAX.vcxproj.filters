@@ -161,6 +161,7 @@
     <ClCompile Include="engine\io\ObjectSave.cpp" />
     <ClCompile Include="engine\imgui\ObjectEditor.cpp" />
     <ClCompile Include="application\controller\ObjectSettings.cpp" />
+    <ClCompile Include="engine\func\common\DeltaTimeManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\2d\Sprite.h">
@@ -359,6 +360,7 @@
     <ClInclude Include="engine\io\ObjectSave.h" />
     <ClInclude Include="engine\imgui\ObjectEditor.h" />
     <ClInclude Include="application\controller\ObjectSettings.h" />
+    <ClInclude Include="engine\func\common\DeltaTimeManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

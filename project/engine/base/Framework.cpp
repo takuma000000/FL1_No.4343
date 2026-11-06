@@ -9,6 +9,7 @@
 #include <ModelManager.h>
 #include <Object3dCommon.h>
 #include <SpriteCommon.h>
+#include "DeltaTimeManager.h"
 
 using TKM::TextureManager;
 using TKM::ModelManager;
@@ -48,11 +49,17 @@ namespace TKM {
 		// モデルマネージャの初期化
 		ModelManager::GetInstance()->Initialize(dxCommon_.get());
 		// オーディオマネージャの初期化
-		AudioManager::GetInstance()->Initialize(); // AudioManagerを初期化
+		AudioManager::GetInstance()->Initialize();
+		// Inputを初期化
+		Input::GetInstance()->Initialize(windowsAPI_.get());
 
-		Object3dCommon::GetInstance()->Initialize(dxCommon_.get()); // Object3dCommonを初期化
-		TKM::SpriteCommon::GetInstance()->Initialize(dxCommon_.get());   // SpriteCommonを初期化
-		Input::GetInstance()->Initialize(windowsAPI_.get());        // Inputを初期化
+		// Object3dCommonを初期化
+		Object3dCommon::GetInstance()->Initialize(dxCommon_.get()); 
+		// SpriteCommonを初期化
+		TKM::SpriteCommon::GetInstance()->Initialize(dxCommon_.get());
+
+		// DeltaTimeの計測を初期化
+		DeltaTimeManager::GetInstance()->Initialize();
 	}
 
 	void Framework::Finalize() {
@@ -62,6 +69,8 @@ namespace TKM {
 	}
 
 	void Framework::Update() {
+		// DeltaTimeを更新
+		DeltaTimeManager::GetInstance()->Update();
 		// 入力状態を更新
 		Input::GetInstance()->Update();
 
