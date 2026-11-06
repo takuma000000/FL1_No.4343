@@ -15,7 +15,7 @@ using namespace TKM;
 /// 3. SetCategory()で、このコライダー自身の種類を設定する
 
 /// 4. AddCollisionTarget()で、当たり判定を取る相手を追加する
-//※ 注意点                                                         ⇩
+// ※ 注意点
 // A と B の判定を取る場合 ➡ お互いが AddCollisionTarget を登録しないと判定されないよ。
 
 /// 5. Finalize()にUnregister()を追加して、終了時に登録を解除する
