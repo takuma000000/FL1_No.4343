@@ -18,6 +18,7 @@ void GameScene::Initialize() {
 	TextureCatalog::LoadTextureCatalogs();
 	ModelCatalog::LoadModelCatalogs(dxCommon_);
 	InitializeObjects();
+	collisionSettings_.Initialize(sphere_.get(), player_.get());
 	objectSettings_.Initialize(sphere_.get(), player_.get());
 	InitializeSprite();
 	InitializeCamera();
@@ -32,6 +33,8 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Finalize() {
+	/// ──────────────── 当たり判定設定終了 ───────────────
+	collisionSettings_.Finalize();
 
 	/// ──────────────── オブジェクト設定終了 ───────────────
 	objectSettings_.Finalize();

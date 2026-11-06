@@ -1,4 +1,5 @@
 #pragma once
+#include "CollisionCategory.h"
 #include "MyMath.h"
 
 #include <cstdint>
@@ -51,17 +52,31 @@ namespace TKM {
 		}
 
 		/// <summary>
-		/// 所属レイヤーを設定します。
+		/// このコライダー自身が何のオブジェクトなのかを設定します。
 		/// </summary>
-		void SetLayer(uint32_t layer) {
-			layer_ = layer;
+		/// <param name="category">自身の種類</param>
+		void SetCategory(
+			CollisionCategory category
+		) {
+			categoryBits_ = ToCollisionBits(category);
 		}
 
 		/// <summary>
-		/// 判定対象にするレイヤーを設定します。
+		/// 当たり判定を取りたい相手を追加します。
+		/// 複数回呼び出すことで、複数の種類を判定対象にできます。
 		/// </summary>
-		void SetMask(uint32_t mask) {
-			mask_ = mask;
+		/// <param name="target">当たり判定を取る相手の種類</param>
+		void AddCollisionTarget(
+			CollisionCategory target
+		) {
+			collisionTargetBits_ |= ToCollisionBits(target);
+		}
+
+		/// <summary>
+		/// 登録されている当たり判定対象をすべて解除します。
+		/// </summary>
+		void ClearCollisionTargets() {
+			collisionTargetBits_ = 0u;
 		}
 
 		/// <summary>
@@ -108,17 +123,17 @@ namespace TKM {
 		}
 
 		/// <summary>
-		/// 所属レイヤーを取得します。
+		/// 指定されたコライダーが、自分の判定対象か確認します。
 		/// </summary>
-		uint32_t GetLayer() const {
-			return layer_;
-		}
-
-		/// <summary>
-		/// 判定対象レイヤーを取得します。
-		/// </summary>
-		uint32_t GetMask() const {
-			return mask_;
+		/// <param name="other">確認する相手</param>
+		/// <returns>判定対象に含まれている場合はtrue</returns>
+		bool IsCollisionTarget(
+			const Collider& other
+		) const {
+			return (
+				collisionTargetBits_ &
+				other.categoryBits_
+				) != 0u;
 		}
 
 		/// <summary>
@@ -136,10 +151,19 @@ namespace TKM {
 		std::string tag_; // コライダーを識別するタグ
 
 		//======================================================================
-		// レイヤー
+		// 当たり判定の種類
 		//======================================================================
-		uint32_t layer_ = 1u;          // 自身が所属するレイヤー
-		uint32_t mask_ = 0xffffffffu; // 判定対象にするレイヤー
+		// このコライダー自身が何の種類なのかを表す。
+		// ゲーム側ではSetCategory()を使って設定する。
+		uint32_t categoryBits_ =
+			ToCollisionBits(CollisionCategory::None);
+
+		//======================================================================
+		// 当たり判定を取る相手
+		//======================================================================
+		// このコライダーが、どの種類と判定するのかを表す。
+		// ゲーム側ではAddCollisionTarget()を使って追加する。
+		uint32_t collisionTargetBits_ = 0u;
 
 		//======================================================================
 		// 状態

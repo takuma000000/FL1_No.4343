@@ -13,9 +13,9 @@ namespace TKM {
 	AABBCollider* CollisionManager::RegisterAABB(
 		const std::string& id,
 		PositionGetter positionGetter,
-		const Vector3& size
+		SizeGetter sizeGetter
 	) {
-		if (id.empty() || !positionGetter) {
+		if (id.empty() || !positionGetter || !sizeGetter) {
 			return nullptr;
 		}
 
@@ -25,6 +25,7 @@ namespace TKM {
 		}
 
 		const Vector3 position = positionGetter();
+		const Vector3 size = sizeGetter();
 
 		auto collider =
 			std::make_unique<AABBCollider>(
@@ -42,7 +43,8 @@ namespace TKM {
 			id,
 			Entry{
 				std::move(collider),
-				std::move(positionGetter)
+				std::move(positionGetter),
+				std::move(sizeGetter)
 			}
 		);
 
@@ -74,7 +76,7 @@ namespace TKM {
 	}
 
 	void CollisionManager::Update() {
-		UpdateColliderPositions();
+		UpdateColliderTransforms();
 		CheckAllCollisions();
 	}
 
@@ -95,14 +97,18 @@ namespace TKM {
 		return iterator->second.collider_.get();
 	}
 
-	void CollisionManager::UpdateColliderPositions() {
+	void CollisionManager::UpdateColliderTransforms() {
 		for (auto& [id, entry] : entries_) {
-			if (!entry.positionGetter_) {
+			if (!entry.positionGetter_ || !entry.sizeGetter_) {
 				continue;
 			}
 
 			entry.collider_->SetCenter(
 				entry.positionGetter_()
+			);
+
+			entry.collider_->SetSize(
+				entry.sizeGetter_()
 			);
 		}
 	}
@@ -215,14 +221,17 @@ namespace TKM {
 		const Collider& first,
 		const Collider& second
 	) {
-		const bool firstAcceptsSecond =
-			(first.GetMask() & second.GetLayer()) != 0u;
+		// 1. firstがsecondを判定対象にしているか確認する
+		const bool firstTargetsSecond =
+			first.IsCollisionTarget(second);
 
-		const bool secondAcceptsFirst =
-			(second.GetMask() & first.GetLayer()) != 0u;
+		// 2. secondがfirstを判定対象にしているか確認する
+		const bool secondTargetsFirst =
+			second.IsCollisionTarget(first);
 
-		return firstAcceptsSecond
-			&& secondAcceptsFirst;
+		// 3. お互いが判定対象にしている場合だけ当たり判定を行う
+		return firstTargetsSecond
+			&& secondTargetsFirst;
 	}
 
 } // namespace TKM

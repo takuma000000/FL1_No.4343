@@ -18,6 +18,8 @@ namespace TKM {
 	public:
 		// オブジェクトの現在位置を取得する処理
 		using PositionGetter = std::function<Vector3()>;
+		// オブジェクトの現在サイズを取得する処理
+		using SizeGetter = std::function<Vector3()>;
 
 		/// <summary>
 		/// CollisionManagerのインスタンスを取得します。
@@ -29,12 +31,12 @@ namespace TKM {
 		/// </summary>
 		/// <param name="id">コライダーの識別名</param>
 		/// <param name="positionGetter">現在位置を取得する処理</param>
-		/// <param name="size">コライダーの全体サイズ</param>
+		/// <param name="sizeGetter">現在サイズを取得する処理</param>
 		/// <returns>登録したコライダー</returns>
 		AABBCollider* RegisterAABB(
 			const std::string& id,
 			PositionGetter positionGetter,
-			const Vector3& size
+			SizeGetter sizeGetter
 		);
 
 		/// <summary>
@@ -77,6 +79,7 @@ namespace TKM {
 		struct Entry {
 			std::unique_ptr<AABBCollider> collider_;
 			PositionGetter positionGetter_;
+			SizeGetter sizeGetter_;
 		};
 
 		//=============================================================
@@ -92,9 +95,9 @@ namespace TKM {
 		};
 
 		/// <summary>
-		/// 全コライダーの位置を更新します。
+		/// 全コライダーの位置とサイズを更新します。
 		/// </summary>
-		void UpdateColliderPositions();
+		void UpdateColliderTransforms();
 
 		/// <summary>
 		/// 全コライダーの当たり判定を行います。

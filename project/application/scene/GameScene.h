@@ -3,6 +3,7 @@
 
 #include "Object3d.h"
 #include "ObjectSettings.h"
+#include "CollisionSettings.h"
 
 #include <memory>
 
@@ -93,4 +94,5 @@ private:
 	// オブジェクト設定
 	//======================================================================
 	ObjectSettings objectSettings_; // オブジェクトの保存・編集設定
+	CollisionSettings collisionSettings_; // オブジェクトの当たり判定設定
 };

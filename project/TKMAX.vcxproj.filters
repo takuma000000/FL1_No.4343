@@ -164,6 +164,7 @@
     <ClCompile Include="engine\func\common\DeltaTimeManager.cpp" />
     <ClCompile Include="engine\3d\collision\AABBCollider.cpp" />
     <ClCompile Include="engine\3d\collision\CollisionManager.cpp" />
+	<ClCompile Include="application\controller\CollisionSettings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\2d\Sprite.h">
@@ -366,6 +367,8 @@
     <ClInclude Include="engine\3d\collision\Collider.h" />
     <ClInclude Include="engine\3d\collision\AABBCollider.h" />
     <ClInclude Include="engine\3d\collision\CollisionManager.h" />
+	<ClInclude Include="engine\3d\collision\CollisionCategory.h" />
+	<ClInclude Include="application\controller\CollisionSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
