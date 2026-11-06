@@ -163,6 +163,7 @@
     <ClCompile Include="application\enemy\EnemyType.cpp" />
     <ClCompile Include="application\enemy\EnemyAttribute.cpp" />
     <ClCompile Include="application\enemy\data\EnemyDataLoader.cpp" />
+    <ClCompile Include="application\enemy\data\EnemyDataCatalog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\2d\Sprite.h">
@@ -364,6 +365,7 @@
     <ClInclude Include="application\enemy\EnemyFactory.h" />
     <ClInclude Include="application\enemy\EnemyAttribute.h" />
     <ClInclude Include="application\enemy\data\EnemyDataLoader.h" />
+    <ClInclude Include="application\enemy\data\EnemyDataCatalog.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
