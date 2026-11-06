@@ -160,6 +160,7 @@
     <ClCompile Include="application\enemy\Enemy.cpp" />
     <ClCompile Include="application\enemy\EnemyManager.cpp" />
     <ClCompile Include="application\enemy\EnemyFactory.cpp" />
+    <ClCompile Include="application\enemy\EnemyType.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\2d\Sprite.h">

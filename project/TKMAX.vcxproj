@@ -114,6 +114,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="application\catalog\AudioCatalog.cpp" />
+    <ClCompile Include="application\enemy\EnemyType.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="application\enemy\Enemy.cpp" />
     <ClCompile Include="application\enemy\EnemyManager.cpp" />
