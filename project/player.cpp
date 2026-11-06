@@ -50,8 +50,6 @@ void Player::Update() {
         if (input->PushKey(DIK_S) || input->PushKey(DIK_DOWN)) { pos_.y -= moveSpeed_; }
     }
 
-    TKM::Input::GetInstance()->Update();
-
     // 位置・回転・スケールの最新値を 3D オブジェクトへセットして行列更新
     if (object_) {
         object_->SetTranslate(pos_);
