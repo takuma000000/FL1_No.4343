@@ -5,6 +5,7 @@
 #include <cwchar>
 #include "SceneManager.h"
 #include "AudioManager.h"
+#include "DeltaTimeManager.h"
 
 #pragma comment(lib, "pdh.lib")
 
@@ -74,8 +75,10 @@ namespace TKM {
 	void BaseScene::UpdatePerformanceInfo() {
 #ifdef USE_IMGUI
 		frameCount_++; // フレーム数カウント
-		float deltaTime = ImGui::GetIO().DeltaTime; // 経過時間取得(秒)
-		timeCount_ += deltaTime; // 経過時間加算
+		// 共通のDeltaTimeを取得
+		const float deltaTime = DeltaTimeManager::GetInstance()->GetDeltaTime();
+		// 経過時間加算
+		timeCount_ += deltaTime;
 
 		// フレームタイム計算
 		frameTimeMs_ = deltaTime * 1000.0f; // 秒 → ミリ秒

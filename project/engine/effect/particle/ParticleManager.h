@@ -106,7 +106,6 @@ namespace TKM {
 		/// <summary>
 		/// ParticleManagerを更新します。
 		/// </summary>
-		/// <param name="dt">経過時間</param>
 		void Update();
 
 		/// <summary>
