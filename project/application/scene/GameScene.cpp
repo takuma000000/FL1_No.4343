@@ -184,7 +184,6 @@ void GameScene::ImGuiDebug() {
 		TKM::CameraManager::GetInstance()->GetMainCamera()) {
 		camera->ImGuiDebug(); // メインカメラのデバッグ表示
 	}
-
 	// ──────────────── オブジェクト編集 ───────────────
 	objectSettings_.ImGuiDebug();
 #endif
