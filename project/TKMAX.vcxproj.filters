@@ -361,6 +361,7 @@
     <ClInclude Include="engine\imgui\ObjectEditor.h" />
     <ClInclude Include="application\controller\ObjectSettings.h" />
     <ClInclude Include="engine\func\common\DeltaTimeManager.h" />
+    <ClInclude Include="engine\3d\collision\Collider.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
