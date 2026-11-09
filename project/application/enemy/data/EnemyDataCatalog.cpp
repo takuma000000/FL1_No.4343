@@ -40,11 +40,19 @@ bool EnemyDataCatalog::LoadDirectory(
 				continue;
 			}
 
-			// 現段階では、通常ファイルをすべてLoadFileへ渡す。
+			const std::string fileName =
+				entry.path().filename().string();
+
+			// 敵データ用の命名規則に一致しないファイルは無視する。
+			// 例: basic_virus.enemy.json は対象、memo.json は対象外。
+			if (!fileName.ends_with(".enemy.json")) {
+				continue;
+			}
+
 			if (!LoadFile(entry.path(), errorMessage)) {
 				errorMessage =
 					"敵データファイルの読み込みに失敗しました: " +
-					entry.path().filename().string() +
+					fileName +
 					"\n" +
 					errorMessage;
 
