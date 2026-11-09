@@ -6,6 +6,8 @@
 #include "CameraManager.h"
 #include "ParticleManager.h"
 
+#include "Logger.h"
+
 #ifdef USE_IMGUI
 #include "imgui.h"
 #endif
@@ -25,6 +27,8 @@ void GameScene::Initialize() {
 	InitializeSprite();
 	InitializeCamera();
 
+	InitializeEnemies(); // カメラを使用するため、カメラの初期化完了後に生成する
+
 	/// ──────────────── パーティクル初期化 ───────────────
 	auto* particleManager = TKM::ParticleManager::GetInstance();
 	particleManager->Initialize(dxCommon_, srvManager_, TKM::CameraManager::GetInstance()->GetMainCamera());
@@ -35,6 +39,16 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Finalize() {
+	/// ──────────────── 敵の終了処理 ────────────────
+	if (enemyManager_) {
+		// EnemyとEnemyが所有するObject3dを破棄する。
+		enemyManager_->Clear();
+		enemyManager_.reset();
+	}
+
+    // EnemyManagerはCatalogを参照しているので、Managerを破棄した後にCatalogを破棄する。
+	enemyDataCatalog_.reset();
+
 	/// ──────────────── 各種終了処理 ───────────────
 	TextureManager::GetInstance()->Finalize();
 	AudioManager::GetInstance()->Finalize();
@@ -45,6 +59,10 @@ void GameScene::Finalize() {
 }
 
 void GameScene::Update() {
+	// 現在は60FPS固定として経過時間を扱う。
+	// 将来的には実際のフレーム経過時間へ置き換える。
+	constexpr float kDeltaTime = 1.0f / 60.0f;
+
 	/// ──────────────── カメラ更新 ───────────────
 	UpdateActiveCamera();
 
@@ -52,12 +70,19 @@ void GameScene::Update() {
 	// テスト用Sphere更新
 	sphere_->Update();
 
+    /// ──────────────── 敵更新 ───────────────
+	if (enemyManager_) {
+		// 現在は中央のSphereをターゲットとしてEnemyを更新する。
+		const Vector3 targetPosition = sphere_->GetTranslate();
+
+		enemyManager_->Update(kDeltaTime, targetPosition);
+	}
+
 	/// ──────────────── ライト更新 ───────────────
 	directionalLight_->Update();
 
 	/// ──────────────── パーティクル更新 ───────────────
-	constexpr float deltaTime = 1.0f / 60.0f;
-	TKM::ParticleManager::GetInstance()->Update(deltaTime);
+	TKM::ParticleManager::GetInstance()->Update(kDeltaTime);
 
 #ifdef USE_IMGUI
 	ImGuiDebug();
@@ -75,6 +100,12 @@ void GameScene::Draw3D() {
 	Object3dCommon::GetInstance()->DrawSetCommon();
 	// テスト用Sphere描画
 	sphere_->Draw(dxCommon_);
+
+	/// ──────────────── 敵描画 ───────────────
+	if (enemyManager_) {
+		// EnemyManagerが所有する生存中のEnemyを描画する。
+		enemyManager_->Draw();
+	}
 
 	/// ──────────────── パーティクル描画 ───────────────
 	ParticleManager::GetInstance()->Draw();
@@ -152,3 +183,93 @@ void GameScene::ImGuiDebug() {
 #endif
 }
 
+// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+// 敵データを読み込み、動作確認用のEnemyを生成する
+// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+void GameScene::InitializeEnemies() {
+	//=========================================================
+	// EnemyDataCatalogの生成
+	//=========================================================
+	enemyDataCatalog_ =
+		std::make_unique<EnemyDataCatalog>();
+
+	std::string errorMessage;
+
+	// resources/data/enemy内にある
+	// .enemy.jsonファイルをすべて読み込む。
+	const bool isCatalogLoaded =
+		enemyDataCatalog_->LoadDirectory(
+			"resources/data/enemy",
+			errorMessage
+		);
+
+	if (!isCatalogLoaded) {
+		Logger::Log(
+			"[Enemy] Failed to load enemy data directory.\n" +
+			errorMessage +
+			"\n"
+		);
+
+		return;
+	}
+
+	//=========================================================
+	// カメラの取得
+	//=========================================================
+	TKM::Camera* mainCamera =
+		TKM::CameraManager::GetInstance()->GetMainCamera();
+
+	// EnemyのObject3dへ設定するカメラがない場合は、
+	// 描画できないためEnemyManagerを生成しない。
+	if (!mainCamera) {
+		Logger::Log(
+			"[Enemy] Main camera is null.\n"
+		);
+
+		return;
+	}
+
+	//=========================================================
+	// EnemyManagerの初期化
+	//=========================================================
+	enemyManager_ =
+		std::make_unique<EnemyManager>();
+
+	enemyManager_->Initialize(
+		dxCommon_,
+		mainCamera,
+		*enemyDataCatalog_
+	);
+
+	//=========================================================
+	// BasicVirusの生成
+	//=========================================================
+	// 中央のテスト用Sphereと重ならないよう、
+	// X方向に離れた位置へ生成する。
+	constexpr Vector3 kBasicVirusPosition = {
+		-15.0f,
+		0.0f,
+		0.0f
+	};
+
+	const bool isSpawned =
+		enemyManager_->Spawn(
+			"BasicVirus",
+			kBasicVirusPosition,
+			errorMessage
+		);
+
+	if (!isSpawned) {
+		Logger::Log(
+			"[Enemy] Failed to spawn BasicVirus.\n" +
+			errorMessage +
+			"\n"
+		);
+
+		return;
+	}
+
+	Logger::Log(
+		"[Enemy] BasicVirus spawned successfully.\n"
+	);
+}
