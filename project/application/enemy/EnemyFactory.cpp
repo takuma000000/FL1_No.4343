@@ -1,6 +1,42 @@
 #include "EnemyFactory.h"
 
+#include "data/EnemyDataCatalog.h"
 #include "Object3dCommon.h"
+
+std::unique_ptr<Enemy> EnemyFactory::Create(
+	const std::string& enemyId,
+	const EnemyDataCatalog& dataCatalog,
+	const Vector3& position,
+	TKM::DirectXCommon* dxCommon,
+	TKM::Camera* camera,
+	std::string& errorMessage
+) {
+	// 前回のエラー内容が残らないように初期化する。
+	errorMessage.clear();
+
+	const EnemyData* enemyData =
+		dataCatalog.FindById(enemyId);
+
+	if (!enemyData) {
+		errorMessage =
+			"指定された敵IDがCatalogに登録されていません: " +
+			enemyId;
+
+		return nullptr;
+	}
+
+	auto enemy = std::make_unique<Enemy>();
+	enemy->Initialize(
+		enemyData->type,
+		*enemyData,
+		position,
+		TKM::Object3dCommon::GetInstance(),
+		dxCommon,
+		camera
+	);
+
+	return enemy;
+}
 
 std::unique_ptr<Enemy> EnemyFactory::Create(
 	EnemyType type,
