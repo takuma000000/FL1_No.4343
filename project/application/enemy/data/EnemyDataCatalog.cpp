@@ -11,25 +11,30 @@ bool EnemyDataCatalog::LoadDirectory(
 	// 前回のエラー内容が残らないように初期化する。
 	errorMessage.clear();
 
-	// 指定されたパスが存在するか確認する。
-	if (!std::filesystem::exists(directoryPath)) {
-		errorMessage =
-			"敵データフォルダが存在しません: " +
-			directoryPath.string();
-
-		return false;
-	}
-
-	// ファイルが指定された場合に、フォルダとして処理しないようにする。
-	if (!std::filesystem::is_directory(directoryPath)) {
-		errorMessage =
-			"指定されたパスはフォルダではありません: " +
-			directoryPath.string();
-
-		return false;
-	}
-
 	try {
+		// 指定されたパスが存在するか確認する。
+		if (!std::filesystem::exists(directoryPath)) {
+			errorMessage =
+				"敵データフォルダが存在しません: " +
+				directoryPath.string();
+
+			return false;
+		}
+
+		// ファイルが指定された場合に、フォルダとして処理しないようにする。
+		if (!std::filesystem::is_directory(directoryPath)) {
+			errorMessage =
+				"指定されたパスはフォルダではありません: " +
+				directoryPath.string();
+
+			return false;
+		}
+
+		// 途中で失敗しても現在のCatalogを変更しないよう、
+		// 読み込んだデータは一時Catalogへ登録する。
+		EnemyDataCatalog temporaryCatalog;
+		std::size_t loadedFileCount = 0;
+
 		// フォルダ内の項目を順番に確認する。
 		for (
 			const std::filesystem::directory_entry& entry :
@@ -49,7 +54,7 @@ bool EnemyDataCatalog::LoadDirectory(
 				continue;
 			}
 
-			if (!LoadFile(entry.path(), errorMessage)) {
+			if (!temporaryCatalog.LoadFile(entry.path(), errorMessage)) {
 				errorMessage =
 					"敵データファイルの読み込みに失敗しました: " +
 					fileName +
@@ -58,7 +63,21 @@ bool EnemyDataCatalog::LoadDirectory(
 
 				return false;
 			}
+
+			++loadedFileCount;
 		}
+
+		// 対象ファイルが1件もない場合は、読み込み成功として扱わない。
+		if (loadedFileCount == 0) {
+			errorMessage =
+				".enemy.jsonファイルが見つかりませんでした: " +
+				directoryPath.string();
+
+			return false;
+		}
+
+		// 全ファイルの読み込みに成功した場合だけ、現在のデータを置き換える。
+		data_ = std::move(temporaryCatalog.data_);
 	}
 	catch (const std::filesystem::filesystem_error& exception) {
 		errorMessage =
