@@ -42,9 +42,12 @@ void Enemy::Update(float deltaTime, const Vector3& targetPosition) {
         return;
     }
 
-    UpdateMovement(deltaTime, targetPosition);
+    // ターゲットが索敵範囲内にいる場合だけ追跡する。
+    if (IsWithinDetectionRange(targetPosition)) {
+        UpdateMovement(deltaTime, targetPosition);
+    }
 
-    // ゲーム上の座標を描画用Object3dへ反映する。
+    // 移動しなかった場合も描画情報は更新する。
     object3d_->SetTranslate(position_);
     object3d_->Update();
 }
@@ -93,4 +96,26 @@ void Enemy::UpdateMovement(float deltaTime, const Vector3& targetPosition) {
     );
 
     position_ += direction * data_.moveSpeed * deltaTime;
+}
+
+bool Enemy::IsWithinDetectionRange(const Vector3& targetPosition) const {
+    // 敵からターゲットまでの座標差を求める
+    const Vector3 difference = {
+        targetPosition.x - position_.x,
+        targetPosition.y - position_.y,
+        targetPosition.z - position_.z
+    };
+
+    // 平方根を使わずに距離を比較するため、
+    // ターゲットまでの距離の二乗を求める
+    const float distanceSquared =
+        difference.x * difference.x +
+        difference.y * difference.y +
+        difference.z * difference.z;
+
+    // 索敵範囲についても二乗値を求める
+    const float detectionRangeSquared =
+        data_.detectionRange * data_.detectionRange;
+
+    return distanceSquared <= detectionRangeSquared;
 }

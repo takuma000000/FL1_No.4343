@@ -69,6 +69,13 @@ private:
     /// </summary>
     void UpdateMovement(float deltaTime, const Vector3& targetPosition);
 
+    /// <summary>
+    /// ターゲットが索敵範囲内にいるか判定する。
+    /// </summary>
+    /// <param name="targetPosition">ターゲットの座標</param>
+    /// <returns>索敵範囲内の場合はtrue</returns>
+    bool IsWithinDetectionRange(const Vector3& targetPosition) const;
+
 private:
     // 描画対象。Enemyが所有権を持つ。
     std::unique_ptr<TKM::Object3d> object3d_;
