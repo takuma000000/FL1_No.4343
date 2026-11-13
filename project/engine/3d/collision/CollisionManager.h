@@ -6,6 +6,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace TKM {
@@ -50,6 +51,24 @@ namespace TKM {
 		AABBCollider* RegisterAABB(
 			const std::string& id,
 			const Object3d* object
+		);
+
+		/// <summary>
+		/// Object3dと自身の種類をまとめて登録します。
+		/// </summary>
+		AABBCollider* RegisterAABB(
+			const std::string& id,
+			const Object3d* object,
+			CollisionCategory category
+		);
+
+		/// <summary>
+		/// 当たり判定を行う2種類の組み合わせを登録します。
+		/// AとBの順番を入れ替えて登録する必要はありません。
+		/// </summary>
+		void AddCollisionPair(
+			CollisionCategory first,
+			CollisionCategory second
 		);
 
 		/// <summary>
@@ -116,6 +135,9 @@ namespace TKM {
 				) const;
 		};
 
+		using CategoryPair =
+			std::pair<uint32_t, uint32_t>;
+
 		/// <summary>
 		/// 全コライダーの位置とサイズを更新します。
 		/// </summary>
@@ -131,15 +153,20 @@ namespace TKM {
 			Collider* second
 		);
 
-		static bool CanCollide(
+		bool CanCollide(
 			const Collider& first,
 			const Collider& second
-		);
+		) const;
 
 		//======================================================================
 		// 登録コライダー
 		//======================================================================
 		std::map<std::string, Entry> entries_;
+
+		//======================================================================
+		// 当たり判定を行うCategoryの組み合わせ
+		//======================================================================
+		std::set<CategoryPair> categoryPairs_;
 
 		//======================================================================
 		// 前フレームの衝突情報

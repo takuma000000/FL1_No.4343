@@ -74,6 +74,40 @@ namespace TKM {
 		);
 	}
 
+	AABBCollider* CollisionManager::RegisterAABB(
+		const std::string& id,
+		const Object3d* object,
+		CollisionCategory category
+	) {
+		auto* collider = RegisterAABB(id, object);
+
+		if (!collider) {
+			return nullptr;
+		}
+
+		collider->SetCategory(category);
+		return collider;
+	}
+
+	void CollisionManager::AddCollisionPair(
+		CollisionCategory first,
+		CollisionCategory second
+	) {
+		uint32_t firstBits = ToCollisionBits(first);
+		uint32_t secondBits = ToCollisionBits(second);
+
+		if (firstBits == 0u || secondBits == 0u) {
+			return;
+		}
+
+		// A × BとB × Aを同じ組み合わせとして扱う
+		if (secondBits < firstBits) {
+			std::swap(firstBits, secondBits);
+		}
+
+		categoryPairs_.insert({ firstBits, secondBits });
+	}
+
 	void CollisionManager::Unregister(
 		const std::string& id
 	) {
@@ -110,6 +144,7 @@ namespace TKM {
 		previousPairs_.clear();
 		collidingColliders_.clear();
 		entries_.clear();
+		categoryPairs_.clear();
 	}
 
 	void CollisionManager::DrawDebug(
@@ -289,18 +324,15 @@ namespace TKM {
 	bool CollisionManager::CanCollide(
 		const Collider& first,
 		const Collider& second
-	) {
-		// 1. firstがsecondを判定対象にしているか確認する
-		const bool firstTargetsSecond =
-			first.IsCollisionTarget(second);
+	) const {
+		uint32_t firstBits = first.categoryBits_;
+		uint32_t secondBits = second.categoryBits_;
 
-		// 2. secondがfirstを判定対象にしているか確認する
-		const bool secondTargetsFirst =
-			second.IsCollisionTarget(first);
+		if (secondBits < firstBits) {
+			std::swap(firstBits, secondBits);
+		}
 
-		// 3. お互いが判定対象にしている場合だけ当たり判定を行う
-		return firstTargetsSecond
-			&& secondTargetsFirst;
+		return categoryPairs_.contains({ firstBits, secondBits });
 	}
 
 } // namespace TKM

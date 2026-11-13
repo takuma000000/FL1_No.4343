@@ -62,24 +62,6 @@ namespace TKM {
 		}
 
 		/// <summary>
-		/// 当たり判定を取りたい相手を追加します。
-		/// 複数回呼び出すことで、複数の種類を判定対象にできます。
-		/// </summary>
-		/// <param name="target">当たり判定を取る相手の種類</param>
-		void AddCollisionTarget(
-			CollisionCategory target
-		) {
-			collisionTargetBits_ |= ToCollisionBits(target);
-		}
-
-		/// <summary>
-		/// 登録されている当たり判定対象をすべて解除します。
-		/// </summary>
-		void ClearCollisionTargets() {
-			collisionTargetBits_ = 0u;
-		}
-
-		/// <summary>
 		/// コライダーの有効状態を設定します。
 		/// </summary>
 		void SetActive(bool active) {
@@ -123,20 +105,6 @@ namespace TKM {
 		}
 
 		/// <summary>
-		/// 指定されたコライダーが、自分の判定対象か確認します。
-		/// </summary>
-		/// <param name="other">確認する相手</param>
-		/// <returns>判定対象に含まれている場合はtrue</returns>
-		bool IsCollisionTarget(
-			const Collider& other
-		) const {
-			return (
-				collisionTargetBits_ &
-				other.categoryBits_
-				) != 0u;
-		}
-
-		/// <summary>
 		/// コライダーが有効か取得します。
 		/// </summary>
 		bool IsActive() const {
@@ -157,13 +125,6 @@ namespace TKM {
 		// ゲーム側ではSetCategory()を使って設定する。
 		uint32_t categoryBits_ =
 			ToCollisionBits(CollisionCategory::None);
-
-		//======================================================================
-		// 当たり判定を取る相手
-		//======================================================================
-		// このコライダーが、どの種類と判定するのかを表す。
-		// ゲーム側ではAddCollisionTarget()を使って追加する。
-		uint32_t collisionTargetBits_ = 0u;
 
 		//======================================================================
 		// 状態

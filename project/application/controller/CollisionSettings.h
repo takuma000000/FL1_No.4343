@@ -23,4 +23,18 @@ public:
 	/// 登録したコライダーを解除します。
 	/// </summary>
 	void Finalize();
+
+private:
+	/// <summary>
+	/// ゲーム内で使用するコライダーをまとめて登録します。
+	/// </summary>
+	void RegisterColliders(
+		TKM::Object3d* plane,
+		Player* player
+	);
+
+	/// <summary>
+	/// 当たり判定を行うCategoryの組み合わせを登録します。
+	/// </summary>
+	void RegisterCollisionPairs();
 };
