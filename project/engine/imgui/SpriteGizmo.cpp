@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "SpriteGizmo.h"
 
 #include <algorithm>
