@@ -113,7 +113,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-	<ClCompile Include="application\controller\CollisionSettings.cpp" />
+    <ClCompile Include="application\controller\CollisionSettings.cpp" />
     <ClCompile Include="engine\3d\collision\CollisionManager.cpp" />
     <ClCompile Include="engine\3d\collision\AABBCollider.cpp" />
     <ClCompile Include="application\catalog\AudioCatalog.cpp" />
@@ -202,11 +202,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\io\ObjectSave.cpp" />
     <ClCompile Include="engine\imgui\ObjectEditor.cpp" />
     <ClCompile Include="application\controller\ObjectSettings.cpp" />
-    <ClCompile Include="application\actor\player.cpp" />
+    <ClCompile Include="application\actor\Player.cpp" />
   </ItemGroup>
   <ItemGroup>
-	<ClInclude Include="application\controller\CollisionSettings.h" />
-	<ClInclude Include="engine\3d\collision\CollisionCategory.h" />
+    <ClInclude Include="application\controller\CollisionSettings.h" />
+    <ClInclude Include="engine\3d\collision\CollisionCategory.h" />
     <ClInclude Include="engine\3d\collision\CollisionManager.h" />
     <ClInclude Include="engine\3d\collision\AABBCollider.h" />
     <ClInclude Include="application\catalog\AudioCatalog.h" />
@@ -288,7 +288,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\io\ObjectSave.h" />
     <ClInclude Include="engine\imgui\ObjectEditor.h" />
     <ClInclude Include="application\controller\ObjectSettings.h" />
-    <ClInclude Include="application\actor\player.h" />
+    <ClInclude Include="application\actor\Player.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="application\catalog\TextureCatalog.h" />
     <ClInclude Include="engine\func\math\Transform.h" />
