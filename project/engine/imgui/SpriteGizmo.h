@@ -29,20 +29,17 @@ namespace TKM {
 			None,
 			Move,
 			TopLeft,
-			Top,
 			TopRight,
-			Right,
 			BottomRight,
-			Bottom,
 			BottomLeft,
-			Left,
 			Rotate,
 		};
 
 		struct Geometry {
 			Vector2 center_{};
 			Vector2 corners_[4]{};
-			Vector2 handles_[8]{};
+			Vector2 handles_[4]{};
+			Vector2 topCenter_{};
 			Vector2 rotateHandle_{};
 		};
 

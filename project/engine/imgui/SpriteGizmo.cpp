@@ -77,31 +77,20 @@ namespace TKM {
 			);
 		}
 
-		// 左上、上、右上、右、右下、下、左下、左
+		// 四隅に縦横比を維持した拡縮ハンドルを置く
 		geometry.handles_[0] = geometry.corners_[0];
-		geometry.handles_[1] = {
+		geometry.handles_[1] = geometry.corners_[1];
+		geometry.handles_[2] = geometry.corners_[2];
+		geometry.handles_[3] = geometry.corners_[3];
+
+		geometry.topCenter_ = {
 			(geometry.corners_[0].x + geometry.corners_[1].x) * 0.5f,
 			(geometry.corners_[0].y + geometry.corners_[1].y) * 0.5f
-		};
-		geometry.handles_[2] = geometry.corners_[1];
-		geometry.handles_[3] = {
-			(geometry.corners_[1].x + geometry.corners_[2].x) * 0.5f,
-			(geometry.corners_[1].y + geometry.corners_[2].y) * 0.5f
-		};
-		geometry.handles_[4] = geometry.corners_[2];
-		geometry.handles_[5] = {
-			(geometry.corners_[2].x + geometry.corners_[3].x) * 0.5f,
-			(geometry.corners_[2].y + geometry.corners_[3].y) * 0.5f
-		};
-		geometry.handles_[6] = geometry.corners_[3];
-		geometry.handles_[7] = {
-			(geometry.corners_[3].x + geometry.corners_[0].x) * 0.5f,
-			(geometry.corners_[3].y + geometry.corners_[0].y) * 0.5f
 		};
 
 		// 上辺の中央から30px離れた位置へ回転ハンドルを置く
 		geometry.rotateHandle_ = Add(
-			geometry.handles_[1],
+			geometry.topCenter_,
 			RotateVector({ 0.0f, -30.0f }, rotation)
 		);
 
@@ -146,18 +135,14 @@ namespace TKM {
 			return Handle::Rotate;
 		}
 
-		const Handle handles[8] = {
+		const Handle handles[4] = {
 			Handle::TopLeft,
-			Handle::Top,
 			Handle::TopRight,
-			Handle::Right,
 			Handle::BottomRight,
-			Handle::Bottom,
-			Handle::BottomLeft,
-			Handle::Left
+			Handle::BottomLeft
 		};
 
-		for (int index = 0; index < 8; ++index) {
+		for (int index = 0; index < 4; ++index) {
 			if (DistanceSquared(mouse, geometry.handles_[index])
 				<= kHitRadiusSquared) {
 				return handles[index];
@@ -205,10 +190,6 @@ namespace TKM {
 			return;
 		}
 
-		const Vector2 mouseDelta = Subtract(mouse, startMouse_);
-		const Vector2 localDelta =
-			RotateVector(mouseDelta, -startRotation_);
-
 		float horizontalDirection = 0.0f;
 		float verticalDirection = 0.0f;
 
@@ -217,68 +198,65 @@ namespace TKM {
 			horizontalDirection = -1.0f;
 			verticalDirection = -1.0f;
 			break;
-		case Handle::Top:
-			verticalDirection = -1.0f;
-			break;
 		case Handle::TopRight:
 			horizontalDirection = 1.0f;
 			verticalDirection = -1.0f;
 			break;
-		case Handle::Right:
-			horizontalDirection = 1.0f;
-			break;
 		case Handle::BottomRight:
 			horizontalDirection = 1.0f;
-			verticalDirection = 1.0f;
-			break;
-		case Handle::Bottom:
 			verticalDirection = 1.0f;
 			break;
 		case Handle::BottomLeft:
 			horizontalDirection = -1.0f;
 			verticalDirection = 1.0f;
 			break;
-		case Handle::Left:
-			horizontalDirection = -1.0f;
-			break;
 		default:
 			return;
 		}
 
-		Vector2 newSize = startSize_;
-		if (horizontalDirection != 0.0f) {
-			newSize.x = std::max(
-				1.0f,
-				startSize_.x
-				+ localDelta.x * horizontalDirection
-			);
-		}
-
-		if (verticalDirection != 0.0f) {
-			newSize.y = std::max(
-				1.0f,
-				startSize_.y
-				+ localDelta.y * verticalDirection
-			);
-		}
+		// 反対側の角を固定し、ドラッグ量を対角線へ投影して倍率を求める
+		const Vector2 startDiagonal = RotateVector(
+			{
+				horizontalDirection * startSize_.x,
+				verticalDirection * startSize_.y
+			},
+			startRotation_
+		);
+		const Vector2 fixedCorner = Subtract(
+			startCenter_,
+			{
+				startDiagonal.x * 0.5f,
+				startDiagonal.y * 0.5f
+			}
+		);
+		const Vector2 currentDiagonal = Subtract(mouse, fixedCorner);
+		const float diagonalLengthSquared =
+			startDiagonal.x * startDiagonal.x
+			+ startDiagonal.y * startDiagonal.y;
+		const float minimumScale = std::max(
+			1.0f / startSize_.x,
+			1.0f / startSize_.y
+		);
+		const float scale = std::max(
+			minimumScale,
+			(currentDiagonal.x * startDiagonal.x
+				+ currentDiagonal.y * startDiagonal.y)
+				/ diagonalLengthSquared
+		);
+		const Vector2 newSize = {
+			startSize_.x * scale,
+			startSize_.y * scale
+		};
 
 		sprite->SetSize(newSize);
 
-		// ドラッグした辺に合わせて中心を移動し、反対側の辺を固定する
-		const Vector2 localCenterDelta = {
-			horizontalDirection != 0.0f
-				? (newSize.x - startSize_.x)
-					* horizontalDirection * 0.5f
-				: 0.0f,
-			verticalDirection != 0.0f
-				? (newSize.y - startSize_.y)
-					* verticalDirection * 0.5f
-				: 0.0f
-		};
-
+		// 拡縮中も反対側の角が動かないように中心位置を更新する
 		const Vector2 newCenter = Add(
-			startCenter_,
-			RotateVector(localCenterDelta, startRotation_)
+			fixedCorner,
+			{
+				startDiagonal.x * scale * 0.5f,
+				startDiagonal.y * scale * 0.5f
+			}
 		);
 
 		// アンカーポイントを考慮して新しい位置を求める
@@ -319,7 +297,7 @@ namespace TKM {
 
 		// 上辺と回転ハンドルをつなぐ線
 		drawList->AddLine(
-			{ geometry.handles_[1].x, geometry.handles_[1].y },
+			{ geometry.topCenter_.x, geometry.topCenter_.y },
 			{ geometry.rotateHandle_.x, geometry.rotateHandle_.y },
 			lineColor,
 			2.0f
