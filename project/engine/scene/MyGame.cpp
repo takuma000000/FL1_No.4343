@@ -16,6 +16,7 @@ namespace TKM {
 
 		// Initialize sceneManager_
 		sceneManager_ = std::make_unique<TKM::SceneManager>();
+		sceneManager_->Initialize(dxCommon_.get());
 
 		//シーンファクトリーの生成、マネージャにセット
 		sceneFactory_ = std::make_unique<TKM::SceneFactory>(dxCommon_.get(), srvManager_.get());
@@ -104,10 +105,13 @@ namespace TKM {
 		srvManager_->PreDraw();
 		sceneManager_->DrawSprite();
 
-		// ⑤ ImGui（好みでUIの後でも前でもOK）
+		// ⑤ シーン切り替えフェードを最前面へ描画
+		sceneManager_->DrawTransition();
+
+		// ⑥ ImGui（デバッグ操作はフェード中も表示する）
 		imguiManager_->Draw();
 
-		// ⑥ フレーム終了
+		// ⑦ フレーム終了
 		dxCommon_->PostDraw();
 	}
 }

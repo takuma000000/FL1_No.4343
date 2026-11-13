@@ -113,6 +113,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+	<ClCompile Include="engine\scene\SceneTransition.cpp" />
 	<ClCompile Include="application\controller\SpriteSettings.cpp" />
 	<ClCompile Include="engine\imgui\SpriteEditor.cpp" />
 	<ClCompile Include="engine\imgui\SpriteGizmo.cpp" />
@@ -209,6 +210,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\actor\Player.cpp" />
   </ItemGroup>
   <ItemGroup>
+	<ClInclude Include="engine\scene\SceneTransition.h" />
 	<ClInclude Include="application\controller\SpriteSettings.h" />
 	<ClInclude Include="engine\imgui\SpriteEditor.h" />
 	<ClInclude Include="engine\imgui\SpriteGizmo.h" />

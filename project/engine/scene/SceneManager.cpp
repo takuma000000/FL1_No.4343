@@ -1,18 +1,25 @@
 #include "SceneManager.h"
 
 namespace TKM {
+	void SceneManager::Initialize(DirectXCommon* dxCommon) {
+		dxCommon_ = dxCommon;
+		sceneTransition_.Initialize(dxCommon_);
+	}
+
 	void SceneManager::Update() {
 		if (quitRequested_) { return; } // アプリ終了要求がある場合は更新しない
 
-		// 次シーン切り替え
-		if (nextScene_) {
-			if (scene_) { // 現在のシーンが存在する場合のみ終了処理
-				scene_->Finalize(); // 現在のシーンの終了処理
-			}
-			scene_ = std::move(nextScene_); // 次のシーンに切り替え
+		// シーン切り替え用フェードを更新する
+		sceneTransition_.Update();
 
-			scene_->SetSceneManager(this); // シーンマネージャーをセット
-			scene_->Start(); // 新しいシーンの初期化
+		// 初回シーン、または完全に暗転したタイミングでシーンを切り替える
+		if (nextScene_) {
+			if (!scene_) {
+				SwitchScene();
+			} else if (sceneTransition_.IsCovered()) {
+				SwitchScene();
+				sceneTransition_.StartFadeIn();
+			}
 		}
 
 		if (scene_) { // シーンが存在する場合のみ更新
@@ -39,6 +46,11 @@ namespace TKM {
 		if (scene_) { scene_->DrawSprite(); } // シーンが存在する場合のみスプライト描画
 	}
 
+	void SceneManager::DrawTransition() {
+		if (quitRequested_) { return; }
+		sceneTransition_.Draw();
+	}
+
 	SceneManager::~SceneManager() {
 		if (scene_) { // シーンが存在する場合のみ終了処理
 			scene_->Finalize(); // 現在のシーンの終了処理
@@ -46,11 +58,35 @@ namespace TKM {
 	}
 
 	void SceneManager::ChangeScene(const std::string& sceneName) {
-		if (!sceneFactory_) { // シーンファクトリーがセットされていない場合は切り替えできない
+		if (!sceneFactory_
+			|| nextScene_
+			|| sceneTransition_.IsActive()) {
 			return;
 		}
 
-		// シーンファクトリーを使って新しいシーンを生成し、次のシーンとしてセット
-		SetNextScene(sceneFactory_->CreateScene(sceneName));
+		auto nextScene = sceneFactory_->CreateScene(sceneName);
+		if (!nextScene) {
+			return;
+		}
+
+		nextScene_ = std::move(nextScene);
+
+		if (scene_) {
+			sceneTransition_.StartFadeOut();
+		}
+	}
+
+	void SceneManager::SwitchScene() {
+		if (!nextScene_) {
+			return;
+		}
+
+		if (scene_) {
+			scene_->Finalize();
+		}
+
+		scene_ = std::move(nextScene_);
+		scene_->SetSceneManager(this);
+		scene_->Start();
 	}
 }

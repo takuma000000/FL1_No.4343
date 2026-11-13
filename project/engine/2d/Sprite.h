@@ -139,6 +139,10 @@ namespace TKM {
 		/// </summary>
 		const std::string& GetEditorName() const { return editorName_; }
 		/// <summary>
+		/// エディターの自動登録対象か確認します。
+		/// </summary>
+		bool IsEditorEnabled() const { return editorEnabled_; }
+		/// <summary>
 		/// 親シーンの取得。
 		/// </summary>
 		/// <returns></returns>
@@ -205,6 +209,10 @@ namespace TKM {
 		/// </summary>
 		/// <param name="enable"></param>
 		void SetAutoAdjustTextureSize(bool enable);
+		/// <summary>
+		/// エディターへの自動登録を有効・無効にします。
+		/// </summary>
+		void SetEditorEnabled(bool enable) { editorEnabled_ = enable; }
 		/// <summary>
 		/// 発光の有効 / 無効を設定。
 		/// </summary>
@@ -297,6 +305,7 @@ namespace TKM {
 		inline static int activeCount_ = 0; // アクティブスプライト数
 		inline static std::vector<Sprite*> activeSprites_; // 現在存在するスプライト一覧
 		std::string editorName_; // エディターと保存データで使用する識別名
+		bool editorEnabled_ = true; // エディターへの自動登録フラグ
 		//======================================================================
 		// 内部処理
 		//======================================================================

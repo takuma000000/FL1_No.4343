@@ -44,7 +44,8 @@ void SpriteSettings::SynchronizeSprites() {
 
 		if (std::find(activeSprites.begin(), activeSprites.end(), sprite)
 			== activeSprites.end()
-			|| sprite->GetEditorName() != id) {
+			|| sprite->GetEditorName() != id
+			|| !sprite->IsEditorEnabled()) {
 			spriteSave_.UnregisterSprite(id);
 #ifdef USE_IMGUI
 			spriteEditor_.UnregisterSprite(id);
@@ -59,6 +60,7 @@ void SpriteSettings::SynchronizeSprites() {
 	for (TKM::Sprite* sprite : activeSprites) {
 		if (!sprite
 			|| sprite->GetEditorName().empty()
+			|| !sprite->IsEditorEnabled()
 			|| registeredSprites_.contains(sprite)) {
 			continue;
 		}
