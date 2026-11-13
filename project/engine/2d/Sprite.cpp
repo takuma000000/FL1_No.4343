@@ -150,8 +150,12 @@ namespace TKM {
 		transformSprite_ = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} }; // スプライトの変換情報
 		cameraTransform_ = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,-10.0f} }; // カメラの変換情報
 
-		//単位行列を書き込んでおく
-		textureIndex_ = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
+		// 指定されたテクスチャが未読み込みなら自動で読み込む
+		TextureManager::GetInstance()->LoadTexture(textureFilePath_);
+		textureIndex_ =
+			TextureManager::GetInstance()->GetTextureIndexByFilePath(
+				textureFilePath_
+			);
 	}
 
 	void Sprite::Update() {

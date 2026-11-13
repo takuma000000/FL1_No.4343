@@ -145,7 +145,6 @@
     <ClCompile Include="engine\effect\post\SmokeVolume3D.cpp" />
     <ClCompile Include="engine\effect\post\LaserBeam3D.cpp" />
     <ClCompile Include="application\effect\ParticleGroupsCatalog.cpp" />
-    <ClCompile Include="application\catalog\TextureCatalog.cpp" />
     <ClCompile Include="application\catalog\ModelCatalog.cpp" />
     <ClCompile Include="engine\3d\camera\manager\CameraManager.cpp" />
     <ClCompile Include="engine\state\StateMachine.cpp" />
@@ -354,7 +353,6 @@
     <ClInclude Include="engine\effect\post\LaserBeam3D.h" />
     <ClInclude Include="application\effect\ParticleGroupsCatalog.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="application\catalog\TextureCatalog.h" />
     <ClInclude Include="application\catalog\ModelCatalog.h" />
     <ClInclude Include="engine\func\math\Transform.h" />
     <ClInclude Include="engine\3d\camera\manager\CameraManager.h" />

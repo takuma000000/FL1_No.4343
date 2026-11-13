@@ -196,7 +196,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\func\common\TimeScaleController.cpp" />
     <ClCompile Include="engine\effect\post\SmokeVolume3D.cpp" />
     <ClCompile Include="application\effect\ParticleGroupsCatalog.cpp" />
-    <ClCompile Include="application\catalog\TextureCatalog.cpp" />
     <ClCompile Include="application\catalog\ModelCatalog.cpp" />
     <ClCompile Include="engine\state\StateMachine.cpp" />
     <ClCompile Include="application\effect\ParticleSpawner.cpp" />
@@ -300,7 +299,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\controller\ObjectSettings.h" />
     <ClInclude Include="application\actor\Player.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="application\catalog\TextureCatalog.h" />
     <ClInclude Include="engine\func\math\Transform.h" />
     <ClInclude Include="engine\state\StateMachine.h" />
     <ClInclude Include="engine\effect\post\TrailRibbonRenderer.h" />

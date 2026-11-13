@@ -84,18 +84,21 @@ namespace TKM {
 		// Getter=====================================
 		/// <summary>
 		/// ファイルパスからテクスチャ番号を取得します。
+		/// 未読み込みの場合は自動で読み込みます。
 		/// </summary>
 		/// <param name="filePath"></param>
 		/// <returns></returns>
 		uint32_t GetTextureIndexByFilePath(const std::string& filePath);
 		/// <summary>
-		/// ファイルパスからSRVのCPUハンドルを取得します。
+		/// ファイルパスからSRVのGPUハンドルを取得します。
+		/// 未読み込みの場合は自動で読み込みます。
 		/// </summary>
 		/// <param name="filePath"></param>
 		/// <returns></returns>
 		D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU(const std::string& filePath);
 		/// <summary>
 		/// ファイルパスからテクスチャメタデータを取得します。
+		/// 未読み込みの場合は自動で読み込みます。
 		/// </summary>
 		/// <param name="filePath"></param>
 		/// <returns></returns>

@@ -1,7 +1,6 @@
 #include "GameOverScene.h"
 
 #include "AudioCatalog.h"
-#include "TextureCatalog.h"
 #include "ModelCatalog.h"
 
 #include "AudioManager.h"
@@ -23,7 +22,6 @@ void GameOverScene::Initialize() {
 
 	/// ──────────────── 各種初期化処理 ───────────────
 	AudioCatalog::LoadResultAudios();
-	TextureCatalog::LoadTextureCatalogs();
 	ModelCatalog::LoadModelCatalogs(dxCommon_);
 
 	InitializeObjects();

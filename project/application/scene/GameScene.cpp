@@ -1,7 +1,6 @@
 #define NOMINMAX
 #include "GameScene.h"
 #include "AudioCatalog.h"
-#include "TextureCatalog.h"
 #include "ModelCatalog.h"
 #include "CameraManager.h"
 #include "ParticleManager.h"
@@ -15,7 +14,6 @@ void GameScene::Initialize() {
 
 	/// ──────────────── 各種初期化処理 ───────────────
 	AudioCatalog::LoadGameAudios();
-	TextureCatalog::LoadTextureCatalogs();
 	ModelCatalog::LoadModelCatalogs(dxCommon_);
 	InitializeObjects();
 	collisionSettings_.Initialize(sphere_.get(), player_.get());
