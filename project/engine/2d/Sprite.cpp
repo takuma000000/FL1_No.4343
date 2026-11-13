@@ -72,29 +72,34 @@ namespace TKM {
 		dxCommon_ = dxCommon;
 		this->textureFilePath_ = textureFilePath;
 
-		// テクスチャ名を基準に、エディター用の識別名を自動生成する
-		const std::string baseName =
-			std::filesystem::path(textureFilePath).filename().string();
-		editorName_ = baseName.empty() ? "Sprite" : baseName;
+		// 編集対象のスプライトだけ識別名を生成する
+		// フェードなどの内部スプライトは通常スプライトの連番へ影響させない
+		editorName_.clear();
+		if (editorEnabled_) {
+			const std::string baseName =
+				std::filesystem::path(textureFilePath).filename().string();
+			editorName_ = baseName.empty() ? "Sprite" : baseName;
 
-		const std::string nameWithoutNumber = editorName_;
-		int duplicateNumber = 2;
-		const auto isNameUsed = [this](const std::string& name) {
-			return std::any_of(
-				activeSprites_.begin(),
-				activeSprites_.end(),
-				[this, &name](const Sprite* sprite) {
-					return sprite
-						&& sprite != this
-						&& sprite->editorName_ == name;
-				}
-			);
-		};
+			const std::string nameWithoutNumber = editorName_;
+			int duplicateNumber = 2;
+			const auto isNameUsed = [this](const std::string& name) {
+				return std::any_of(
+					activeSprites_.begin(),
+					activeSprites_.end(),
+					[this, &name](const Sprite* sprite) {
+						return sprite
+							&& sprite != this
+							&& sprite->editorEnabled_
+							&& sprite->editorName_ == name;
+					}
+				);
+			};
 
-		while (isNameUsed(editorName_)) {
-			editorName_ = nameWithoutNumber
-				+ " #" + std::to_string(duplicateNumber);
-			++duplicateNumber;
+			while (isNameUsed(editorName_)) {
+				editorName_ = nameWithoutNumber
+					+ " #" + std::to_string(duplicateNumber);
+				++duplicateNumber;
+			}
 		}
 
 		//VertexResourceを作る
