@@ -15,6 +15,18 @@ namespace TKM {
     class DirectXCommon;
 }
 
+struct EnemyAttackEvent {
+
+    // 攻撃を行った敵のID。
+    std::string enemyId;
+
+    // 攻撃が発生したときの敵の座標。
+    Vector3 enemyPosition{ 0.0f, 0.0f, 0.0f };
+
+    // ターゲットへ与えるダメージ量。
+    float damage = 0.0f;
+};
+
 //=============================================================
 // 敵マネージャークラス
 // 敵の生成・更新・描画・破棄を一括管理する。
@@ -56,8 +68,27 @@ public:
     /// </summary>
     void Clear();
 
+    //=============================================================
+    // Getter
+    //=============================================================
+
+    /// <summary>
+    /// 現在管理している敵の数を取得する。
+    /// </summary>
+    /// <returns>管理中の敵の数</returns>
     std::size_t GetEnemyCount() const { return enemies_.size(); }
+
+    /// <summary>
+    /// 現在管理している敵の一覧を取得する。
+    /// </summary>
+    /// <returns>管理中の敵の一覧</returns>
     const std::vector<std::unique_ptr<Enemy>>& GetEnemies() const { return enemies_; }
+
+    /// <summary>
+    /// このフレームに発生した敵の攻撃イベントを取得する。
+    /// </summary>
+    /// <returns>敵の攻撃イベント一覧</returns>
+    const std::vector<EnemyAttackEvent>& GetAttackEvents() const { return attackEvents_; }
 
 private:
     // これらはEnemyManagerが所有せず、シーン側が生存期間を管理する。
@@ -67,5 +98,9 @@ private:
 
     // unique_ptrにより、敵の破棄を自動化する。
     std::vector<std::unique_ptr<Enemy>> enemies_;
-};
 
+    // このフレームに発生した攻撃イベント。
+    // Updateの開始時に毎フレーム空にする。
+    std::vector<EnemyAttackEvent> attackEvents_;
+
+};

@@ -77,9 +77,33 @@ bool EnemyManager::Spawn(
 	return true;
 }
 
-void EnemyManager::Update(float deltaTime, const Vector3& targetPosition) {
+void EnemyManager::Update(
+    float deltaTime,
+    const Vector3& targetPosition) {
+
+    // 前フレームの攻撃情報を残さないように初期化する。
+    attackEvents_.clear();
+
+    // 管理中の敵を更新し、発生した攻撃を収集する。
     for (const auto& enemy : enemies_) {
+
         enemy->Update(deltaTime, targetPosition);
+
+        // このフレームに攻撃していない敵は無視する。
+        if (!enemy->DidAttackThisFrame()) {
+            continue;
+        }
+
+        // 外部でダメージ処理などを行えるように、
+        // 攻撃した敵の情報を値として保存する。
+        EnemyAttackEvent attackEvent{};
+        attackEvent.enemyId = enemy->GetData().id;
+        attackEvent.enemyPosition = enemy->GetPosition();
+        attackEvent.damage = enemy->GetData().attackPower;
+
+        attackEvents_.push_back(
+            std::move(attackEvent)
+        );
     }
 
     // HPが0になった敵を更新後にまとめて破棄する。
@@ -103,5 +127,8 @@ void EnemyManager::Draw() {
 }
 
 void EnemyManager::Clear() {
+
+    // 管理中の敵と、未処理の攻撃イベントを破棄する。
     enemies_.clear();
+    attackEvents_.clear();
 }
