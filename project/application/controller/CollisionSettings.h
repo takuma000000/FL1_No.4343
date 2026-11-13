@@ -1,4 +1,5 @@
 #pragma once
+#include "CollisionCategory.h"
 #include "Object3d.h"
 #include "player.h"
 
@@ -37,4 +38,13 @@ private:
 	/// 当たり判定を行うCategoryの組み合わせを登録します。
 	/// </summary>
 	void RegisterCollisionPairs();
+
+	/// <summary>
+	/// 指定した2種類の当たり判定を有効にします。
+	/// 順番を入れ替えて追加登録する必要はありません。
+	/// </summary>
+	void RegisterPair(
+		TKM::CollisionCategory first,
+		TKM::CollisionCategory second
+	);
 };

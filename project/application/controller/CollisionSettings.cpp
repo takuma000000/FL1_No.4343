@@ -54,14 +54,27 @@ void CollisionSettings::RegisterColliders(
 }
 
 void CollisionSettings::RegisterCollisionPairs() {
-	auto* collisionManager =
-		CollisionManager::GetInstance();
+	// CollisionCategory::を省略して書けるようにする
+	using enum TKM::CollisionCategory;
 
-	// PlayerとPlaneの当たり判定を有効にする
-	// 逆方向を追加で登録する必要はない。
-	collisionManager->AddCollisionPair(
-		CollisionCategory::Player,
-		CollisionCategory::Plane
+	//======================================================================
+	// 当たり判定を行う組み合わせ
+	//======================================================================
+
+	// PlayerとPlane
+	RegisterPair(
+		Player,
+		Plane
+	);
+}
+
+void CollisionSettings::RegisterPair(
+	TKM::CollisionCategory first,
+	TKM::CollisionCategory second
+) {
+	CollisionManager::GetInstance()->AddCollisionPair(
+		first,
+		second
 	);
 }
 
