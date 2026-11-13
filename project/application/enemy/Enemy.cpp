@@ -26,6 +26,9 @@ void Enemy::Initialize(
     position_ = position;
     currentHp_ = data_.maxHp;
 
+    // 生成直後は攻撃できる状態にする。
+    attackCooldownTimer_ = 0.0f;
+
     // Object3dは描画だけを担当し、ゲームの値はEnemy側で管理する。
     object3d_ = std::make_unique<TKM::Object3d>();
     object3d_->Initialize(object3dCommon, dxCommon);
@@ -41,6 +44,9 @@ void Enemy::Update(float deltaTime, const Vector3& targetPosition) {
     if (!IsAlive() || !object3d_) {
         return;
     }
+
+    // 次の攻撃までの待機時間を更新する
+    UpdateAttackCooldown(deltaTime);
 
     // ターゲットが索敵範囲内にいる場合だけ追跡する。
     if (IsWithinDetectionRange(targetPosition)) {
@@ -119,4 +125,18 @@ bool Enemy::IsWithinDetectionRange(const Vector3& targetPosition) const {
         data_.detectionRange * data_.detectionRange;
 
     return distanceSquared <= detectionRangeSquared;
+}
+
+void Enemy::UpdateAttackCooldown(float deltaTime) {
+
+    // すでに攻撃可能な場合は更新しない。
+    if (attackCooldownTimer_ <= 0.0f) {
+        return;
+    }
+
+    // 経過時間を差し引き、負の値にならないようにする。
+    attackCooldownTimer_ = (std::max)(
+        0.0f,
+        attackCooldownTimer_ - deltaTime
+        );
 }

@@ -76,6 +76,12 @@ private:
     /// <returns>索敵範囲内の場合はtrue</returns>
     bool IsWithinDetectionRange(const Vector3& targetPosition) const;
 
+    /// <summary>
+    /// 次の攻撃までの待機時間を更新する
+    /// </summary>
+    /// <param name="deltaTime">前フレームからの経過時間</param>
+    void UpdateAttackCooldown(float deltaTime);
+
 private:
     // 描画対象。Enemyが所有権を持つ。
     std::unique_ptr<TKM::Object3d> object3d_;
@@ -87,4 +93,8 @@ private:
     // ゲーム中に変化する値。
     Vector3 position_{ 0.0f, 0.0f, 0.0f };
     int currentHp_ = 0;
+
+    // 次の攻撃が可能になるまでの残り時間。
+    // 0以下の場合は攻撃可能。
+    float attackCooldownTimer_ = 0.0f;
 };
