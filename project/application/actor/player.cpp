@@ -60,6 +60,16 @@ void Player::Update() {
         object_->SetScale(size_);
         object_->Update();
     }
+
+    // 追従カメラが設定されていれば、遅れなしで即座に一定距離を保って追従させる
+    if (followCamera_) {
+        followCamera_->SetTranslate({
+            cameraOffset_.x,
+            cameraOffset_.y,
+            pos_.z + cameraOffset_.z
+            });
+    }
+
 }
 
 void Player::Draw(TKM::DirectXCommon* dxCommon) {
