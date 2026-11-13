@@ -60,12 +60,7 @@ void CollisionSettings::RegisterCollisionPairs() {
 	//======================================================================
 	// 当たり判定を行う組み合わせ
 	//======================================================================
-
-	// PlayerとPlane
-	RegisterPair(
-		Player,
-		Plane
-	);
+	RegisterPair(Player, Plane); // PlayerとPlane
 }
 
 void CollisionSettings::RegisterPair(
