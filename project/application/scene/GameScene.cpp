@@ -21,6 +21,7 @@ void GameScene::Initialize() {
 	collisionSettings_.Initialize(sphere_.get(), player_.get());
 	objectSettings_.Initialize(sphere_.get(), player_.get());
 	InitializeSprite();
+	spriteSettings_.Initialize(logoSprite_.get());
 	InitializeCamera();
 
 	/// ──────────────── パーティクル初期化 ───────────────
@@ -33,6 +34,9 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Finalize() {
+	/// ──────────────── スプライト設定終了 ───────────────
+	spriteSettings_.Finalize();
+
 	/// ──────────────── 当たり判定設定終了 ───────────────
 	collisionSettings_.Finalize();
 
@@ -60,6 +64,11 @@ void GameScene::Update() {
 	}
 	if (player_) {
 		player_->Update();
+	}
+
+	/// ──────────────── スプライト更新 ───────────────
+	if (logoSprite_) {
+		logoSprite_->Update();
 	}
 
 	/// ──────────────── ライト更新 ───────────────
@@ -103,6 +112,11 @@ void GameScene::Draw3D() {
 void GameScene::DrawSprite() {
 	/// ──────────────── 2D描画共通設定 ───────────────
 	TKM::SpriteCommon::GetInstance()->DrawSetCommon();
+
+	/// ──────────────── TKMAXロゴ描画 ───────────────
+	if (logoSprite_) {
+		logoSprite_->Draw();
+	}
 }
 
 TKM::Camera* GameScene::UpdateActiveCamera() {
@@ -121,7 +135,27 @@ TKM::Camera* GameScene::UpdateActiveCamera() {
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 // スプライトを作成し、初期化する
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-void GameScene::InitializeSprite() {}
+void GameScene::InitializeSprite() {
+	// TKMAXロゴを生成する
+	logoSprite_ = std::make_unique<TKM::Sprite>();
+	logoSprite_->Initialize(
+		TKM::SpriteCommon::GetInstance(),
+		dxCommon_,
+		"./resources/texture/TKMAX_logo.png"
+	);
+
+	// 画像の中心を画面中央へ配置する
+	logoSprite_->SetAnchorPoint({ 0.5f, 0.5f });
+	logoSprite_->SetPosition({
+		static_cast<float>(TKM::WindowsAPI::GetClientWidth()) * 0.5f,
+		static_cast<float>(TKM::WindowsAPI::GetClientHeight()) * 0.5f
+	});
+
+	// 元画像と同じサイズで表示する
+	logoSprite_->SetAutoAdjustTextureSize(false);
+	logoSprite_->SetSize({ 459.0f, 287.0f });
+	logoSprite_->Update();
+}
 
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 // 3Dオブジェクトを作成し、初期化する
@@ -188,5 +222,8 @@ void GameScene::ImGuiDebug() {
 	}
 	// ──────────────── オブジェクト編集 ───────────────
 	objectSettings_.ImGuiDebug();
+
+	// ──────────────── スプライト編集 ───────────────
+	spriteSettings_.ImGuiDebug();
 #endif
 }

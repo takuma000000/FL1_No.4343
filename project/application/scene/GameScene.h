@@ -2,8 +2,10 @@
 #include "BaseScene.h"
 
 #include "Object3d.h"
+#include "Sprite.h"
 #include "ObjectSettings.h"
 #include "CollisionSettings.h"
+#include "SpriteSettings.h"
 
 #include <memory>
 
@@ -91,8 +93,14 @@ private:
 	std::unique_ptr<Player> player_ = nullptr;
 
 	//======================================================================
+	// 2Dスプライト
+	//======================================================================
+	std::unique_ptr<TKM::Sprite> logoSprite_ = nullptr; // TKMAXロゴ
+
+	//======================================================================
 	// オブジェクト設定
 	//======================================================================
 	ObjectSettings objectSettings_; // オブジェクトの保存・編集設定
 	CollisionSettings collisionSettings_; // オブジェクトの当たり判定設定
+	SpriteSettings spriteSettings_; // スプライトの保存・編集設定
 };

@@ -66,6 +66,7 @@ namespace TKM {
 		void Draw();
 		/// <summary>
 		/// ImGuiデバッグ表示。
+		/// 呼び出し側でImGui::BeginとImGui::Endを行います。
 		/// </summary>
 		void ImGuiDebug();
 

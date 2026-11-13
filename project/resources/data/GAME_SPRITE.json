@@ -1,0 +1,28 @@
+{
+    "sprites": {
+        "TKMAX Logo": {
+            "anchor": [
+                0.5,
+                0.5
+            ],
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "flipX": false,
+            "flipY": false,
+            "position": [
+                640.0,
+                360.0
+            ],
+            "rotation": 0.0,
+            "size": [
+                459.0,
+                287.0
+            ]
+        }
+    },
+    "version": 1
+}

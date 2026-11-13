@@ -122,6 +122,15 @@ namespace TKM {
 	}
 
 	void Sprite::Update() {
+		// テクスチャサイズへ自動調整する場合は、行列計算より先に反映する
+		if (autoAdjustTextureSize_) {
+			AdjustTextureSize();
+		}
+
+		// 最新の編集値を行列計算より先にTransformへ反映する
+		transformSprite_.translate_ = { position_.x,position_.y,0.0f };
+		transformSprite_.rotate_ = { 0.0f,0.0f,rotation_ };
+		transformSprite_.scale_ = { size_.x,size_.y,1.0f };
 
 		float left = 0.0f - anchorPoint_.x; // アンカーポイントを考慮した左端座標
 		float right = 1.0f - anchorPoint_.x; // アンカーポイントを考慮した右端座標
@@ -180,14 +189,6 @@ namespace TKM {
 		transformationMatrixData_->wvp = MyMath::Multiply(worldMatrixSprite, MyMath::Multiply(viewMatrixSprite, projectionMatrixSprite)); // WVP行列の計算
 		transformationMatrixData_->World = worldMatrixSprite; // ワールド行列の設定
 
-		//反映処理
-		transformSprite_.translate_ = { position_.x,position_.y,0.0f };
-		transformSprite_.rotate_ = { 0.0f,0.0f,rotation_ };
-		transformSprite_.scale_ = { size_.x,size_.y,1.0f };
-
-		if (autoAdjustTextureSize_) {
-			AdjustTextureSize();
-		}
 	}
 
 	void Sprite::Draw() {
@@ -224,11 +225,48 @@ namespace TKM {
 
 	void Sprite::ImGuiDebug() {
 #ifdef USE_IMGUI
-		// ImGui ウィジェット: スプライトの座標操作
-		ImGui::Begin("Sprite");
-		// スプライトの座標を操作するスライダー
-		ImGui::SliderFloat2("Sprite Position", &position_.x, 0.0f, 500.0f, "%.1f");
-		ImGui::End();
+		// 位置
+		ImGui::DragFloat2(
+			"位置",
+			&position_.x,
+			1.0f
+		);
+
+		// 回転
+		ImGui::DragFloat(
+			"回転",
+			&rotation_,
+			0.01f
+		);
+
+		// サイズ
+		ImGui::DragFloat2(
+			"サイズ",
+			&size_.x,
+			1.0f,
+			1.0f,
+			4096.0f,
+			"%.1f"
+		);
+
+		// 色
+		ImGui::ColorEdit4(
+			"色",
+			&materialData_->color.x
+		);
+
+		// アンカーポイント
+		ImGui::DragFloat2(
+			"アンカー",
+			&anchorPoint_.x,
+			0.01f,
+			0.0f,
+			1.0f
+		);
+
+		// 反転
+		ImGui::Checkbox("左右反転", &isFlipX_);
+		ImGui::Checkbox("上下反転", &isFlipY_);
 #endif
 	}
 

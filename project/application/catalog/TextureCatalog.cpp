@@ -8,6 +8,7 @@ void TextureCatalog::LoadTextureCatalogs() {
 
 	// ファイル名だけ並べる（ベースパスは共通化）
 	static constexpr const char* kFiles[] = {
+		"TKMAX_logo.png",
 		"uvChecker.png",
 		"circle.png",
 		"circle2.png",

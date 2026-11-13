@@ -165,6 +165,9 @@
     <ClCompile Include="engine\3d\collision\AABBCollider.cpp" />
     <ClCompile Include="engine\3d\collision\CollisionManager.cpp" />
 	<ClCompile Include="application\controller\CollisionSettings.cpp" />
+	<ClCompile Include="application\controller\SpriteSettings.cpp" />
+	<ClCompile Include="engine\imgui\SpriteEditor.cpp" />
+	<ClCompile Include="engine\io\SpriteSave.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\2d\Sprite.h">
@@ -369,6 +372,9 @@
     <ClInclude Include="engine\3d\collision\CollisionManager.h" />
 	<ClInclude Include="engine\3d\collision\CollisionCategory.h" />
 	<ClInclude Include="application\controller\CollisionSettings.h" />
+	<ClInclude Include="application\controller\SpriteSettings.h" />
+	<ClInclude Include="engine\imgui\SpriteEditor.h" />
+	<ClInclude Include="engine\io\SpriteSave.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

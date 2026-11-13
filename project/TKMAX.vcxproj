@@ -113,6 +113,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+	<ClCompile Include="application\controller\SpriteSettings.cpp" />
+	<ClCompile Include="engine\imgui\SpriteEditor.cpp" />
+	<ClCompile Include="engine\io\SpriteSave.cpp" />
 	<ClCompile Include="application\controller\CollisionSettings.cpp" />
     <ClCompile Include="engine\3d\collision\CollisionManager.cpp" />
     <ClCompile Include="engine\3d\collision\AABBCollider.cpp" />
@@ -205,6 +208,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\actor\player.cpp" />
   </ItemGroup>
   <ItemGroup>
+	<ClInclude Include="application\controller\SpriteSettings.h" />
+	<ClInclude Include="engine\imgui\SpriteEditor.h" />
+	<ClInclude Include="engine\io\SpriteSave.h" />
 	<ClInclude Include="application\controller\CollisionSettings.h" />
 	<ClInclude Include="engine\3d\collision\CollisionCategory.h" />
     <ClInclude Include="engine\3d\collision\CollisionManager.h" />
