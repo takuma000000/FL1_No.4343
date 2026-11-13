@@ -39,18 +39,19 @@ void Player::SetCamera(TKM::Camera* camera) {
 
 void Player::Update() {
 
-    // 自動で奥（+Z方向）へ移動
-    pos_.z += forwardSpeed_;
-
     TKM::Input* input = TKM::Input::GetInstance();
     if (input != nullptr) {
         // A / D キー、または 左右矢印キーで X軸移動
-        if (input->PushKey(DIK_A) || input->PushKey(DIK_LEFT)) { pos_.x -= moveSpeed_; }
-        if (input->PushKey(DIK_D) || input->PushKey(DIK_RIGHT)) { pos_.x += moveSpeed_; }
+        if (input->PushKey(DIK_A)) { pos_.x -= moveSpeed_; }
+        if (input->PushKey(DIK_D) ) { pos_.x += moveSpeed_; }
 
         // W / S キー、または 上下矢印キーで Z軸（前後）移動
-        if (input->PushKey(DIK_W) || input->PushKey(DIK_UP)) { pos_.y += moveSpeed_; }
-        if (input->PushKey(DIK_S) || input->PushKey(DIK_DOWN)) { pos_.y -= moveSpeed_; }
+        if (input->PushKey(DIK_W)) { pos_.y += moveSpeed_; }
+        if (input->PushKey(DIK_S)) { pos_.y -= moveSpeed_; }
+
+        if (input->PushKey(DIK_UP)) { pos_.z += moveSpeed_; }
+        if (input->PushKey(DIK_DOWN)) { pos_.z -= moveSpeed_; }
+
     }
 
     // 位置・回転・スケールの最新値を 3D オブジェクトへセットして行列更新
