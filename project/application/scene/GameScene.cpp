@@ -21,7 +21,10 @@ void GameScene::Initialize() {
 	collisionSettings_.Initialize(sphere_.get(), player_.get());
 	objectSettings_.Initialize(sphere_.get(), player_.get());
 	InitializeSprite();
-	spriteSettings_.Initialize(logoSprite_.get());
+	spriteSettings_.Initialize(
+		logoSprite_.get(),
+		uvCheckerSprite_.get()
+	);
 	InitializeCamera();
 
 	/// ──────────────── パーティクル初期化 ───────────────

@@ -13,7 +13,10 @@ public:
 	/// <summary>
 	/// スプライトの保存・編集設定を初期化します。
 	/// </summary>
-	void Initialize(TKM::Sprite* logoSprite);
+	void Initialize(
+		TKM::Sprite* logoSprite,
+		TKM::Sprite* uvCheckerSprite
+	);
 
 	/// <summary>
 	/// スプライトの保存・編集設定を終了します。
