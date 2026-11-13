@@ -1,6 +1,7 @@
 #define NOMINMAX
 #include "Sprite.h"
 #include <algorithm>
+#include <filesystem>
 
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -9,9 +10,11 @@
 namespace TKM {
 	Sprite::Sprite() {
 		++activeCount_; //アクティブスプライト数をインクリメント
+		activeSprites_.push_back(this); // 全スプライトの自動編集用一覧へ登録
 	}
 
 	Sprite::~Sprite() {
+		std::erase(activeSprites_, this); // 自動編集用一覧から登録解除
 		--activeCount_; //アクティブスプライト数をデクリメント
 	}
 
@@ -68,6 +71,31 @@ namespace TKM {
 		this->spriteCommon_ = spriteCommon;
 		dxCommon_ = dxCommon;
 		this->textureFilePath_ = textureFilePath;
+
+		// テクスチャ名を基準に、エディター用の識別名を自動生成する
+		const std::string baseName =
+			std::filesystem::path(textureFilePath).filename().string();
+		editorName_ = baseName.empty() ? "Sprite" : baseName;
+
+		const std::string nameWithoutNumber = editorName_;
+		int duplicateNumber = 2;
+		const auto isNameUsed = [this](const std::string& name) {
+			return std::any_of(
+				activeSprites_.begin(),
+				activeSprites_.end(),
+				[this, &name](const Sprite* sprite) {
+					return sprite
+						&& sprite != this
+						&& sprite->editorName_ == name;
+				}
+			);
+		};
+
+		while (isNameUsed(editorName_)) {
+			editorName_ = nameWithoutNumber
+				+ " #" + std::to_string(duplicateNumber);
+			++duplicateNumber;
+		}
 
 		//VertexResourceを作る
 		vertexResource_ = dxCommon_->CreateBufferResource(sizeof(VertexData) * 4);

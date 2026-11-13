@@ -6,6 +6,8 @@
 #include "BaseScene.h"
 #include "Transform.h"
 
+#include <vector>
+
 class SpriteCommon;
 class BaseScene;
 
@@ -126,6 +128,16 @@ namespace TKM {
 		/// </summary>
 		/// <returns></returns>
 		static int GetActiveCount() { return activeCount_; }
+		/// <summary>
+		/// 現在存在している全スプライトを取得します。
+		/// </summary>
+		static const std::vector<Sprite*>& GetActiveSprites() {
+			return activeSprites_;
+		}
+		/// <summary>
+		/// エディター上で使用する識別名を取得します。
+		/// </summary>
+		const std::string& GetEditorName() const { return editorName_; }
 		/// <summary>
 		/// 親シーンの取得。
 		/// </summary>
@@ -283,6 +295,8 @@ namespace TKM {
 		// 内部状態
 		//======================================================================
 		inline static int activeCount_ = 0; // アクティブスプライト数
+		inline static std::vector<Sprite*> activeSprites_; // 現在存在するスプライト一覧
+		std::string editorName_; // エディターと保存データで使用する識別名
 		//======================================================================
 		// 内部処理
 		//======================================================================
