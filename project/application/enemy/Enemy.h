@@ -51,16 +51,67 @@ public:
     /// </summary>
     void TakeDamage(int damage);
 
-    // Getter ====================================================
+    //============================================================
+    // Getter
+    //============================================================
+
+    /// <summary>
+    /// 敵の種類を取得する。
+    /// </summary>
+    /// <returns>敵の種類</returns>
     EnemyType GetType() const { return type_; }
+
+    /// <summary>
+    /// 敵の設定データを取得する。
+    /// </summary>
+    /// <returns>JSONから読み込まれた敵の設定データ</returns>
     const EnemyData& GetData() const { return data_; }
+
+    /// <summary>
+    /// 敵の現在座標を取得する。
+    /// </summary>
+    /// <returns>敵の現在座標</returns>
     const Vector3& GetPosition() const { return position_; }
+
+    /// <summary>
+    /// 敵の現在HPを取得する。
+    /// </summary>
+    /// <returns>敵の現在HP</returns>
     int GetCurrentHp() const { return currentHp_; }
+
+    /// <summary>
+    /// 敵の当たり判定半径を取得する。
+    /// </summary>
+    /// <returns>敵の当たり判定半径</returns>
     float GetCollisionRadius() const { return data_.collisionRadius; }
+
+    /// <summary>
+    /// 敵が生存しているか判定する。
+    /// </summary>
+    /// <returns>HPが1以上の場合はtrue</returns>
     bool IsAlive() const { return currentHp_ > 0; }
+
+    /// <summary>
+    /// ターゲットが攻撃範囲内にいるか判定する。
+    /// </summary>
+    /// <param name="targetPosition">ターゲットの座標</param>
+    /// <returns>攻撃範囲内の場合はtrue</returns>
     bool IsWithinAttackRange(const Vector3& targetPosition) const;
 
-    // Setter ====================================================
+    /// <summary>
+    /// このフレームに攻撃が発生したか取得する。
+    /// </summary>
+    /// <returns>攻撃が発生した場合はtrue</returns>
+    bool DidAttackThisFrame() const { return didAttackThisFrame_; }
+
+    //============================================================
+    // Setter
+    //============================================================
+
+    /// <summary>
+    /// 敵の座標を設定する。
+    /// </summary>
+    /// <param name="position">設定する座標</param>
     void SetPosition(const Vector3& position) { position_ = position; }
 
 private:
@@ -82,6 +133,12 @@ private:
     /// <param name="deltaTime">前フレームからの経過時間</param>
     void UpdateAttackCooldown(float deltaTime);
 
+    /// <summary>
+    /// 攻撃可能な状態であれば、攻撃を開始する。
+    /// </summary>
+    /// <param name="targetPosition">ターゲットの座標</param>
+    void TryAttack(const Vector3& targetPosition);
+
 private:
     // 描画対象。Enemyが所有権を持つ。
     std::unique_ptr<TKM::Object3d> object3d_;
@@ -97,4 +154,8 @@ private:
     // 次の攻撃が可能になるまでの残り時間。
     // 0以下の場合は攻撃可能。
     float attackCooldownTimer_ = 0.0f;
+
+    // 攻撃を行ったかどうかのフラグ。
+    // 攻撃を行った場合は、次のフレームでfalseに戻す。
+    bool didAttackThisFrame_ = false;
 };

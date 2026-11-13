@@ -29,6 +29,8 @@ void Enemy::Initialize(
     // 生成直後は攻撃できる状態にする。
     attackCooldownTimer_ = 0.0f;
 
+    didAttackThisFrame_ = false;
+
     // Object3dは描画だけを担当し、ゲームの値はEnemy側で管理する。
     object3d_ = std::make_unique<TKM::Object3d>();
     object3d_->Initialize(object3dCommon, dxCommon);
@@ -45,11 +47,18 @@ void Enemy::Update(float deltaTime, const Vector3& targetPosition) {
         return;
     }
 
+    // 攻撃を行ったかどうかのフラグをリセットする。
+    didAttackThisFrame_ = false;
+
     // 次の攻撃までの待機時間を更新する
     UpdateAttackCooldown(deltaTime);
 
     // ターゲットが索敵範囲内にいる場合だけ追跡する。
     if (IsWithinDetectionRange(targetPosition)) {
+        // 攻撃可能な状態であれば、攻撃を開始する。
+        TryAttack(targetPosition);
+
+        // 攻撃可能な距離まで接近していない場合は、移動する。
         UpdateMovement(deltaTime, targetPosition);
     }
 
@@ -139,4 +148,24 @@ void Enemy::UpdateAttackCooldown(float deltaTime) {
         0.0f,
         attackCooldownTimer_ - deltaTime
         );
+}
+
+void Enemy::TryAttack(const Vector3& targetPosition) {
+
+    // 攻撃範囲外では攻撃しない。
+    if (!IsWithinAttackRange(targetPosition)) {
+        return;
+    }
+
+    // クールタイム中は攻撃しない。
+    if (attackCooldownTimer_ > 0.0f) {
+        return;
+    }
+
+    // このフレームに攻撃が発生したことを記録する。
+    didAttackThisFrame_ = true;
+
+    // JSONから読み込んだ攻撃間隔を設定し、
+    // 次の攻撃まで待機させる。
+    attackCooldownTimer_ = data_.attackInterval;
 }
