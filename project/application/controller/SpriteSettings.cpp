@@ -3,7 +3,7 @@
 void SpriteSettings::Initialize(TKM::Sprite* logoSprite) {
 	// GAMEシーンのスプライト保存先を設定する
 	spriteSave_.SetSettingsPath(
-		"resources/data/GAME_SPRITE.json"
+		"resources/data/game_sprite.json"
 	);
 
 	//======================================================================
