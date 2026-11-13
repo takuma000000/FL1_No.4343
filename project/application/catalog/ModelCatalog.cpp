@@ -9,6 +9,7 @@ void ModelCatalog::LoadModelCatalogs(TKM::DirectXCommon* dxCommon) {
 		"sphere.obj",
 		"plane.obj",
 		"player/player.obj",
+		"playerBullet/playerBullet.obj",
 	};
 
 	auto* mm = TKM::ModelManager::GetInstance();
