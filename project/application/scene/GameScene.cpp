@@ -54,16 +54,19 @@ void GameScene::Finalize() {
 
 void GameScene::Update() {
 
+	/// ──────────────── 3Dオブジェクト更新 ───────────────
+	// 先にプレイヤーを更新し、同時に追従カメラの座標を確定させる
+	if (player_) {
+		player_->Update();
+	}
+
 	/// ──────────────── カメラ更新 ───────────────
+	// 確定したカメラ座標をもとに同じフレーム内で行列更新・適用（1フレームの遅れも防止）
 	UpdateActiveCamera();
 
-	/// ──────────────── 3Dオブジェクト更新 ───────────────
 	// テスト用Sphere更新
 	if (sphere_) {
 		sphere_->Update();
-	}
-	if (player_) {
-		player_->Update();
 	}
 
 	/// ──────────────── スプライト更新 ───────────────
@@ -79,11 +82,8 @@ void GameScene::Update() {
 	TKM::ParticleManager::GetInstance()->Update();
 
 #ifdef USE_IMGUI
-
 	ImGuiDebug();
-
-#endif // 
-
+#endif
 }
 
 void GameScene::Draw() {
@@ -222,19 +222,23 @@ void GameScene::InitializeCamera() {
 	TKM::CameraManager::GetInstance()->Initialize(mainRot, mainPos, debugTarget);
 
 	// メインカメラの設定を読み込み、更新する
-	if (TKM::CameraManager::GetInstance()->GetMainCamera()) {
-		TKM::CameraManager::GetInstance()->GetMainCamera()->SetSettingsPath("resources/data/mainCamera.json");
-		TKM::CameraManager::GetInstance()->GetMainCamera()->LoadSettings();
-		TKM::CameraManager::GetInstance()->GetMainCamera()->Update();
+	auto mainCamera = TKM::CameraManager::GetInstance()->GetMainCamera();
+	if (mainCamera) {
+		mainCamera->SetSettingsPath("resources/data/mainCamera.json");
+		mainCamera->LoadSettings();
+		mainCamera->Update();
 	}
 
 	/// ───────────────── Objectカメラ設定 ───────────────
 	if (sphere_) {
-		sphere_->SetCamera(TKM::CameraManager::GetInstance()->GetMainCamera());
+		sphere_->SetCamera(mainCamera);
 	}
 
 	if (player_) {
-		player_->SetCamera(TKM::CameraManager::GetInstance()->GetMainCamera());
+		player_->SetCamera(mainCamera);
+		if (mainCamera) {
+			player_->SetFollowCamera(mainCamera, mainCamera->GetTranslate());
+		}
 	}
 }
 
