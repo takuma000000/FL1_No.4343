@@ -36,7 +36,9 @@ namespace TKM {
 		void Clear();
 
 		bool SaveSettings();
+		bool SaveSettings(const std::string& id);
 		bool LoadSettings();
+		bool LoadSettings(const std::string& id);
 
 		void SetSettingsPath(const std::string& filePath) {
 			settingsPath_ = filePath;

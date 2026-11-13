@@ -177,6 +177,109 @@ namespace TKM {
 		}
 	}
 
+	bool ObjectSave::SaveSettings(const std::string& id) {
+		try {
+			if (settingsPath_.empty()) {
+				throw std::runtime_error("Settings path is not set");
+			}
+
+			const auto entryIterator = entries_.find(id);
+			if (entryIterator == entries_.end()) {
+				throw std::runtime_error("Object is not registered: " + id);
+			}
+
+			nlohmann::json data = {
+				{ "version", 1 },
+				{ "objects", nlohmann::json::object() }
+			};
+
+			// 既存データを読み込み、選択対象以外の保存値を維持する
+			if (std::filesystem::exists(settingsPath_)) {
+				std::ifstream inputFile(settingsPath_);
+				if (!inputFile) {
+					throw std::runtime_error("Cannot open settings file");
+				}
+
+				inputFile >> data;
+
+				if (data.at("version").get<int>() != 1) {
+					throw std::runtime_error("Unsupported settings version");
+				}
+
+				if (!data.at("objects").is_object()) {
+					throw std::runtime_error("Objects must be a JSON object");
+				}
+			}
+
+			const Values values = entryIterator->second.getter_();
+			ValidateObjectValues(values);
+
+			nlohmann::json objectData = {
+				{ "position", {
+					values.position_.x,
+					values.position_.y,
+					values.position_.z
+				}},
+				{ "rotation", {
+					values.rotation_.x,
+					values.rotation_.y,
+					values.rotation_.z
+				}},
+				{ "scale", {
+					values.scale_.x,
+					values.scale_.y,
+					values.scale_.z
+				}}
+			};
+
+			if (values.visible_.has_value()) {
+				objectData["visible"] = values.visible_.value();
+			}
+
+			data["objects"][id] = std::move(objectData);
+
+			const std::filesystem::path path(settingsPath_);
+			if (!path.parent_path().empty()) {
+				std::filesystem::create_directories(path.parent_path());
+			}
+
+			auto temporaryPath = path;
+			temporaryPath += ".tmp";
+
+			std::ofstream file(temporaryPath, std::ios::trunc);
+			if (!file) {
+				throw std::runtime_error("Cannot open temporary file");
+			}
+
+			file << data.dump(4);
+			file.close();
+
+			if (!file) {
+				throw std::runtime_error("Failed to write settings");
+			}
+
+			if (!MoveFileExW(
+				temporaryPath.c_str(),
+				path.c_str(),
+				MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH
+			)) {
+				throw std::runtime_error(
+					"Cannot replace settings file. Windows error: "
+					+ std::to_string(GetLastError())
+				);
+			}
+
+			settingsMessage_ =
+				"選択中のオブジェクトを保存しました: " + id;
+			return true;
+		}
+		catch (const std::exception& error) {
+			settingsMessage_ =
+				"保存失敗: " + id + "\n" + error.what();
+			return false;
+		}
+	}
+
 	bool ObjectSave::LoadSettings() {
 		try {
 			if (settingsPath_.empty()) {
@@ -266,6 +369,77 @@ namespace TKM {
 		catch (const std::exception& error) {
 			settingsMessage_ =
 				"読込失敗: " + settingsPath_ + "\n" + error.what();
+			return false;
+		}
+	}
+
+	bool ObjectSave::LoadSettings(const std::string& id) {
+		try {
+			if (settingsPath_.empty()) {
+				throw std::runtime_error("Settings path is not set");
+			}
+
+			const auto entryIterator = entries_.find(id);
+			if (entryIterator == entries_.end()) {
+				throw std::runtime_error("Object is not registered: " + id);
+			}
+
+			if (!std::filesystem::exists(settingsPath_)) {
+				throw std::runtime_error("Settings file does not exist");
+			}
+
+			std::ifstream file(settingsPath_);
+			if (!file) {
+				throw std::runtime_error("Cannot open settings file");
+			}
+
+			nlohmann::json data;
+			file >> data;
+
+			if (data.at("version").get<int>() != 1) {
+				throw std::runtime_error("Unsupported settings version");
+			}
+
+			const nlohmann::json& objects = data.at("objects");
+			if (!objects.is_object()) {
+				throw std::runtime_error("Objects must be a JSON object");
+			}
+
+			if (!objects.contains(id)) {
+				throw std::runtime_error("Saved object was not found: " + id);
+			}
+
+			const nlohmann::json& objectData = objects.at(id);
+			if (!objectData.is_object()) {
+				throw std::runtime_error("Invalid object data: " + id);
+			}
+
+			Values values{};
+			values.position_ =
+				ReadObjectVector3(objectData.at("position"));
+			values.rotation_ =
+				ReadObjectVector3(objectData.at("rotation"));
+			values.scale_ =
+				ReadObjectVector3(objectData.at("scale"));
+
+			if (objectData.contains("visible")) {
+				if (!objectData.at("visible").is_boolean()) {
+					throw std::runtime_error("Invalid visible value: " + id);
+				}
+
+				values.visible_ = objectData.at("visible").get<bool>();
+			}
+
+			ValidateObjectValues(values);
+			entryIterator->second.setter_(values);
+
+			settingsMessage_ =
+				"選択中のオブジェクトを保存状態に戻しました: " + id;
+			return true;
+		}
+		catch (const std::exception& error) {
+			settingsMessage_ =
+				"読込失敗: " + id + "\n" + error.what();
 			return false;
 		}
 	}

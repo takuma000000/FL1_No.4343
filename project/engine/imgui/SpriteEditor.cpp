@@ -110,6 +110,24 @@ namespace TKM {
 			ImGui::EndCombo();
 		}
 
+		// ──────────────── 選択対象だけを保存・復元 ───────────────
+		if (spriteSave_
+			&& selectedIndex_ > 0
+			&& selectedIndex_ <= static_cast<int>(entries_.size())) {
+			const std::string& selectedName =
+				entries_[selectedIndex_ - 1].name_;
+
+			if (ImGui::Button("選択対象を保存")) {
+				spriteSave_->SaveSettings(selectedName);
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("選択対象を元に戻す")) {
+				spriteSave_->LoadSettings(selectedName);
+			}
+		}
+
 		ImGui::Separator();
 
 		// ──────────────── 選択対象の編集項目 ───────────────

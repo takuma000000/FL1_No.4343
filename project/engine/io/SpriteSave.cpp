@@ -164,6 +164,103 @@ namespace TKM {
 		}
 	}
 
+	bool SpriteSave::SaveSettings(const std::string& id) {
+		try {
+			if (settingsPath_.empty()) {
+				throw std::runtime_error("Settings path is not set");
+			}
+
+			const auto entryIterator = entries_.find(id);
+			if (entryIterator == entries_.end()) {
+				throw std::runtime_error("Sprite is not registered: " + id);
+			}
+
+			nlohmann::json data = {
+				{ "version", 1 },
+				{ "sprites", nlohmann::json::object() }
+			};
+
+			// 既存データを読み込み、選択対象以外の保存値を維持する
+			if (std::filesystem::exists(settingsPath_)) {
+				std::ifstream inputFile(settingsPath_);
+				if (!inputFile) {
+					throw std::runtime_error("Cannot open settings file");
+				}
+
+				inputFile >> data;
+
+				if (data.at("version").get<int>() != 1) {
+					throw std::runtime_error("Unsupported settings version");
+				}
+
+				if (!data.at("sprites").is_object()) {
+					throw std::runtime_error("Sprites must be a JSON object");
+				}
+			}
+
+			const Values values = entryIterator->second.getter_();
+			ValidateValues(values);
+
+			data["sprites"][id] = {
+				{ "position", { values.position_.x, values.position_.y } },
+				{ "rotation", values.rotation_ },
+				{ "size", { values.size_.x, values.size_.y } },
+				{ "color", {
+					values.color_.x,
+					values.color_.y,
+					values.color_.z,
+					values.color_.w
+				} },
+				{ "anchor", {
+					values.anchorPoint_.x,
+					values.anchorPoint_.y
+				} },
+				{ "flipX", values.isFlipX_ },
+				{ "flipY", values.isFlipY_ }
+			};
+
+			const std::filesystem::path path(settingsPath_);
+			if (!path.parent_path().empty()) {
+				std::filesystem::create_directories(path.parent_path());
+			}
+
+			auto temporaryPath = path;
+			temporaryPath += ".tmp";
+
+			std::ofstream file(temporaryPath, std::ios::trunc);
+			if (!file) {
+				throw std::runtime_error("Cannot open temporary file");
+			}
+
+			file << data.dump(4);
+			file.close();
+
+			if (!file) {
+				throw std::runtime_error("Failed to write settings");
+			}
+
+			if (!MoveFileExW(
+				temporaryPath.c_str(),
+				path.c_str(),
+				MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH
+			)) {
+				throw std::runtime_error(
+					"Cannot replace settings file. Windows error: "
+					+ std::to_string(GetLastError())
+				);
+			}
+
+			settingsMessage_ =
+				"選択中のスプライトを保存しました: " + id;
+			return true;
+		}
+		catch (const std::exception& error) {
+			settingsMessage_ =
+				"保存失敗: " + id + "\n" + error.what();
+			return false;
+		}
+	}
+
 	bool SpriteSave::LoadSettings() {
 		try {
 			if (settingsPath_.empty()) {
@@ -224,6 +321,66 @@ namespace TKM {
 		catch (const std::exception& error) {
 			settingsMessage_ =
 				"読込失敗: " + settingsPath_ + "\n" + error.what();
+			return false;
+		}
+	}
+
+	bool SpriteSave::LoadSettings(const std::string& id) {
+		try {
+			if (settingsPath_.empty()) {
+				throw std::runtime_error("Settings path is not set");
+			}
+
+			const auto entryIterator = entries_.find(id);
+			if (entryIterator == entries_.end()) {
+				throw std::runtime_error("Sprite is not registered: " + id);
+			}
+
+			if (!std::filesystem::exists(settingsPath_)) {
+				throw std::runtime_error("Settings file does not exist");
+			}
+
+			std::ifstream file(settingsPath_);
+			if (!file) {
+				throw std::runtime_error("Cannot open settings file");
+			}
+
+			nlohmann::json data;
+			file >> data;
+
+			if (data.at("version").get<int>() != 1) {
+				throw std::runtime_error("Unsupported settings version");
+			}
+
+			const nlohmann::json& sprites = data.at("sprites");
+			if (!sprites.is_object()) {
+				throw std::runtime_error("Sprites must be a JSON object");
+			}
+
+			if (!sprites.contains(id)) {
+				throw std::runtime_error("Saved sprite was not found: " + id);
+			}
+
+			const nlohmann::json& spriteData = sprites.at(id);
+			Values values{};
+			values.position_ = ReadVector2(spriteData.at("position"));
+			values.rotation_ = spriteData.at("rotation").get<float>();
+			values.size_ = ReadVector2(spriteData.at("size"));
+			values.color_ = ReadVector4(spriteData.at("color"));
+			values.anchorPoint_ = ReadVector2(spriteData.at("anchor"));
+			values.isFlipX_ = spriteData.at("flipX").get<bool>();
+			values.isFlipY_ = spriteData.at("flipY").get<bool>();
+
+			ValidateValues(values);
+			entryIterator->second.setter_(values);
+
+			settingsMessage_ =
+				"選択中のスプライトを保存状態に戻しました: " + id;
+			return true;
+		}
+		catch (const std::exception& error) {
+			settingsMessage_ =
+				"読込失敗: " + id + "\n" + error.what();
 			return false;
 		}
 	}
