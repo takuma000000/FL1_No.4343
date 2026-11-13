@@ -52,6 +52,10 @@ public:
 	/// </summary>
 	void DrawSprite() override;
 	/// <summary>
+	/// ゲーム本編シーンの背景を描画します。
+	/// </summary>
+	void DrawBack() override;
+	/// <summary>
 	/// ImGuiでデバッグ表示を行います。
 	/// </summary>
 	void ImGuiDebug();

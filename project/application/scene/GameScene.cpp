@@ -87,6 +87,7 @@ void GameScene::Update() {
 }
 
 void GameScene::Draw() {
+	DrawBack();
 	Draw3D();
 	DrawSprite();
 }
@@ -112,9 +113,16 @@ void GameScene::DrawSprite() {
 	/// ──────────────── 2D描画共通設定 ───────────────
 	TKM::SpriteCommon::GetInstance()->DrawSetCommon();
 
-	/// ──────────────── TKMAXロゴ描画 ───────────────
-	logoSprite_->Draw();      // TKMAXロゴ描画
+	/// ──────────────── 前面スプライト描画 ───────────────
 	uvCheckerSprite_->Draw(); // UVチェッカー描画
+}
+
+void GameScene::DrawBack() {
+	/// ──────────────── 背景描画共通設定 ───────────────
+	TKM::SpriteCommon::GetInstance()->DrawSetCommon();
+
+	/// ──────────────── TKMAXロゴ背景描画 ───────────────
+	logoSprite_->Draw();
 }
 
 TKM::Camera* GameScene::UpdateActiveCamera() {
