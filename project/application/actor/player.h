@@ -44,6 +44,9 @@ public:
     float GetMoveSpeed() const { return moveSpeed_; }
     void SetMoveSpeed(float speed) { moveSpeed_ = speed; }
 
+    float GetForwardSpeed() const { return forwardSpeed_; }
+    void SetForwardSpeed(float speed) { forwardSpeed_ = speed; }
+
 private:
     Vector3 pos_;
     Vector3 rotation_;
@@ -53,4 +56,7 @@ private:
     bool isVisible_ = true;
 
     std::unique_ptr<TKM::Object3d> object_ = nullptr;
+
+    float forwardSpeed_ = 0.3f;
+
 };

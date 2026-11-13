@@ -39,6 +39,9 @@ void Player::SetCamera(TKM::Camera* camera) {
 
 void Player::Update() {
 
+    // 自動で奥（+Z方向）へ移動
+    pos_.z += forwardSpeed_;
+
     TKM::Input* input = TKM::Input::GetInstance();
     if (input != nullptr) {
         // A / D キー、または 左右矢印キーで X軸移動
