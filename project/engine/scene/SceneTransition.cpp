@@ -1,3 +1,5 @@
+#define NOMINMAX
+
 #include "SceneTransition.h"
 
 #include "DeltaTimeManager.h"
