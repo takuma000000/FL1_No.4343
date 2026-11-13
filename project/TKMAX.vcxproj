@@ -115,6 +115,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
 	<ClCompile Include="application\controller\SpriteSettings.cpp" />
 	<ClCompile Include="engine\imgui\SpriteEditor.cpp" />
+	<ClCompile Include="engine\imgui\SpriteGizmo.cpp" />
 	<ClCompile Include="engine\io\SpriteSave.cpp" />
 	<ClCompile Include="application\controller\CollisionSettings.cpp" />
     <ClCompile Include="engine\3d\collision\CollisionManager.cpp" />
@@ -210,6 +211,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
 	<ClInclude Include="application\controller\SpriteSettings.h" />
 	<ClInclude Include="engine\imgui\SpriteEditor.h" />
+	<ClInclude Include="engine\imgui\SpriteGizmo.h" />
 	<ClInclude Include="engine\io\SpriteSave.h" />
 	<ClInclude Include="application\controller\CollisionSettings.h" />
 	<ClInclude Include="engine\3d\collision\CollisionCategory.h" />

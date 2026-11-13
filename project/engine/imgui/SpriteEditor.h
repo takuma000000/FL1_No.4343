@@ -1,4 +1,5 @@
 #pragma once
+#include "SpriteGizmo.h"
 #include "SpriteSave.h"
 
 #include <functional>
@@ -19,6 +20,7 @@ namespace TKM {
 
 		bool RegisterSprite(
 			const std::string& name,
+			Sprite* sprite,
 			ImGuiCallback callback
 		);
 
@@ -29,12 +31,14 @@ namespace TKM {
 	private:
 		struct Entry {
 			std::string name_;
+			Sprite* sprite_ = nullptr;
 			ImGuiCallback callback_;
 		};
 
 		std::vector<Entry> entries_;
 		int selectedIndex_ = 0;
 		SpriteSave* spriteSave_ = nullptr;
+		SpriteGizmo spriteGizmo_;
 	};
 
 } // namespace TKM

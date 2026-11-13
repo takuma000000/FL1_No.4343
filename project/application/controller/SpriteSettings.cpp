@@ -39,6 +39,7 @@ void SpriteSettings::Initialize(TKM::Sprite* logoSprite) {
 		// ImGuiの編集対象へ登録する
 		spriteEditor_.RegisterSprite(
 			"TKMAX Logo",
+			logoSprite,
 			[logoSprite]() {
 				logoSprite->ImGuiDebug();
 			}

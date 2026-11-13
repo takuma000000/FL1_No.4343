@@ -15,9 +15,10 @@ namespace TKM {
 
 	bool SpriteEditor::RegisterSprite(
 		const std::string& name,
+		Sprite* sprite,
 		ImGuiCallback callback
 	) {
-		if (name.empty() || !callback) {
+		if (name.empty() || !sprite || !callback) {
 			return false;
 		}
 
@@ -33,7 +34,7 @@ namespace TKM {
 			return false;
 		}
 
-		entries_.push_back({ name, std::move(callback) });
+		entries_.push_back({ name, sprite, std::move(callback) });
 		return true;
 	}
 
@@ -52,6 +53,7 @@ namespace TKM {
 		entries_.clear();
 		selectedIndex_ = 0;
 		spriteSave_ = nullptr;
+		spriteGizmo_.Clear();
 	}
 
 	void SpriteEditor::ImGuiDebug() {
@@ -120,6 +122,30 @@ namespace TKM {
 		}
 
 		ImGui::End();
+
+		// ──────────────── 画面上のスプライト選択 ───────────────
+		// ImGuiウィンドウの操作中でなければ、画像クリックで選択する。
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)
+			&& !ImGui::GetIO().WantCaptureMouse) {
+			for (int index = static_cast<int>(entries_.size()) - 1;
+				index >= 0;
+				--index) {
+				if (spriteGizmo_.IsMouseOver(entries_[index].sprite_)) {
+					selectedIndex_ = index + 1;
+					break;
+				}
+			}
+		}
+
+		// ──────────────── 選択中スプライトのマウス操作 ───────────────
+		if (selectedIndex_ > 0
+			&& selectedIndex_ <= static_cast<int>(entries_.size())) {
+			spriteGizmo_.Update(
+				entries_[selectedIndex_ - 1].sprite_
+			);
+		} else {
+			spriteGizmo_.Clear();
+		}
 #endif
 	}
 
