@@ -153,6 +153,7 @@ void GameScene::InitializeSprite() {
 
 	// 元画像と同じサイズで表示する
 	logoSprite_->SetAutoAdjustTextureSize(false);
+	logoSprite_->SetTextureSize({ 459.0f, 287.0f });
 	logoSprite_->SetSize({ 459.0f, 287.0f });
 	logoSprite_->Update();
 }
