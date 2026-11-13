@@ -1,6 +1,6 @@
 {
     "sprites": {
-        "TKMAX Logo": {
+        "TKMAX_logo.png": {
             "anchor": [
                 0.5,
                 0.5
@@ -14,13 +14,36 @@
             "flipX": false,
             "flipY": false,
             "position": [
-                240.0,
-                574.0
+                571.6946411132813,
+                294.46112060546875
             ],
             "rotation": 0.0,
             "size": [
-                459.0,
-                287.0
+                310.3892517089844,
+                194.0778045654297
+            ]
+        },
+        "uvChecker.png": {
+            "anchor": [
+                0.5,
+                0.5
+            ],
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "flipX": false,
+            "flipY": false,
+            "position": [
+                641.5,
+                590.5
+            ],
+            "rotation": 0.0,
+            "size": [
+                229.0,
+                229.0
             ]
         }
     },
