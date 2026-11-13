@@ -85,8 +85,9 @@ void Enemy::UpdateMovement(float deltaTime, const Vector3& targetPosition) {
         difference.y = 0.0f;
     }
 
-    // 射撃型は攻撃範囲内に入ったら、その場で停止する。
-    if (type_ == EnemyType::Shooter && IsWithinAttackRange(targetPosition)) {
+    // 攻撃可能な距離まで接近した場合は、
+    // ターゲットを通り過ぎないように移動を停止する。
+    if (IsWithinAttackRange(targetPosition)) {
         return;
     }
 
