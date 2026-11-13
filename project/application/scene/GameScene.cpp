@@ -67,9 +67,8 @@ void GameScene::Update() {
 	}
 
 	/// ──────────────── スプライト更新 ───────────────
-	if (logoSprite_) {
-		logoSprite_->Update();
-	}
+	logoSprite_->Update();      // TKMAXロゴ更新
+	uvCheckerSprite_->Update(); // UVチェッカー更新
 
 	/// ──────────────── ライト更新 ───────────────
 	if (directionalLight_) {
@@ -114,9 +113,8 @@ void GameScene::DrawSprite() {
 	TKM::SpriteCommon::GetInstance()->DrawSetCommon();
 
 	/// ──────────────── TKMAXロゴ描画 ───────────────
-	if (logoSprite_) {
-		logoSprite_->Draw();
-	}
+	logoSprite_->Draw();      // TKMAXロゴ描画
+	uvCheckerSprite_->Draw(); // UVチェッカー描画
 }
 
 TKM::Camera* GameScene::UpdateActiveCamera() {
@@ -136,7 +134,7 @@ TKM::Camera* GameScene::UpdateActiveCamera() {
 // スプライトを作成し、初期化する
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 void GameScene::InitializeSprite() {
-	// TKMAXロゴを生成する
+	/// TKMAXロゴを生成する
 	logoSprite_ = std::make_unique<TKM::Sprite>();
 	logoSprite_->Initialize(
 		TKM::SpriteCommon::GetInstance(),
@@ -149,13 +147,34 @@ void GameScene::InitializeSprite() {
 	logoSprite_->SetPosition({
 		static_cast<float>(TKM::WindowsAPI::GetClientWidth()) * 0.5f,
 		static_cast<float>(TKM::WindowsAPI::GetClientHeight()) * 0.5f
-	});
+		});
 
 	// 元画像と同じサイズで表示する
 	logoSprite_->SetAutoAdjustTextureSize(false);
 	logoSprite_->SetTextureSize({ 459.0f, 287.0f });
 	logoSprite_->SetSize({ 459.0f, 287.0f });
 	logoSprite_->Update();
+
+	/// UVチェッカーを生成する
+	uvCheckerSprite_ = std::make_unique<TKM::Sprite>();
+	uvCheckerSprite_->Initialize(
+		TKM::SpriteCommon::GetInstance(),
+		dxCommon_,
+		"./resources/texture/uvChecker.png"
+	);
+
+	// 画像の中心を画面中央へ配置する
+	uvCheckerSprite_->SetAnchorPoint({ 0.5f, 0.5f });
+	uvCheckerSprite_->SetPosition({
+		static_cast<float>(TKM::WindowsAPI::GetClientWidth()) * 0.5f,
+		static_cast<float>(TKM::WindowsAPI::GetClientHeight()) * 0.5f
+		});
+
+	// 元画像と同じサイズで表示する
+	uvCheckerSprite_->SetAutoAdjustTextureSize(false);
+	uvCheckerSprite_->SetTextureSize({ 512.0f, 512.0f });
+	uvCheckerSprite_->SetSize({ 512.0f, 512.0f });
+	uvCheckerSprite_->Update();
 }
 
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*

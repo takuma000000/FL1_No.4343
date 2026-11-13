@@ -96,6 +96,7 @@ private:
 	// 2Dスプライト
 	//======================================================================
 	std::unique_ptr<TKM::Sprite> logoSprite_ = nullptr; // TKMAXロゴ
+	std::unique_ptr<TKM::Sprite> uvCheckerSprite_ = nullptr; // UVチェッカー
 
 	//======================================================================
 	// オブジェクト設定
