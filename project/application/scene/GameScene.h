@@ -10,8 +10,8 @@
 #include <memory>
 
 #include "player.h"
-#include "../enemy/data/EnemyDataCatalog.h"
-#include "../enemy/EnemyManager.h"
+#include "../actor/enemy/data/EnemyDataCatalog.h"
+#include "../actor/enemy/EnemyManager.h"
 
 //=============================================================
 // GameSceneクラス

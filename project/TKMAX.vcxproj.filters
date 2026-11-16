@@ -157,13 +157,13 @@
     <ClCompile Include="engine\effect\post\MotionBlurEffect.cpp" />
     <ClCompile Include="engine\effect\post\SpeedLineEffect.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
-    <ClCompile Include="application\enemy\Enemy.cpp" />
-    <ClCompile Include="application\enemy\EnemyManager.cpp" />
-    <ClCompile Include="application\enemy\EnemyFactory.cpp" />
-    <ClCompile Include="application\enemy\EnemyType.cpp" />
-    <ClCompile Include="application\enemy\EnemyAttribute.cpp" />
-    <ClCompile Include="application\enemy\data\EnemyDataLoader.cpp" />
-    <ClCompile Include="application\enemy\data\EnemyDataCatalog.cpp" />
+    <ClCompile Include="application\actor\enemy\Enemy.cpp" />
+    <ClCompile Include="application\actor\enemy\EnemyManager.cpp" />
+    <ClCompile Include="application\actor\enemy\EnemyFactory.cpp" />
+    <ClCompile Include="application\actor\enemy\EnemyType.cpp" />
+    <ClCompile Include="application\actor\enemy\EnemyAttribute.cpp" />
+    <ClCompile Include="application\actor\enemy\data\EnemyDataLoader.cpp" />
+    <ClCompile Include="application\actor\enemy\data\EnemyDataCatalog.cpp" />
     <ClCompile Include="application\actor\Player.cpp" />
     <ClCompile Include="engine\io\ObjectSave.cpp" />
     <ClCompile Include="engine\imgui\ObjectEditor.cpp" />
@@ -370,14 +370,14 @@
     <ClInclude Include="application\catalog\AudioCatalog.h" />
     <ClInclude Include="engine\effect\post\MotionBlurEffect.h" />
     <ClInclude Include="engine\effect\post\SpeedLineEffect.h" />
-    <ClInclude Include="application\enemy\Enemy.h" />
-    <ClInclude Include="application\enemy\EnemyData.h" />
-    <ClInclude Include="application\enemy\EnemyType.h" />
-    <ClInclude Include="application\enemy\EnemyManager.h" />
-    <ClInclude Include="application\enemy\EnemyFactory.h" />
-    <ClInclude Include="application\enemy\EnemyAttribute.h" />
-    <ClInclude Include="application\enemy\data\EnemyDataLoader.h" />
-    <ClInclude Include="application\enemy\data\EnemyDataCatalog.h" />
+    <ClInclude Include="application\actor\enemy\Enemy.h" />
+    <ClInclude Include="application\actor\enemy\EnemyData.h" />
+    <ClInclude Include="application\actor\enemy\EnemyType.h" />
+    <ClInclude Include="application\actor\enemy\EnemyManager.h" />
+    <ClInclude Include="application\actor\enemy\EnemyFactory.h" />
+    <ClInclude Include="application\actor\enemy\EnemyAttribute.h" />
+    <ClInclude Include="application\actor\enemy\data\EnemyDataLoader.h" />
+    <ClInclude Include="application\actor\enemy\data\EnemyDataCatalog.h" />
     <ClInclude Include="application\actor\Player.h" />
     <ClInclude Include="engine\io\ObjectSave.h" />
     <ClInclude Include="engine\imgui\ObjectEditor.h" />
@@ -448,7 +448,7 @@
     <Filter Include="application\scene">
       <UniqueIdentifier>{f48ae6cb-3f7e-4f7e-9139-39692494a5ed}</UniqueIdentifier>
     </Filter>
-    <Filter Include="application\enemy">
+    <Filter Include="application\actor\enemy">
       <UniqueIdentifier>{25936b32-69c5-41c7-a4da-720ca181539d}</UniqueIdentifier>
     </Filter>
     <Filter Include="application\boss">
@@ -463,7 +463,7 @@
     <Filter Include="application\player\reticle">
       <UniqueIdentifier>{377c4e20-132f-4863-9c81-4fa6244f77f3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="application\enemy\manager">
+    <Filter Include="application\actor\enemy\manager">
       <UniqueIdentifier>{b5a17694-ede9-4458-b6f3-b5d3eef79bf8}</UniqueIdentifier>
     </Filter>
     <Filter Include="application\boss\manager">
