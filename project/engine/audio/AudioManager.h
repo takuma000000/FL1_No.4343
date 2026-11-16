@@ -3,6 +3,7 @@
 #include <dxgi1_6.h>
 #include <wrl.h>
 #include <fstream>
+#include <string>
 #include <xaudio2.h>
 #include <unordered_map>
 #include <vector>
@@ -69,7 +70,16 @@ namespace TKM {
 		bool LoadSound(const std::string& key, const std::string& filename);
 
 		/// <summary>
-		/// 音声データを再生します。
+		/// ファイルパスをキーとして事前読み込みします（任意）。
+		/// resources/audioからの相対パス、またはresources/audio/...を指定します。
+		/// </summary>
+		bool LoadSound(const std::string& filename);
+
+		/// <summary>
+		/// 音声データを再生します。未読み込みの場合はパスから自動で読み込みます。
+		/// 例: PlaySound("bgm.wav", 0.5f, true)。停止等にも同じパスを指定します。
+		/// LoadSound(key, filename)で登録済みのキーも使用できます。
+		/// 対応形式はPCM WAVです。
 		/// </summary>
 		void PlaySound(const std::string& key, float volume = 1.0f, bool loop = false);
 

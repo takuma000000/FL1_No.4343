@@ -121,7 +121,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
 	<ClCompile Include="application\controller\CollisionSettings.cpp" />
     <ClCompile Include="engine\3d\collision\CollisionManager.cpp" />
     <ClCompile Include="engine\3d\collision\AABBCollider.cpp" />
-    <ClCompile Include="application\catalog\AudioCatalog.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="engine\func\common\DeltaTimeManager.cpp" />
     <ClCompile Include="engine\3d\BarrierCommon.cpp" />
@@ -197,7 +196,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\func\common\TimeScaleController.cpp" />
     <ClCompile Include="engine\effect\post\SmokeVolume3D.cpp" />
     <ClCompile Include="application\effect\ParticleGroupsCatalog.cpp" />
-    <ClCompile Include="application\catalog\ModelCatalog.cpp" />
     <ClCompile Include="engine\state\StateMachine.cpp" />
     <ClCompile Include="application\effect\ParticleSpawner.cpp" />
     <ClCompile Include="engine\effect\post\TrailRibbonRenderer.cpp" />
@@ -219,7 +217,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
 	<ClInclude Include="engine\3d\collision\CollisionCategory.h" />
     <ClInclude Include="engine\3d\collision\CollisionManager.h" />
     <ClInclude Include="engine\3d\collision\AABBCollider.h" />
-    <ClInclude Include="application\catalog\AudioCatalog.h" />
     <ClInclude Include="engine\3d\collision\Collider.h" />
     <ClInclude Include="engine\func\common\DeltaTimeManager.h" />
     <ClInclude Include="engine\3d\BarrierCommon.h" />
@@ -289,7 +286,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\effect\post\SmokeVolume3D.h" />
     <ClInclude Include="engine\effect\post\LaserBeam3D.h" />
     <ClInclude Include="application\effect\ParticleGroupsCatalog.h" />
-    <ClInclude Include="application\catalog\ModelCatalog.h" />
     <ClInclude Include="engine\state\IState.h" />
     <ClInclude Include="engine\state\IStateContext.h" />
     <ClInclude Include="application\effect\ParticleSpawner.h" />

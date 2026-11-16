@@ -1,7 +1,5 @@
 #define NOMINMAX
 #include "GameScene.h"
-#include "AudioCatalog.h"
-#include "ModelCatalog.h"
 #include "CameraManager.h"
 #include "ParticleManager.h"
 
@@ -13,8 +11,6 @@ void GameScene::Initialize() {
 	assert(dxCommon_ != nullptr && "dxCommon is nullptr in GameScene::Initialize");
 
 	/// ──────────────── 各種初期化処理 ───────────────
-	AudioCatalog::LoadGameAudios();
-	ModelCatalog::LoadModelCatalogs(dxCommon_);
 	InitializeObjects();
 	collisionSettings_.Initialize(sphere_.get(), player_.get());
 	objectSettings_.Initialize(sphere_.get(), player_.get());

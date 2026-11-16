@@ -275,7 +275,7 @@ namespace TKM {
 #endif
 
 	void Object3d::SetModel(const std::string& filePath) {
-		//モデルを検索してセットする
+		// 未読み込みなら自動で読み込み、読み込み済みなら再利用する
 		model_ = ModelManager::GetInstance()->FindModel(filePath);
 	}
 
