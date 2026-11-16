@@ -50,6 +50,10 @@ if (!effects->Play("enemyExplosion", enemyPosition)) {
     // GetLastError()に失敗理由が入ります。
 }
 
+// 移動する対象から発生させる場合、対象のUpdate後に位置だけ更新。
+// 毎フレームPlayを呼ぶとEmitterが重複するので、一度だけPlayして使います。
+effects->SetPosition("enemyExplosion", enemyPosition);
+
 // 連続発生の停止と、その名前の生存粒子の消去。
 effects->Stop("enemyExplosion");
 ```

@@ -32,6 +32,14 @@ namespace TKM {
 			error_.clear(); return true;
 		} catch (const std::exception& e) { error_ = e.what(); return false; }
 	}
+	void ParticleEffects::SetPosition(const std::string& name, const Vector3& position) {
+		if (!std::isfinite(position.x) || !std::isfinite(position.y) || !std::isfinite(position.z)) { return; }
+		const std::string group = "__effect_" + name;
+		for (auto& emitter : emitters_) {
+			if (emitter.group == group) { emitter.position = position; }
+		}
+	}
+
 	void ParticleEffects::Stop(const std::string& name) {
 		const std::string group = "__effect_" + name;
 		std::erase_if(emitters_, [&](const Emitter& e) { return e.group == group; });

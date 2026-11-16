@@ -11,6 +11,8 @@ namespace TKM {
 		// resources/effects/<name>.jsonを初回だけ読み込む。loopならStopまで放出する。
 		bool Play(const std::string& name, const Vector3& position);
 		bool Reload(const std::string& name);
+		// 再生中の同名エフェクトの発生位置を更新する。既に出た粒子は移動させない。
+		void SetPosition(const std::string& name, const Vector3& position);
 		void Stop(const std::string& name);
 		void StopAll();
 		// エディタの固定スロット。再調整してもGPU用グループを増殖させない。
