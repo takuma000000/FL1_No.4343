@@ -114,6 +114,11 @@ public:
     /// <param name="position">設定する座標</param>
     void SetPosition(const Vector3& position) { position_ = position; }
 
+    /// <summary>
+    /// 描画に使用するカメラを設定する。
+    /// </summary>
+    void SetCamera(TKM::Camera* camera);
+
 private:
     /// <summary>
     /// 敵の種類に応じた移動を行う。

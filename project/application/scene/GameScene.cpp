@@ -13,13 +13,12 @@ void GameScene::Initialize() {
 	assert(dxCommon_ != nullptr && "dxCommon is nullptr in GameScene::Initialize");
 
 	/// ──────────────── 各種初期化処理 ───────────────
+	InitializeCamera();
 	InitializeObjects();
 	collisionSettings_.Initialize(sphere_.get(), player_.get());
 	objectSettings_.Initialize(sphere_.get(), player_.get());
 	InitializeSprite();
 	spriteSettings_.Initialize();
-	InitializeCamera();
-	InitializeEnemies(); // カメラ初期化後に敵を生成する
 
 	/// ──────────────── パーティクル初期化 ───────────────
 	auto particleManager = TKM::ParticleManager::GetInstance();
@@ -36,7 +35,6 @@ void GameScene::Finalize() {
 		enemyManager_->Clear();
 		enemyManager_.reset();
 	}
-	enemyDataCatalog_.reset();
 
 	/// ──────────────── スプライト設定終了 ───────────────
 	spriteSettings_.Finalize();
@@ -149,6 +147,9 @@ TKM::Camera* GameScene::UpdateActiveCamera() {
 
 		sphere_->SetCamera(activeCamera); // テスト用Sphereにカメラを設定
 		player_->SetCamera(activeCamera); // プレイヤーにカメラを設定
+		if (enemyManager_) {
+			enemyManager_->SetCamera(activeCamera);
+		}
 	}
 
 	return activeCamera;
@@ -205,6 +206,7 @@ void GameScene::InitializeSprite() {
 // 3Dオブジェクトを作成し、初期化する
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 void GameScene::InitializeObjects() {
+	auto* mainCamera = TKM::CameraManager::GetInstance()->GetMainCamera();
 
 	// テスト用Sphere生成
 	sphere_ = std::make_unique<TKM::Object3d>();
@@ -219,14 +221,38 @@ void GameScene::InitializeObjects() {
 	constexpr Vector3 kSphereScale = { 3.0f, 3.0f, 3.0f };
 	sphere_->SetTranslate(kSpherePosition);
 	sphere_->SetScale(kSphereScale);
+	sphere_->SetCamera(mainCamera);
 
 	// プレイヤー生成・初期化
 	player_ = std::make_unique<Player>();
 	player_->Initialize(dxCommon_);
+	player_->SetCamera(mainCamera);
+	if (mainCamera) {
+		player_->SetFollowCamera(mainCamera, mainCamera->GetTranslate());
+	}
+
+	// 敵管理を生成し、敵データを読み込む
+	enemyManager_ = std::make_unique<EnemyManager>();
+	std::string errorMessage;
+	if (!enemyManager_->Initialize(
+		dxCommon_,
+		mainCamera,
+		"resources/data/enemy",
+		errorMessage
+	)) {
+		Logger::Log("[Enemy] Failed to initialize enemy manager.\n" + errorMessage + "\n");
+		return;
+	}
+
+	constexpr Vector3 kBasicVirusPosition = { -15.0f, 0.0f, 0.0f };
+	if (!enemyManager_->Spawn("BasicVirus", kBasicVirusPosition, errorMessage)) {
+		Logger::Log("[Enemy] Failed to spawn BasicVirus.\n" + errorMessage + "\n");
+		return;
+	}
 }
 
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-// カメラを作成し、各オブジェクトに適用する
+// カメラを作成し、設定を読み込む
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 void GameScene::InitializeCamera() {
 	/// ──────────────── カメラ初期値 ───────────────
@@ -245,17 +271,6 @@ void GameScene::InitializeCamera() {
 		mainCamera->Update();
 	}
 
-	/// ───────────────── Objectカメラ設定 ───────────────
-	if (sphere_) {
-		sphere_->SetCamera(mainCamera);
-	}
-
-	if (player_) {
-		player_->SetCamera(mainCamera);
-		if (mainCamera) {
-			player_->SetFollowCamera(mainCamera, mainCamera->GetTranslate());
-		}
-	}
 }
 
 void GameScene::ImGuiDebug() {
@@ -275,35 +290,3 @@ void GameScene::ImGuiDebug() {
 #endif
 }
 
-void GameScene::InitializeEnemies() {
-    // 敵データカタログを作成し、ディレクトリから敵データを読み込む
-	enemyDataCatalog_ = std::make_unique<EnemyDataCatalog>();
-	std::string errorMessage;
-
-    // 敵データディレクトリの読み込み
-	if (!enemyDataCatalog_->LoadDirectory("resources/data/enemy", errorMessage)) {
-		Logger::Log("[Enemy] Failed to load enemy data directory.\n" + errorMessage + "\n");
-		return;
-	}
-
-    // メインカメラを取得し、敵マネージャーを初期化する
-	TKM::Camera* mainCamera = TKM::CameraManager::GetInstance()->GetMainCamera();
-	if (!mainCamera) {
-		Logger::Log("[Enemy] Main camera is null.\n");
-		return;
-	}
-
-    // 敵マネージャーを作成し、初期化する
-	enemyManager_ = std::make_unique<EnemyManager>();
-	enemyManager_->Initialize(dxCommon_, mainCamera, *enemyDataCatalog_);
-
-	constexpr Vector3 kBasicVirusPosition = { -15.0f, 0.0f, 0.0f };
-
-    // BasicVirusをスポーンする
-	if (!enemyManager_->Spawn("BasicVirus", kBasicVirusPosition, errorMessage)) {
-		Logger::Log("[Enemy] Failed to spawn BasicVirus.\n" + errorMessage + "\n");
-		return;
-	}
-
-	Logger::Log("[Enemy] BasicVirus spawned successfully.\n");
-}

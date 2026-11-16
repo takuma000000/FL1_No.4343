@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <filesystem>
 #include <memory>
 #include <vector>
 #include <string>
@@ -40,9 +41,19 @@ public:
     EnemyManager& operator=(const EnemyManager&) = delete;
 
     /// <summary>
-    /// 敵の生成に必要な機能とデータカタログを登録する。
+    /// 敵の生成に必要な機能を登録し、敵データを読み込む。
     /// </summary>
-    void Initialize(TKM::DirectXCommon* dxCommon, TKM::Camera* camera, const EnemyDataCatalog& dataCatalog);
+    bool Initialize(
+        TKM::DirectXCommon* dxCommon,
+        TKM::Camera* camera,
+        const std::filesystem::path& dataDirectory,
+        std::string& errorMessage
+    );
+
+    /// <summary>
+    /// 管理中の敵へ描画用カメラを設定する。
+    /// </summary>
+    void SetCamera(TKM::Camera* camera);
 
     /// <summary>
     /// 指定した敵IDのEnemyを生成する。
@@ -91,10 +102,12 @@ public:
     const std::vector<EnemyAttackEvent>& GetAttackEvents() const { return attackEvents_; }
 
 private:
-    // これらはEnemyManagerが所有せず、シーン側が生存期間を管理する。
+    // DirectXCommonとCameraは所有せず、シーン側が生存期間を管理する。
     TKM::DirectXCommon* dxCommon_ = nullptr;
     TKM::Camera* camera_ = nullptr;
-    const EnemyDataCatalog* dataCatalog_ = nullptr;
+
+    // EnemyManagerが敵データの読み込み結果を所有する。
+    std::unique_ptr<EnemyDataCatalog> dataCatalog_;
 
     // unique_ptrにより、敵の破棄を自動化する。
     std::vector<std::unique_ptr<Enemy>> enemies_;

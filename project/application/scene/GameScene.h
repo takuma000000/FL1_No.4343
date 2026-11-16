@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "player.h"
-#include "../actor/enemy/data/EnemyDataCatalog.h"
 #include "../actor/enemy/EnemyManager.h"
 
 //=============================================================
@@ -81,11 +80,6 @@ public:
 	/// <returns></returns>
 	TKM::Camera* UpdateActiveCamera();
 
-	/// <summary>
-	/// 敵データを読み込み、動作確認用の敵を生成します。
-	/// </summary>
-	void InitializeEnemies();
-
 private:
 	//======================================================================
 	// 基本システム
@@ -119,6 +113,5 @@ private:
 	//======================================================================
 	// 敵データ・敵管理
 	//======================================================================
-	std::unique_ptr<EnemyDataCatalog> enemyDataCatalog_ = nullptr;
 	std::unique_ptr<EnemyManager> enemyManager_ = nullptr;
 };

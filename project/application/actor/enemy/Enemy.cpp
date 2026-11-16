@@ -75,6 +75,12 @@ void Enemy::Draw(TKM::DirectXCommon* dxCommon) {
     object3d_->Draw(dxCommon);
 }
 
+void Enemy::SetCamera(TKM::Camera* camera) {
+    if (object3d_) {
+        object3d_->SetCamera(camera);
+    }
+}
+
 void Enemy::TakeDamage(int damage) {
     // 0以下のダメージや、死亡後のダメージは無視する。
     if (damage <= 0 || !IsAlive()) {

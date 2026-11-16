@@ -13,16 +13,44 @@
 EnemyManager::EnemyManager() = default;
 EnemyManager::~EnemyManager() = default;
 
-void EnemyManager::Initialize(TKM::DirectXCommon* dxCommon, TKM::Camera* camera, const EnemyDataCatalog& dataCatalog) {
+bool EnemyManager::Initialize(
+    TKM::DirectXCommon* dxCommon,
+    TKM::Camera* camera,
+    const std::filesystem::path& dataDirectory,
+    std::string& errorMessage
+) {
     assert(dxCommon != nullptr && "EnemyManager::Initialize: dxCommon is null");
     assert(camera != nullptr && "EnemyManager::Initialize: camera is null");
 
+    errorMessage.clear();
+    if (!dxCommon || !camera) {
+        errorMessage = "EnemyManagerの初期化に必要な機能が設定されていません。";
+        return false;
+    }
+
+    auto dataCatalog = std::make_unique<EnemyDataCatalog>();
+    if (!dataCatalog->LoadDirectory(dataDirectory, errorMessage)) {
+        return false;
+    }
+
     dxCommon_ = dxCommon;
     camera_ = camera;
-    dataCatalog_ = &dataCatalog;
+    dataCatalog_ = std::move(dataCatalog);
 
     // シーン再初期化時に、前回の敵が残らないようにする。
     Clear();
+    return true;
+}
+
+void EnemyManager::SetCamera(TKM::Camera* camera) {
+    if (!camera) {
+        return;
+    }
+
+    camera_ = camera;
+    for (const auto& enemy : enemies_) {
+        enemy->SetCamera(camera_);
+    }
 }
 
 bool EnemyManager::Spawn(
