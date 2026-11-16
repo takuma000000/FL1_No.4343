@@ -2,10 +2,15 @@
 #include "GameScene.h"
 #include "CameraManager.h"
 #include "ParticleManager.h"
+#include "ParticleEffects.h"
 #include "DeltaTimeManager.h"
 #include "Logger.h"
 
 using namespace TKM;
+
+namespace {
+	constexpr const char* kPlayerAuraEffect = "player_aura";
+}
 
 void GameScene::Initialize() {
 	/// ──────────────── NULLチェック ────────────────
@@ -24,6 +29,13 @@ void GameScene::Initialize() {
 	/// ──────────────── パーティクル初期化 ───────────────
 	auto particleManager = TKM::ParticleManager::GetInstance();
 	particleManager->Initialize(dxCommon_, srvManager_, TKM::CameraManager::GetInstance()->GetMainCamera());
+	// 一度だけ再生を開始する。連続発生の間隔・見た目は保存したJSONに従う。
+	if (player_) {
+		auto* effects = TKM::ParticleEffects::GetInstance();
+		if (!effects->Play(kPlayerAuraEffect, player_->GetPos())) {
+			Logger::Log("[Particle] player_aura: " + effects->GetLastError() + "\n");
+		}
+	}
 
 	/// ──────────────── ライトの初期化 ───────────────
 	directionalLight_ = std::make_unique<DirectionalLight>();
@@ -71,6 +83,8 @@ void GameScene::Update() {
 	// Player内で移動→追従カメラ行列→オブジェクト行列の順に更新する
 	if (player_) {
 		player_->Update();
+		// 移動後の位置を渡し、次に生まれる粒子をPlayerの位置から発生させる。
+		TKM::ParticleEffects::GetInstance()->SetPosition(kPlayerAuraEffect, player_->GetPos());
 	}
 
 	// テスト用Sphere更新
@@ -163,7 +177,7 @@ void GameScene::InitializeSprite() {
 	logoSprite_->Initialize(
 		TKM::SpriteCommon::GetInstance(),
 		dxCommon_,
-		"./resources/texture/TKMAX_logo.png"
+		"./resources/texture/nomura.jpg"
 	);
 
 	// 画像の中心を画面中央へ配置する

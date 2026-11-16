@@ -119,6 +119,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
 	<ClCompile Include="engine\imgui\SpriteGizmo.cpp" />
 	<ClCompile Include="engine\io\SpriteSave.cpp" />
 	<ClCompile Include="application\controller\CollisionSettings.cpp" />
+    <ClCompile Include="engine\effect\particle\ParticleEffectSettings.cpp" />
+    <ClCompile Include="engine\effect\particle\ParticleEffects.cpp" />
+    <ClCompile Include="engine\effect\particle\ParticleEditor.cpp" />
+    <ClCompile Include="application\scene\ParticleEditorScene.cpp" />
     <ClCompile Include="engine\3d\collision\CollisionManager.cpp" />
     <ClCompile Include="engine\3d\collision\AABBCollider.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
@@ -223,6 +227,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
 	<ClInclude Include="engine\io\SpriteSave.h" />
 	<ClInclude Include="application\controller\CollisionSettings.h" />
 	<ClInclude Include="engine\3d\collision\CollisionCategory.h" />
+    <ClInclude Include="engine\effect\particle\ParticleEffectSettings.h" />
+    <ClInclude Include="engine\effect\particle\ParticleEffects.h" />
+    <ClInclude Include="engine\effect\particle\ParticleEditor.h" />
+    <ClInclude Include="application\scene\ParticleEditorScene.h" />
     <ClInclude Include="engine\3d\collision\CollisionManager.h" />
     <ClInclude Include="engine\3d\collision\AABBCollider.h" />
     <ClInclude Include="application\catalog\AudioCatalog.h" />
