@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "Object3d.h"
 #include "Object3dCommon.h"
 #include <fstream>
@@ -7,6 +8,9 @@
 #include "Model.h"
 #include "ModelManager.h"
 #include "Camera.h"
+#include <algorithm>
+#include <cmath>
+#include <limits>
 
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -89,6 +93,116 @@ namespace TKM {
 		wvpData_->WorldInverseTranspose_ = MyMath::Inverse4x4(worldMatrix);
 	}
 
+	Vector3 Object3d::GetWorldBoundsCenter() const {
+		Vector3 center{};
+		Vector3 size{};
+		CalculateWorldBounds(center, size);
+		return center;
+	}
+
+	Vector3 Object3d::GetWorldBoundsSize() const {
+		Vector3 center{};
+		Vector3 size{};
+		CalculateWorldBounds(center, size);
+		return size;
+	}
+
+	void Object3d::CalculateWorldBounds(
+		Vector3& center,
+		Vector3& size
+	) const {
+		// 1. モデルが設定されていない場合は、
+		//    Object3dの位置とScaleを予備値として使用する
+		if (!model_ || !model_->HasLocalBounds()) {
+			center = transform_.translate_;
+			size = {
+				std::abs(transform_.scale_.x),
+				std::abs(transform_.scale_.y),
+				std::abs(transform_.scale_.z)
+			};
+			return;
+		}
+
+		// 2. 現在のTransformからワールド行列を作る
+		Matrix4x4 boundsWorldMatrix =
+			MyMath::MakeAffineMatrix(
+				transform_.scale_,
+				transform_.rotate_,
+				transform_.translate_
+			);
+
+		// 3. 親オブジェクトが存在する場合は親の行列も反映する
+		if (parent_) {
+			boundsWorldMatrix = MyMath::Multiply(
+				boundsWorldMatrix,
+				parent_->GetWorldMatrix()
+			);
+		}
+
+		// 4. モデル本来の中心とサイズを取得する
+		const Vector3& localCenter =
+			model_->GetLocalBoundsCenter();
+
+		const Vector3& localSize =
+			model_->GetLocalBoundsSize();
+
+		const Vector3 halfSize = {
+			localSize.x * 0.5f,
+			localSize.y * 0.5f,
+			localSize.z * 0.5f
+		};
+
+		// 5. モデル範囲を構成する8個の頂点を作る
+		const Vector3 localCorners[8] = {
+			{ localCenter.x - halfSize.x, localCenter.y - halfSize.y, localCenter.z - halfSize.z },
+			{ localCenter.x + halfSize.x, localCenter.y - halfSize.y, localCenter.z - halfSize.z },
+			{ localCenter.x - halfSize.x, localCenter.y + halfSize.y, localCenter.z - halfSize.z },
+			{ localCenter.x + halfSize.x, localCenter.y + halfSize.y, localCenter.z - halfSize.z },
+			{ localCenter.x - halfSize.x, localCenter.y - halfSize.y, localCenter.z + halfSize.z },
+			{ localCenter.x + halfSize.x, localCenter.y - halfSize.y, localCenter.z + halfSize.z },
+			{ localCenter.x - halfSize.x, localCenter.y + halfSize.y, localCenter.z + halfSize.z },
+			{ localCenter.x + halfSize.x, localCenter.y + halfSize.y, localCenter.z + halfSize.z }
+		};
+
+		// 6. ワールド空間の最小座標と最大座標を用意する
+		const float largest =
+			std::numeric_limits<float>::max();
+
+		Vector3 worldMinimum = { largest, largest, largest };
+		Vector3 worldMaximum = { -largest, -largest, -largest };
+
+		// 7. 8頂点をワールド空間へ変換する
+		for (const Vector3& localCorner : localCorners) {
+			const Vector3 worldCorner =
+				MyMath::Transform(
+					localCorner,
+					boundsWorldMatrix
+				);
+
+			worldMinimum.x = std::min(worldMinimum.x, worldCorner.x);
+			worldMinimum.y = std::min(worldMinimum.y, worldCorner.y);
+			worldMinimum.z = std::min(worldMinimum.z, worldCorner.z);
+
+			worldMaximum.x = std::max(worldMaximum.x, worldCorner.x);
+			worldMaximum.y = std::max(worldMaximum.y, worldCorner.y);
+			worldMaximum.z = std::max(worldMaximum.z, worldCorner.z);
+		}
+
+		// 8. ワールド空間での中心を求める
+		center = {
+			(worldMinimum.x + worldMaximum.x) * 0.5f,
+			(worldMinimum.y + worldMaximum.y) * 0.5f,
+			(worldMinimum.z + worldMaximum.z) * 0.5f
+		};
+
+		// 9. ワールド空間での全体サイズを求める
+		size = {
+			worldMaximum.x - worldMinimum.x,
+			worldMaximum.y - worldMinimum.y,
+			worldMaximum.z - worldMinimum.z
+		};
+	}
+
 	void Object3d::Draw(TKM::DirectXCommon* dxCommon) {
 
 		dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_);// VBVを設定
@@ -131,6 +245,34 @@ namespace TKM {
 			}
 		}
 	}
+
+#ifdef USE_IMGUI
+	void Object3d::ImGuiDebug() {
+		// 位置
+		ImGui::DragFloat3(
+			"位置",
+			&transform_.translate_.x,
+			0.1f
+		);
+
+		// 回転
+		ImGui::DragFloat3(
+			"回転",
+			&transform_.rotate_.x,
+			0.01f
+		);
+
+		// 拡大縮小
+		ImGui::DragFloat3(
+			"拡縮",
+			&transform_.scale_.x,
+			0.01f,
+			0.001f,
+			100.0f,
+			"%.3f"
+		);
+	}
+#endif
 
 	void Object3d::SetModel(const std::string& filePath) {
 		//モデルを検索してセットする

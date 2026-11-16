@@ -99,6 +99,14 @@ namespace TKM {
 		/// </summary>
 		void Draw(TKM::DirectXCommon* dxCommon);
 
+#ifdef USE_IMGUI
+		/// <summary>
+		/// 3DオブジェクトのImGui編集項目を表示します。
+		/// 呼び出し側でImGui::BeginとImGui::Endを行います。
+		/// </summary>
+		void ImGuiDebug();
+#endif
+
 		/// <summary>
 		/// 親オブジェクトを解除します。
 		/// </summary>
@@ -137,6 +145,18 @@ namespace TKM {
 		/// ワールド行列を取得します。
 		/// </summary>
 		const Matrix4x4& GetWorldMatrix() const { return worldMatrix_; }
+
+		/// <summary>
+		/// モデルの見た目に合わせたAABBの中心座標を取得します。
+		/// 位置・回転・Scaleが反映されます。
+		/// </summary>
+		Vector3 GetWorldBoundsCenter() const;
+
+		/// <summary>
+		/// モデルの見た目に合わせたAABBの全体サイズを取得します。
+		/// 位置・回転・Scaleが反映されます。
+		/// </summary>
+		Vector3 GetWorldBoundsSize() const;
 
 		/// <summary>
 		/// モデルを取得します。
@@ -355,6 +375,14 @@ namespace TKM {
 		/// 環境マップリソースを生成します。
 		/// </summary>
 		void Environment(TKM::DirectXCommon* dxCommon);
+
+		/// <summary>
+		/// モデルのローカル範囲をワールド空間のAABBへ変換します。
+		/// </summary>
+		void CalculateWorldBounds(
+			Vector3& center,
+			Vector3& size
+		) const;
 
 		//=============================================================
 		// Transform・状態

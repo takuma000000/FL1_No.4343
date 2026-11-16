@@ -65,7 +65,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\base;$(ProjectDir)engine\func\common;$(ProjectDir)engine\func\math;$(ProjectDir)engine\io;$(ProjectDir)engine\scene;$(ProjectDir)engine\effect\post;$(ProjectDir)externals\imgui;$(ProjectDir)externals\DirectXTex;$(ProjectDir)engine\effect\light;$(ProjectDir)engine\audio;$(ProjectDir)engine\effect\particle;$(ProjectDir)engine\effect\line;$(ProjectDir)application\scene;$(ProjectDir)engine\imgui;$(ProjectDir)application\actor\player;$(ProjectDir)application\actor\enemy;$(ProjectDir)application\actor\boss;$(ProjectDir)application\effect;$(ProjectDir)engine\csv;$(ProjectDir)application\controller;$(ProjectDir)application\ui;$(ProjectDir)application\effect\controller;$(ProjectDir)application\scene\controller;$(ProjectDir)application\catalog;$(ProjectDir)engine\3d\camera;$(ProjectDir)engine\3d\camera\manager;$(ProjectDir)engine\state;$(ProjectDir)application\state;$(ProjectDir)application\actor;$(ProjectDir)externals\nlohmann;$(ProjectDir)application\actor\player\shot;$(ProjectDir)application\actor\barrier;$(ProjectDir)application\sequence;$(ProjectDir)application\ui\config;$(ProjectDir)application\actor\player\dodge;$(ProjectDir)application\actor\player\health;$(ProjectDir)application\actor\player\death</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\base;$(ProjectDir)engine\func\common;$(ProjectDir)engine\func\math;$(ProjectDir)engine\io;$(ProjectDir)engine\scene;$(ProjectDir)engine\effect\post;$(ProjectDir)externals\imgui;$(ProjectDir)externals\DirectXTex;$(ProjectDir)engine\effect\light;$(ProjectDir)engine\audio;$(ProjectDir)engine\effect\particle;$(ProjectDir)engine\effect\line;$(ProjectDir)application\scene;$(ProjectDir)engine\imgui;$(ProjectDir)application\actor\player;$(ProjectDir)application\actor\enemy;$(ProjectDir)application\actor\boss;$(ProjectDir)application\effect;$(ProjectDir)engine\csv;$(ProjectDir)application\controller;$(ProjectDir)application\ui;$(ProjectDir)application\effect\controller;$(ProjectDir)application\scene\controller;$(ProjectDir)application\catalog;$(ProjectDir)engine\3d\camera;$(ProjectDir)engine\3d\camera\manager;$(ProjectDir)engine\state;$(ProjectDir)application\state;$(ProjectDir)application\actor;$(ProjectDir)externals\nlohmann;$(ProjectDir)application\actor\player\shot;$(ProjectDir)application\actor\barrier;$(ProjectDir)application\sequence;$(ProjectDir)application\ui\config;$(ProjectDir)application\actor\player\dodge;$(ProjectDir)application\actor\player\health;$(ProjectDir)application\actor\player\death;$(ProjectDir)engine\3d\collision</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -94,7 +94,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\base;$(ProjectDir)engine\func\common;$(ProjectDir)engine\func\math;$(ProjectDir)engine\io;$(ProjectDir)engine\scene;$(ProjectDir)engine\effect\post;$(ProjectDir)externals\imgui;$(ProjectDir)externals\DirectXTex;$(ProjectDir)engine\effect\light;$(ProjectDir)engine\audio;$(ProjectDir)engine\effect\particle;$(ProjectDir)engine\effect\line;$(ProjectDir)application\scene;$(ProjectDir)engine\imgui;$(ProjectDir)application\actor\player;$(ProjectDir)application\actor\enemy;$(ProjectDir)application\actor\boss;$(ProjectDir)application\effect;$(ProjectDir)engine\csv;$(ProjectDir)application\controller;$(ProjectDir)application\ui;$(ProjectDir)application\effect\controller;$(ProjectDir)application\scene\controller;$(ProjectDir)application\catalog;$(ProjectDir)engine\3d\camera;$(ProjectDir)engine\3d\camera\manager;$(ProjectDir)engine\state;$(ProjectDir)application\state;$(ProjectDir)application\actor;$(ProjectDir)externals\nlohmann;$(ProjectDir)application\actor\player\shot;$(ProjectDir)application\actor\barrier;$(ProjectDir)application\sequence;$(ProjectDir)application\ui\config;$(ProjectDir)application\actor\player\dodge;$(ProjectDir)application\actor\player\health;$(ProjectDir)application\actor\player\death</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\base;$(ProjectDir)engine\func\common;$(ProjectDir)engine\func\math;$(ProjectDir)engine\io;$(ProjectDir)engine\scene;$(ProjectDir)engine\effect\post;$(ProjectDir)externals\imgui;$(ProjectDir)externals\DirectXTex;$(ProjectDir)engine\effect\light;$(ProjectDir)engine\audio;$(ProjectDir)engine\effect\particle;$(ProjectDir)engine\effect\line;$(ProjectDir)application\scene;$(ProjectDir)engine\imgui;$(ProjectDir)application\actor\player;$(ProjectDir)application\actor\enemy;$(ProjectDir)application\actor\boss;$(ProjectDir)application\effect;$(ProjectDir)engine\csv;$(ProjectDir)application\controller;$(ProjectDir)application\ui;$(ProjectDir)application\effect\controller;$(ProjectDir)application\scene\controller;$(ProjectDir)application\catalog;$(ProjectDir)engine\3d\camera;$(ProjectDir)engine\3d\camera\manager;$(ProjectDir)engine\state;$(ProjectDir)application\state;$(ProjectDir)application\actor;$(ProjectDir)externals\nlohmann;$(ProjectDir)application\actor\player\shot;$(ProjectDir)application\actor\barrier;$(ProjectDir)application\sequence;$(ProjectDir)application\ui\config;$(ProjectDir)application\actor\player\dodge;$(ProjectDir)application\actor\player\health;$(ProjectDir)application\actor\player\death;$(ProjectDir)engine\3d\collision</AdditionalIncludeDirectories>
       <Optimization>MinSpace</Optimization>
     </ClCompile>
     <Link>
@@ -113,15 +113,23 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+	<ClCompile Include="application\controller\SpriteSettings.cpp" />
+	<ClCompile Include="engine\imgui\SpriteEditor.cpp" />
+	<ClCompile Include="engine\imgui\SpriteGizmo.cpp" />
+	<ClCompile Include="engine\io\SpriteSave.cpp" />
+	<ClCompile Include="application\controller\CollisionSettings.cpp" />
+    <ClCompile Include="engine\3d\collision\CollisionManager.cpp" />
+    <ClCompile Include="engine\3d\collision\AABBCollider.cpp" />
     <ClCompile Include="application\catalog\AudioCatalog.cpp" />
-    <ClCompile Include="application\enemy\data\EnemyDataCatalog.cpp" />
-    <ClCompile Include="application\enemy\data\EnemyDataLoader.cpp" />
-    <ClCompile Include="application\enemy\EnemyAttribute.cpp" />
-    <ClCompile Include="application\enemy\EnemyType.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="application\enemy\Enemy.cpp" />
     <ClCompile Include="application\enemy\EnemyManager.cpp" />
     <ClCompile Include="application\enemy\EnemyFactory.cpp" />
+    <ClCompile Include="application\enemy\EnemyType.cpp" />
+    <ClCompile Include="application\enemy\EnemyAttribute.cpp" />
+    <ClCompile Include="application\enemy\data\EnemyDataLoader.cpp" />
+    <ClCompile Include="application\enemy\data\EnemyDataCatalog.cpp" />
+    <ClCompile Include="engine\func\common\DeltaTimeManager.cpp" />
     <ClCompile Include="engine\3d\BarrierCommon.cpp" />
     <ClCompile Include="engine\3d\camera\manager\CameraManager.cpp" />
     <ClCompile Include="engine\csv\CsvReader.cpp" />
@@ -202,8 +210,20 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\effect\post\NoiseEffect.cpp" />
     <ClCompile Include="engine\effect\post\MotionBlurEffect.cpp" />
     <ClCompile Include="engine\effect\post\SpeedLineEffect.cpp" />
+    <ClCompile Include="engine\io\ObjectSave.cpp" />
+    <ClCompile Include="engine\imgui\ObjectEditor.cpp" />
+    <ClCompile Include="application\controller\ObjectSettings.cpp" />
+    <ClCompile Include="application\actor\Player.cpp" />
   </ItemGroup>
   <ItemGroup>
+	<ClInclude Include="application\controller\SpriteSettings.h" />
+	<ClInclude Include="engine\imgui\SpriteEditor.h" />
+	<ClInclude Include="engine\imgui\SpriteGizmo.h" />
+	<ClInclude Include="engine\io\SpriteSave.h" />
+	<ClInclude Include="application\controller\CollisionSettings.h" />
+	<ClInclude Include="engine\3d\collision\CollisionCategory.h" />
+    <ClInclude Include="engine\3d\collision\CollisionManager.h" />
+    <ClInclude Include="engine\3d\collision\AABBCollider.h" />
     <ClInclude Include="application\catalog\AudioCatalog.h" />
     <ClInclude Include="application\enemy\data\EnemyDataCatalog.h" />
     <ClInclude Include="application\enemy\data\EnemyDataLoader.h" />
@@ -213,6 +233,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\enemy\EnemyType.h" />
     <ClInclude Include="application\enemy\EnemyManager.h" />
     <ClInclude Include="application\enemy\EnemyFactory.h" />
+    <ClInclude Include="engine\3d\collision\Collider.h" />
+    <ClInclude Include="engine\func\common\DeltaTimeManager.h" />
     <ClInclude Include="engine\3d\BarrierCommon.h" />
     <ClInclude Include="engine\3d\camera\manager\CameraManager.h" />
     <ClInclude Include="engine\csv\CsvReader.h" />
@@ -286,6 +308,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\nlohmann\json.hpp" />
     <ClInclude Include="engine\effect\post\NoiseEffect.h" />
     <ClInclude Include="engine\effect\post\MotionBlurEffect.h" />
+    <ClInclude Include="engine\io\ObjectSave.h" />
+    <ClInclude Include="engine\imgui\ObjectEditor.h" />
+    <ClInclude Include="application\controller\ObjectSettings.h" />
+    <ClInclude Include="application\actor\Player.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="application\catalog\TextureCatalog.h" />
     <ClInclude Include="engine\func\math\Transform.h" />

@@ -9,6 +9,8 @@
 #include <ModelManager.h>
 #include <Object3dCommon.h>
 #include <SpriteCommon.h>
+#include "DeltaTimeManager.h"
+#include "LineRenderer.h"
 
 using TKM::TextureManager;
 using TKM::ModelManager;
@@ -48,11 +50,19 @@ namespace TKM {
 		// モデルマネージャの初期化
 		ModelManager::GetInstance()->Initialize(dxCommon_.get());
 		// オーディオマネージャの初期化
-		AudioManager::GetInstance()->Initialize(); // AudioManagerを初期化
+		AudioManager::GetInstance()->Initialize();
+		// Inputを初期化
+		Input::GetInstance()->Initialize(windowsAPI_.get());
 
-		Object3dCommon::GetInstance()->Initialize(dxCommon_.get()); // Object3dCommonを初期化
-		TKM::SpriteCommon::GetInstance()->Initialize(dxCommon_.get());   // SpriteCommonを初期化
-		Input::GetInstance()->Initialize(windowsAPI_.get());        // Inputを初期化
+		// Object3dCommonを初期化
+		Object3dCommon::GetInstance()->Initialize(dxCommon_.get());
+		// SpriteCommonを初期化
+		TKM::SpriteCommon::GetInstance()->Initialize(dxCommon_.get());
+		// デバッグ用ライン描画を初期化
+		LineRenderer::GetInstance()->Initialize(dxCommon_.get());
+
+		// DeltaTimeの計測を初期化
+		DeltaTimeManager::GetInstance()->Initialize();
 	}
 
 	void Framework::Finalize() {
@@ -62,9 +72,12 @@ namespace TKM {
 	}
 
 	void Framework::Update() {
-		//シーンマネージャーの更新
+		// DeltaTimeを更新
+		DeltaTimeManager::GetInstance()->Update();
+		// 入力状態を更新
+		Input::GetInstance()->Update();
+		// シーンマネージャーの更新
 		sceneManager_->Update();
-
 		// シーン側から「アプリ終了要求」が来たら、Frameworkの終了フラグを立てる
 		if (sceneManager_ && sceneManager_->IsQuitRequested()) {
 			endRequest_ = true;

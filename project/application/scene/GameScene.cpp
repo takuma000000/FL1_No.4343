@@ -5,12 +5,8 @@
 #include "ModelCatalog.h"
 #include "CameraManager.h"
 #include "ParticleManager.h"
-
+#include "DeltaTimeManager.h"
 #include "Logger.h"
-
-#ifdef USE_IMGUI
-#include "imgui.h"
-#endif
 
 using namespace TKM;
 
@@ -24,13 +20,15 @@ void GameScene::Initialize() {
 	TextureCatalog::LoadTextureCatalogs();
 	ModelCatalog::LoadModelCatalogs(dxCommon_);
 	InitializeObjects();
+	collisionSettings_.Initialize(sphere_.get(), player_.get());
+	objectSettings_.Initialize(sphere_.get(), player_.get());
 	InitializeSprite();
+	spriteSettings_.Initialize();
 	InitializeCamera();
-
-	InitializeEnemies(); // カメラを使用するため、カメラの初期化完了後に生成する
+	InitializeEnemies(); // カメラ初期化後に敵を生成する
 
 	/// ──────────────── パーティクル初期化 ───────────────
-	auto* particleManager = TKM::ParticleManager::GetInstance();
+	auto particleManager = TKM::ParticleManager::GetInstance();
 	particleManager->Initialize(dxCommon_, srvManager_, TKM::CameraManager::GetInstance()->GetMainCamera());
 
 	/// ──────────────── ライトの初期化 ───────────────
@@ -39,15 +37,21 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Finalize() {
-	/// ──────────────── 敵の終了処理 ────────────────
+	/// ──────── 敵の終了処理 ────────
 	if (enemyManager_) {
-		// EnemyとEnemyが所有するObject3dを破棄する。
 		enemyManager_->Clear();
 		enemyManager_.reset();
 	}
-
-    // EnemyManagerはCatalogを参照しているので、Managerを破棄した後にCatalogを破棄する。
 	enemyDataCatalog_.reset();
+
+	/// ──────────────── スプライト設定終了 ───────────────
+	spriteSettings_.Finalize();
+
+	/// ──────────────── 当たり判定設定終了 ───────────────
+	collisionSettings_.Finalize();
+
+	/// ──────────────── オブジェクト設定終了 ───────────────
+	objectSettings_.Finalize();
 
 	/// ──────────────── 各種終了処理 ───────────────
 	TextureManager::GetInstance()->Finalize();
@@ -59,30 +63,39 @@ void GameScene::Finalize() {
 }
 
 void GameScene::Update() {
-	// 現在は60FPS固定として経過時間を扱う。
-	// 将来的には実際のフレーム経過時間へ置き換える。
-	constexpr float kDeltaTime = 1.0f / 60.0f;
-
-	/// ──────────────── カメラ更新 ───────────────
-	UpdateActiveCamera();
+	const float deltaTime = TKM::DeltaTimeManager::GetInstance()->GetDeltaTime();
 
 	/// ──────────────── 3Dオブジェクト更新 ───────────────
+	// 先にプレイヤーを更新し、同時に追従カメラの座標を確定させる
+	if (player_) {
+		player_->Update();
+	}
+
+	/// ──────────────── カメラ更新 ───────────────
+	// 確定したカメラ座標をもとに同じフレーム内で行列更新・適用（1フレームの遅れも防止）
+	UpdateActiveCamera();
+
 	// テスト用Sphere更新
-	sphere_->Update();
+	if (sphere_) {
+		sphere_->Update();
+	}
 
-    /// ──────────────── 敵更新 ───────────────
-	if (enemyManager_) {
-		// 現在は中央のSphereをターゲットとしてEnemyを更新する。
-		const Vector3 targetPosition = sphere_->GetTranslate();
+	/// ──────────────── スプライト更新 ───────────────
+	logoSprite_->Update();      // TKMAXロゴ更新
+	uvCheckerSprite_->Update(); // UVチェッカー更新
 
-		enemyManager_->Update(kDeltaTime, targetPosition);
+	/// ──────── 敵更新 ────────
+	if (enemyManager_ && sphere_) {
+		enemyManager_->Update(deltaTime, sphere_->GetTranslate());
 	}
 
 	/// ──────────────── ライト更新 ───────────────
-	directionalLight_->Update();
+	if (directionalLight_) {
+		directionalLight_->Update();
+	}
 
 	/// ──────────────── パーティクル更新 ───────────────
-	TKM::ParticleManager::GetInstance()->Update(kDeltaTime);
+	TKM::ParticleManager::GetInstance()->Update();
 
 #ifdef USE_IMGUI
 	ImGuiDebug();
@@ -90,20 +103,26 @@ void GameScene::Update() {
 }
 
 void GameScene::Draw() {
+	DrawBack();
 	Draw3D();
 	DrawSprite();
 }
 
 void GameScene::Draw3D() {
-
 	/// ──────────────── 3Dオブジェクト描画 ───────────────
 	Object3dCommon::GetInstance()->DrawSetCommon();
-	// テスト用Sphere描画
-	sphere_->Draw(dxCommon_);
 
-	/// ──────────────── 敵描画 ───────────────
+	// テスト用Sphere描画
+	if (sphere_) {
+		sphere_->Draw(dxCommon_);
+	}
+
+	if (player_) {
+		player_->Draw(dxCommon_);
+	}
+
+	/// ──────── 敵描画 ────────
 	if (enemyManager_) {
-		// EnemyManagerが所有する生存中のEnemyを描画する。
 		enemyManager_->Draw();
 	}
 
@@ -114,14 +133,27 @@ void GameScene::Draw3D() {
 void GameScene::DrawSprite() {
 	/// ──────────────── 2D描画共通設定 ───────────────
 	TKM::SpriteCommon::GetInstance()->DrawSetCommon();
+
+	/// ──────────────── 前面スプライト描画 ───────────────
+	uvCheckerSprite_->Draw(); // UVチェッカー描画
+}
+
+void GameScene::DrawBack() {
+	/// ──────────────── 背景描画共通設定 ───────────────
+	TKM::SpriteCommon::GetInstance()->DrawSetCommon();
+
+	/// ──────────────── TKMAXロゴ背景描画 ───────────────
+	logoSprite_->Draw();
 }
 
 TKM::Camera* GameScene::UpdateActiveCamera() {
-	auto* activeCamera =
-		TKM::CameraManager::GetInstance()->Update();
+	auto activeCamera = TKM::CameraManager::GetInstance()->Update();
 
 	if (activeCamera) {
 		TKM::ParticleManager::GetInstance()->SetCamera(activeCamera);
+
+		sphere_->SetCamera(activeCamera); // テスト用Sphereにカメラを設定
+		player_->SetCamera(activeCamera); // プレイヤーにカメラを設定
 	}
 
 	return activeCamera;
@@ -130,7 +162,49 @@ TKM::Camera* GameScene::UpdateActiveCamera() {
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 // スプライトを作成し、初期化する
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-void GameScene::InitializeSprite() {}
+void GameScene::InitializeSprite() {
+	/// TKMAXロゴを生成する
+	logoSprite_ = std::make_unique<TKM::Sprite>();
+	logoSprite_->Initialize(
+		TKM::SpriteCommon::GetInstance(),
+		dxCommon_,
+		"./resources/texture/TKMAX_logo.png"
+	);
+
+	// 画像の中心を画面中央へ配置する
+	logoSprite_->SetAnchorPoint({ 0.5f, 0.5f });
+	logoSprite_->SetPosition({
+		static_cast<float>(TKM::WindowsAPI::GetClientWidth()) * 0.5f,
+		static_cast<float>(TKM::WindowsAPI::GetClientHeight()) * 0.5f
+		});
+
+	// 元画像と同じサイズで表示する
+	logoSprite_->SetAutoAdjustTextureSize(false);
+	logoSprite_->SetTextureSize({ 459.0f, 287.0f });
+	logoSprite_->SetSize({ 459.0f, 287.0f });
+	logoSprite_->Update();
+
+	/// UVチェッカーを生成する
+	uvCheckerSprite_ = std::make_unique<TKM::Sprite>();
+	uvCheckerSprite_->Initialize(
+		TKM::SpriteCommon::GetInstance(),
+		dxCommon_,
+		"./resources/texture/uvChecker.png"
+	);
+
+	// 画像の中心を画面中央へ配置する
+	uvCheckerSprite_->SetAnchorPoint({ 0.5f, 0.5f });
+	uvCheckerSprite_->SetPosition({
+		static_cast<float>(TKM::WindowsAPI::GetClientWidth()) * 0.5f,
+		static_cast<float>(TKM::WindowsAPI::GetClientHeight()) * 0.5f
+		});
+
+	// 元画像と同じサイズで表示する
+	uvCheckerSprite_->SetAutoAdjustTextureSize(false);
+	uvCheckerSprite_->SetTextureSize({ 512.0f, 512.0f });
+	uvCheckerSprite_->SetSize({ 512.0f, 512.0f });
+	uvCheckerSprite_->Update();
+}
 
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 // 3Dオブジェクトを作成し、初期化する
@@ -144,12 +218,16 @@ void GameScene::InitializeObjects() {
 		dxCommon_
 	);
 	// モデル設定
-	sphere_->SetModel("sphere.obj");
+	sphere_->SetModel("plane.obj");
 	// 座標・スケール設定
-	constexpr Vector3 kSpherePosition = { 0.0f, 0.0f, 0.0f };
+	constexpr Vector3 kSpherePosition = { 0.0f, 5.0f, 0.0f };
 	constexpr Vector3 kSphereScale = { 3.0f, 3.0f, 3.0f };
 	sphere_->SetTranslate(kSpherePosition);
 	sphere_->SetScale(kSphereScale);
+
+	// プレイヤー生成・初期化
+	player_ = std::make_unique<Player>();
+	player_->Initialize(dxCommon_);
 }
 
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
@@ -163,113 +241,75 @@ void GameScene::InitializeCamera() {
 
 	/// ──────────────── カメラマネージャー初期化 ───────────────
 	TKM::CameraManager::GetInstance()->Initialize(mainRot, mainPos, debugTarget);
-	// 行列を即更新して、1フレームだけ古いカメラになるのを防ぐ
-	if (TKM::CameraManager::GetInstance()->GetMainCamera()) {
-		TKM::CameraManager::GetInstance()->GetMainCamera()->Update();
+
+	// メインカメラの設定を読み込み、更新する
+	auto mainCamera = TKM::CameraManager::GetInstance()->GetMainCamera();
+	if (mainCamera) {
+		mainCamera->SetSettingsPath("resources/data/mainCamera.json");
+		mainCamera->LoadSettings();
+		mainCamera->Update();
 	}
 
 	/// ───────────────── Objectカメラ設定 ───────────────
-	// Sphereにカメラを設定
-	sphere_->SetCamera(TKM::CameraManager::GetInstance()->GetMainCamera());
+	if (sphere_) {
+		sphere_->SetCamera(mainCamera);
+	}
+
+	if (player_) {
+		player_->SetCamera(mainCamera);
+		if (mainCamera) {
+			player_->SetFollowCamera(mainCamera, mainCamera->GetTranslate());
+		}
+	}
 }
 
 void GameScene::ImGuiDebug() {
 #ifdef USE_IMGUI
-
 	// ──────────────── カメラ表示 ───────────────
-	if (auto* camera = TKM::CameraManager::GetInstance()->GetMainCamera()) {
+	// デバッグカメラの切り替え表示
+	TKM::CameraManager::GetInstance()->ImGuiDebug();
+	// メインカメラのデバッグ表示
+	if (auto camera =
+		TKM::CameraManager::GetInstance()->GetMainCamera()) {
 		camera->ImGuiDebug(); // メインカメラのデバッグ表示
 	}
+	// ──────────────── オブジェクト編集 ───────────────
+	objectSettings_.ImGuiDebug();
+
+	// ──────────────── スプライト編集 ───────────────
+	spriteSettings_.ImGuiDebug();
 #endif
 }
 
-// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-// 敵データを読み込み、動作確認用のEnemyを生成する
-// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 void GameScene::InitializeEnemies() {
-	//=========================================================
-	// EnemyDataCatalogの生成
-	//=========================================================
-	enemyDataCatalog_ =
-		std::make_unique<EnemyDataCatalog>();
-
+    // 敵データカタログを作成し、ディレクトリから敵データを読み込む
+	enemyDataCatalog_ = std::make_unique<EnemyDataCatalog>();
 	std::string errorMessage;
 
-	// resources/data/enemy内にある
-	// .enemy.jsonファイルをすべて読み込む。
-	const bool isCatalogLoaded =
-		enemyDataCatalog_->LoadDirectory(
-			"resources/data/enemy",
-			errorMessage
-		);
-
-	if (!isCatalogLoaded) {
-		Logger::Log(
-			"[Enemy] Failed to load enemy data directory.\n" +
-			errorMessage +
-			"\n"
-		);
-
+    // 敵データディレクトリの読み込み
+	if (!enemyDataCatalog_->LoadDirectory("resources/data/enemy", errorMessage)) {
+		Logger::Log("[Enemy] Failed to load enemy data directory.\n" + errorMessage + "\n");
 		return;
 	}
 
-	//=========================================================
-	// カメラの取得
-	//=========================================================
-	TKM::Camera* mainCamera =
-		TKM::CameraManager::GetInstance()->GetMainCamera();
-
-	// EnemyのObject3dへ設定するカメラがない場合は、
-	// 描画できないためEnemyManagerを生成しない。
+    // メインカメラを取得し、敵マネージャーを初期化する
+	TKM::Camera* mainCamera = TKM::CameraManager::GetInstance()->GetMainCamera();
 	if (!mainCamera) {
-		Logger::Log(
-			"[Enemy] Main camera is null.\n"
-		);
-
+		Logger::Log("[Enemy] Main camera is null.\n");
 		return;
 	}
 
-	//=========================================================
-	// EnemyManagerの初期化
-	//=========================================================
-	enemyManager_ =
-		std::make_unique<EnemyManager>();
+    // 敵マネージャーを作成し、初期化する
+	enemyManager_ = std::make_unique<EnemyManager>();
+	enemyManager_->Initialize(dxCommon_, mainCamera, *enemyDataCatalog_);
 
-	enemyManager_->Initialize(
-		dxCommon_,
-		mainCamera,
-		*enemyDataCatalog_
-	);
+	constexpr Vector3 kBasicVirusPosition = { -15.0f, 0.0f, 0.0f };
 
-	//=========================================================
-	// BasicVirusの生成
-	//=========================================================
-	// 中央のテスト用Sphereと重ならないよう、
-	// X方向に離れた位置へ生成する。
-	constexpr Vector3 kBasicVirusPosition = {
-		-15.0f,
-		0.0f,
-		0.0f
-	};
-
-	const bool isSpawned =
-		enemyManager_->Spawn(
-			"BasicVirus",
-			kBasicVirusPosition,
-			errorMessage
-		);
-
-	if (!isSpawned) {
-		Logger::Log(
-			"[Enemy] Failed to spawn BasicVirus.\n" +
-			errorMessage +
-			"\n"
-		);
-
+    // BasicVirusをスポーンする
+	if (!enemyManager_->Spawn("BasicVirus", kBasicVirusPosition, errorMessage)) {
+		Logger::Log("[Enemy] Failed to spawn BasicVirus.\n" + errorMessage + "\n");
 		return;
 	}
 
-	Logger::Log(
-		"[Enemy] BasicVirus spawned successfully.\n"
-	);
+	Logger::Log("[Enemy] BasicVirus spawned successfully.\n");
 }

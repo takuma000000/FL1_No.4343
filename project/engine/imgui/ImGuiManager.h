@@ -63,6 +63,11 @@ namespace TKM {
 		/// </summary>
 		void SetColorRainbow();
 
+		/// <summary>
+		/// クリスタルガラスをイメージしたテーマに設定します。
+		/// </summary>
+		void SetColorCrystalGlass();
+
 	private:
 		//=============================================================
 		// 共通参照

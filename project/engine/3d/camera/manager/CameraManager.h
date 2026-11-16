@@ -30,6 +30,11 @@ namespace TKM {
 		Camera* Update();
 
 		/// <summary>
+		/// ImGuiでカメラ切り替え画面を表示します。
+		/// </summary>
+		void ImGuiDebug();
+
+		/// <summary>
 		/// デバッグカメラを使用しているかどうかを取得します。
 		/// </summary>
 		/// <returns>デバッグカメラを使用している場合 true、それ以外は false</returns>

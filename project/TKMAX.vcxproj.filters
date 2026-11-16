@@ -164,6 +164,18 @@
     <ClCompile Include="application\enemy\EnemyAttribute.cpp" />
     <ClCompile Include="application\enemy\data\EnemyDataLoader.cpp" />
     <ClCompile Include="application\enemy\data\EnemyDataCatalog.cpp" />
+    <ClCompile Include="application\actor\Player.cpp" />
+    <ClCompile Include="engine\io\ObjectSave.cpp" />
+    <ClCompile Include="engine\imgui\ObjectEditor.cpp" />
+    <ClCompile Include="application\controller\ObjectSettings.cpp" />
+    <ClCompile Include="engine\func\common\DeltaTimeManager.cpp" />
+    <ClCompile Include="engine\3d\collision\AABBCollider.cpp" />
+    <ClCompile Include="engine\3d\collision\CollisionManager.cpp" />
+	<ClCompile Include="application\controller\CollisionSettings.cpp" />
+	<ClCompile Include="application\controller\SpriteSettings.cpp" />
+	<ClCompile Include="engine\imgui\SpriteEditor.cpp" />
+	<ClCompile Include="engine\imgui\SpriteGizmo.cpp" />
+	<ClCompile Include="engine\io\SpriteSave.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\2d\Sprite.h">
@@ -366,6 +378,20 @@
     <ClInclude Include="application\enemy\EnemyAttribute.h" />
     <ClInclude Include="application\enemy\data\EnemyDataLoader.h" />
     <ClInclude Include="application\enemy\data\EnemyDataCatalog.h" />
+    <ClInclude Include="application\actor\Player.h" />
+    <ClInclude Include="engine\io\ObjectSave.h" />
+    <ClInclude Include="engine\imgui\ObjectEditor.h" />
+    <ClInclude Include="application\controller\ObjectSettings.h" />
+    <ClInclude Include="engine\func\common\DeltaTimeManager.h" />
+    <ClInclude Include="engine\3d\collision\Collider.h" />
+    <ClInclude Include="engine\3d\collision\AABBCollider.h" />
+    <ClInclude Include="engine\3d\collision\CollisionManager.h" />
+	<ClInclude Include="engine\3d\collision\CollisionCategory.h" />
+	<ClInclude Include="application\controller\CollisionSettings.h" />
+	<ClInclude Include="application\controller\SpriteSettings.h" />
+	<ClInclude Include="engine\imgui\SpriteEditor.h" />
+	<ClInclude Include="engine\imgui\SpriteGizmo.h" />
+	<ClInclude Include="engine\io\SpriteSave.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
