@@ -10,7 +10,7 @@ void PlayerBullet::Initialize(TKM::DirectXCommon* dxCommon, const Vector3& posit
 	object_->Initialize(TKM::Object3dCommon::GetInstance(), dxCommon);
 	// ※プロジェクト内にある弾用モデル（またはsphere.objなど）に書き換えてください
 	object_->SetModel("playerBullet/playerBullet.obj");
-	object_->SetScale({ 0.3f, 0.3f, 0.3f });
+	object_->SetScale({ 0.7f, 0.7f, 0.7f });
 	object_->SetTranslate(pos_);
 	object_->SetRotate(rotation_);
 	object_->Update();
