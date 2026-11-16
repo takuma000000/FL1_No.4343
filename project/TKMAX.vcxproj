@@ -113,11 +113,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-	<ClCompile Include="application\controller\SpriteSettings.cpp" />
-	<ClCompile Include="engine\imgui\SpriteEditor.cpp" />
-	<ClCompile Include="engine\imgui\SpriteGizmo.cpp" />
-	<ClCompile Include="engine\io\SpriteSave.cpp" />
-	<ClCompile Include="application\controller\CollisionSettings.cpp" />
+    <ClCompile Include="application\controller\SpriteSettings.cpp" />
+    <ClCompile Include="engine\imgui\SpriteEditor.cpp" />
+    <ClCompile Include="engine\imgui\SpriteGizmo.cpp" />
+    <ClCompile Include="engine\io\SpriteSave.cpp" />
+    <ClCompile Include="application\controller\CollisionSettings.cpp" />
     <ClCompile Include="engine\3d\collision\CollisionManager.cpp" />
     <ClCompile Include="engine\3d\collision\AABBCollider.cpp" />
     <ClCompile Include="application\catalog\AudioCatalog.cpp" />
@@ -207,14 +207,15 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\imgui\ObjectEditor.cpp" />
     <ClCompile Include="application\controller\ObjectSettings.cpp" />
     <ClCompile Include="application\actor\Player.cpp" />
+    <ClCompile Include="PlayerBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
-	<ClInclude Include="application\controller\SpriteSettings.h" />
-	<ClInclude Include="engine\imgui\SpriteEditor.h" />
-	<ClInclude Include="engine\imgui\SpriteGizmo.h" />
-	<ClInclude Include="engine\io\SpriteSave.h" />
-	<ClInclude Include="application\controller\CollisionSettings.h" />
-	<ClInclude Include="engine\3d\collision\CollisionCategory.h" />
+    <ClInclude Include="application\controller\SpriteSettings.h" />
+    <ClInclude Include="engine\imgui\SpriteEditor.h" />
+    <ClInclude Include="engine\imgui\SpriteGizmo.h" />
+    <ClInclude Include="engine\io\SpriteSave.h" />
+    <ClInclude Include="application\controller\CollisionSettings.h" />
+    <ClInclude Include="engine\3d\collision\CollisionCategory.h" />
     <ClInclude Include="engine\3d\collision\CollisionManager.h" />
     <ClInclude Include="engine\3d\collision\AABBCollider.h" />
     <ClInclude Include="application\catalog\AudioCatalog.h" />
@@ -297,6 +298,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\imgui\ObjectEditor.h" />
     <ClInclude Include="application\controller\ObjectSettings.h" />
     <ClInclude Include="application\actor\Player.h" />
+    <ClInclude Include="PlayerBullet.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="application\catalog\TextureCatalog.h" />
     <ClInclude Include="engine\func\math\Transform.h" />
