@@ -12,6 +12,7 @@ void PlayerBullet::Initialize(TKM::DirectXCommon* dxCommon, const Vector3& posit
 	object_->SetModel("playerBullet/playerBullet.obj");
 	object_->SetScale({ 0.3f, 0.3f, 0.3f });
 	object_->SetTranslate(pos_);
+	object_->SetRotate(rotation_);
 	object_->Update();
 }
 
@@ -25,6 +26,9 @@ void PlayerBullet::Update() {
 	pos_.y += velocity_.y;
 	pos_.z += velocity_.z;
 
+	// 縦方向に回転させる
+	rotation_.x += rotateSpeed_.x;
+
 	// 寿命カウント（一定時間経過で消滅）
 	lifeTimer_++;
 	if (lifeTimer_ >= kMaxLifeTime) {
@@ -33,6 +37,7 @@ void PlayerBullet::Update() {
 
 	if (object_) {
 		object_->SetTranslate(pos_);
+		object_->SetRotate(rotation_);
 		object_->Update();
 	}
 }
