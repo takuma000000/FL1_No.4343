@@ -3,6 +3,7 @@
 #include "CameraManager.h"
 #include "ParticleManager.h"
 #include "DeltaTimeManager.h"
+#include "Input.h"
 #include "Logger.h"
 
 using namespace TKM;
@@ -67,9 +68,13 @@ void GameScene::Update() {
 	/// ──────────────── カメラ更新 ───────────────
 	UpdateActiveCamera();
 
+	/// ──────────────── 敵選択更新 ───────────────
+	UpdateEnemySelection();
+
 	/// ──────────────── 3Dオブジェクト更新 ───────────────
 	// Player内で移動→追従カメラ行列→オブジェクト行列の順に更新する
-	if (player_) {
+	// 選択確定後にプレイヤーを更新する
+	if (player_ && enemySelectionConfirmed_) {
 		player_->Update();
 	}
 
@@ -79,8 +84,10 @@ void GameScene::Update() {
 	}
 
 	/// ──────────────── スプライト更新 ───────────────
-	logoSprite_->Update();      // TKMAXロゴ更新
-	uvCheckerSprite_->Update(); // UVチェッカー更新
+	logoSprite_->Update();        // TKMAXロゴ更新
+	uvCheckerSprite_->Update();   // UVチェッカー更新
+	weakEnemySprite_->Update();   // 弱い敵更新
+	strongEnemySprite_->Update(); // 強い敵更新
 
 	/// ──────── 敵更新 ────────
 	if (enemyManager_ && sphere_) {
@@ -131,6 +138,10 @@ void GameScene::DrawSprite() {
 
 	/// ──────────────── 前面スプライト描画 ───────────────
 	uvCheckerSprite_->Draw(); // UVチェッカー描画
+	if (!enemySelectionConfirmed_) {
+		weakEnemySprite_->Draw();   // 弱い敵
+		strongEnemySprite_->Draw(); // 強い敵
+	}
 }
 
 void GameScene::DrawBack() {
@@ -199,6 +210,55 @@ void GameScene::InitializeSprite() {
 	uvCheckerSprite_->SetTextureSize({ 512.0f, 512.0f });
 	uvCheckerSprite_->SetSize({ 512.0f, 512.0f });
 	uvCheckerSprite_->Update();
+
+	const float screenWidth = static_cast<float>(TKM::WindowsAPI::GetClientWidth());
+	const float screenHeight = static_cast<float>(TKM::WindowsAPI::GetClientHeight());
+	const Vector2 directionSpriteSize = { 256.0f, 256.0f };
+
+	auto initializeEnemySprite = [&](std::unique_ptr<TKM::Sprite>& sprite, const char* texturePath, float x) {
+		sprite = std::make_unique<TKM::Sprite>();
+		sprite->Initialize(TKM::SpriteCommon::GetInstance(), dxCommon_, texturePath);
+		sprite->SetAnchorPoint({ 0.5f, 0.5f });
+		sprite->SetPosition({ x, screenHeight * 0.75f });
+		sprite->SetAutoAdjustTextureSize(false);
+		sprite->SetTextureSize(directionSpriteSize);
+		sprite->SetSize(directionSpriteSize);
+		sprite->Update();
+	};
+
+	initializeEnemySprite(weakEnemySprite_, "./resources/texture/weakEnemy.png", screenWidth * 0.25f);
+	initializeEnemySprite(strongEnemySprite_, "./resources/texture/strongEnemy.png", screenWidth * 0.75f);
+	weakEnemySprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+	strongEnemySprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.45f });
+}
+
+void GameScene::UpdateEnemySelection() {
+	if (enemySelectionConfirmed_) {
+		return;
+	}
+
+	TKM::Input* input = TKM::Input::GetInstance();
+	if (!input) {
+		return;
+	}
+
+	if (input->TriggerKey(DIK_LEFT) || input->TriggerKey(DIK_A)) {
+		enemyChoice_ = EnemyChoice::Weak;
+		weakEnemySprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+		strongEnemySprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.45f });
+	}
+	if (input->TriggerKey(DIK_RIGHT) || input->TriggerKey(DIK_D)) {
+		enemyChoice_ = EnemyChoice::Strong;
+		weakEnemySprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.45f });
+		strongEnemySprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+	}
+
+	if (input->TriggerKey(DIK_RETURN) || input->TriggerKey(DIK_SPACE)) {
+		enemySelectionConfirmed_ = true;
+		Logger::Log(enemyChoice_ == EnemyChoice::Weak
+			? "[Game] Weak enemy selected.\n"
+			: "[Game] Strong enemy selected.\n");
+	}
 }
 
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*

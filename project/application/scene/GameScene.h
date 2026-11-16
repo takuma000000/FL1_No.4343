@@ -86,7 +86,12 @@ public:
 	/// </summary>
 	void InitializeEnemies();
 
-private:
+	private:
+	/// <summary>
+	/// 敵の選択入力を更新します。
+	/// </summary>
+	void UpdateEnemySelection();
+
 	//======================================================================
 	// 基本システム
 	//======================================================================
@@ -108,6 +113,16 @@ private:
 	//======================================================================
 	std::unique_ptr<TKM::Sprite> logoSprite_ = nullptr; // TKMAXロゴ
 	std::unique_ptr<TKM::Sprite> uvCheckerSprite_ = nullptr; // UVチェッカー
+	std::unique_ptr<TKM::Sprite> weakEnemySprite_ = nullptr; // 弱い敵
+	std::unique_ptr<TKM::Sprite> strongEnemySprite_ = nullptr; // 強い敵
+
+	enum class EnemyChoice {
+		Weak,
+		Strong
+	};
+
+	EnemyChoice enemyChoice_ = EnemyChoice::Weak;
+	bool enemySelectionConfirmed_ = false;
 
 	//======================================================================
 	// オブジェクト設定
