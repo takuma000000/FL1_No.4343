@@ -1,0 +1,18 @@
+{
+    "version": 1,
+    "texture": "resources/texture/circle.png",
+    "shape": 0,
+    "count": 40,
+    "loop": false,
+    "interval": 0.15,
+    "spawnExtent": [0.15, 0.15, 0.15],
+    "velocityMin": [-3.0, -1.0, -3.0],
+    "velocityMax": [3.0, 4.0, 3.0],
+    "gravity": [0.0, -2.0, 0.0],
+    "lifeMin": 0.4,
+    "lifeMax": 1.0,
+    "startSize": 0.5,
+    "endSize": 0.0,
+    "startColor": [1.0, 0.6, 0.1, 1.0],
+    "endColor": [1.0, 0.1, 0.0, 0.0]
+}

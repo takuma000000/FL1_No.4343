@@ -50,7 +50,8 @@ namespace TKM {
 			"TITLE",
 			"GAME",
 			"CLEAR",
-			"GAMEOVER"
+			"GAMEOVER",
+			"PARTICLE_EDITOR"
 		};
 
 		ImGui::Combo(
