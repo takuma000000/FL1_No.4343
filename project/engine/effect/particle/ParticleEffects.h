@@ -1,6 +1,7 @@
 #pragma once
 #include "ParticleEffectSettings.h"
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace TKM {
@@ -16,6 +17,10 @@ namespace TKM {
 		// 再生開始後に指定。発生位置を基準に粒・範囲・移動距離をまとめて拡大。
 		// 寿命・発生間隔・粒数は変更しない。生存中の粒子にも即時反映。
 		void SetScale(const std::string& name, float scale);
+		// JSONの他の項目を保持して倍率だけ保存。Reloadで保存値へ戻せる。
+		bool SaveScale(const std::string& name);
+		void ImGuiDebug();
+		void SetPreviewScale(float scale);
 		// 以前の呼び出しとの互換用。演出全体の倍率として扱う。
 		void SetSizeMultiplier(const std::string& name, float multiplier);
 		void Stop(const std::string& name);
@@ -36,6 +41,8 @@ namespace TKM {
 		std::unordered_map<std::string, ParticleEffectSettings> cache_;
 		std::vector<Emitter> emitters_;
 		std::string error_;
+		std::unordered_set<std::string> dirtyScales_;
+		std::string selectedScaleEffect_, scaleMessage_;
 		static constexpr const char* kPreviewGroup = "__editor_particle_preview";
 		static constexpr size_t kMaxLoopingEffects = 64;
 		static constexpr int kMaxBurstsPerFrame = 8;

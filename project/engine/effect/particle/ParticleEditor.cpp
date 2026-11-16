@@ -110,6 +110,8 @@ namespace TKM {
 		changed |= ImGui::DragFloat("寿命 最小（秒）", &settings_.lifeMin, 0.01f, 0.01f, 60.0f);
 		changed |= ImGui::DragFloat("寿命 最大（秒）", &settings_.lifeMax, 0.01f, 0.01f, 60.0f);
 		ImGui::SeparatorText("見た目");
+		const bool scaleChanged = ImGui::DragFloat("演出全体の倍率", &settings_.scale, 0.1f, 0.1f, 100.0f, "%.1f倍", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::TextDisabled("粒・範囲・軌跡をまとめて拡大。保存するとゲームにも反映されます。");
 		const char* shapes[] = { "通常（板）", "リング", "シリンダー", "リボン（板）" };
 		changed |= ImGui::Combo("形状", &settings_.shape, shapes, IM_ARRAYSIZE(shapes));
 		if (ImGui::BeginCombo("テクスチャ", settings_.texture.c_str())) {
@@ -121,7 +123,9 @@ namespace TKM {
 		changed |= ImGui::ColorEdit4("開始色", &settings_.startColor.x);
 		changed |= ImGui::ColorEdit4("終了色", &settings_.endColor.x);
 		ImGui::TextDisabled("色・サイズは寿命に沿って変化。ブレンドは既存の加算合成です。");
-		if (changed) { dirty_ = true; confirmOverwrite_ = false; }
+		if (changed || scaleChanged) { dirty_ = true; confirmOverwrite_ = false; }
+		// 倍率だけの調整では粒や発生タイマーをリセットしない。
+		if (scaleChanged) { ParticleEffects::GetInstance()->SetPreviewScale(settings_.scale); }
 		if ((changed || previewChanged) && playing_) { Restart(); }
 		ImGui::TextDisabled("再生・調整時も「前の粒子を寿命まで残す」に従います。形状・テクスチャ変更時は消去します。");
 		ImGui::SeparatorText("保存");

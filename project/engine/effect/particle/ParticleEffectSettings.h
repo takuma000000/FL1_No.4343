@@ -14,6 +14,7 @@ namespace TKM {
 		bool loop = false;
 		bool keepParticles = true; // 次の発生時も生存粒子を寿命まで残す
 		float interval = 0.15f;
+		float scale = 1.0f; // 粒・発生範囲・軌跡に共通の保存倍率
 		Vector3 spawnExtent = { 0.3f, 0.3f, 0.3f };
 		Vector3 velocityMin = { -2.0f, 1.0f, -2.0f };
 		Vector3 velocityMax = { 2.0f, 4.0f, 2.0f };

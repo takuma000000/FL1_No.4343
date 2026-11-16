@@ -45,6 +45,7 @@ namespace TKM {
 		auto ext = std::filesystem::path(texture).extension().string();
 		std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 		Require(ext == ".png" || ext == ".dds" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp", "Unsupported texture extension");
+		Require(InRange(scale, 0.1f, 100.0f), "Scale must be 0.1-100");
 		Require(shape >= 0 && shape <= 3, "Invalid shape");
 		Require(count >= 1 && count <= 512, "Count must be 1-512");
 		Require(InRange(interval, 0.01f, 60.0f), "Interval must be 0.01-60 seconds");
@@ -100,6 +101,7 @@ namespace TKM {
 			s.shape = j.at("shape").get<int>();
 			Require(j.at("count").is_number_integer() && j.at("count").get<int64_t>() >= 1 && j.at("count").get<int64_t>() <= 512, "Invalid count");
 			s.count = j.at("count").get<uint32_t>();
+			s.scale = j.value("scale", 1.0f); // 旧ファイルは元の大きさ
 			s.keepParticles = j.value("keepParticles", true); // 旧JSONは重ねて発生
 			s.loop = j.at("loop").get<bool>(); s.interval = j.at("interval").get<float>();
 			s.spawnExtent = Read3(j.at("spawnExtent"));
@@ -117,7 +119,7 @@ namespace TKM {
 			const auto path = Path(name);
 			s.Validate(); ValidateTexture(s.texture);
 			Json j = { {"version", 1}, {"texture", s.texture}, {"shape", s.shape}, {"count", s.count},
-				{"loop", s.loop}, {"keepParticles", s.keepParticles}, {"interval", s.interval}, {"spawnExtent", ToJson(s.spawnExtent)},
+				{"scale", s.scale}, {"loop", s.loop}, {"keepParticles", s.keepParticles}, {"interval", s.interval}, {"spawnExtent", ToJson(s.spawnExtent)},
 				{"velocityMin", ToJson(s.velocityMin)}, {"velocityMax", ToJson(s.velocityMax)}, {"gravity", ToJson(s.gravity)},
 				{"lifeMin", s.lifeMin}, {"lifeMax", s.lifeMax}, {"startSize", s.startSize}, {"endSize", s.endSize},
 				{"startColor", ToJson(s.startColor)}, {"endColor", ToJson(s.endColor)} };
