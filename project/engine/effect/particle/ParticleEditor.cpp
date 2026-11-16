@@ -86,7 +86,7 @@ namespace TKM {
 			if (ImGui::Button("キャンセル")) { confirmNew_ = false; pendingLoad_.clear(); }
 		}
 		ImGui::SeparatorText("再生");
-		if (ImGui::Button("再生 / 最初から")) { Restart(); }
+		if (ImGui::Button("再生 / もう一度発生")) { Restart(); }
 		ImGui::SameLine();
 		if (ImGui::Button(paused_ ? "再開" : "一時停止")) { paused_ = !paused_; }
 		ImGui::SameLine();
@@ -96,6 +96,9 @@ namespace TKM {
 		bool previewChanged = ImGui::DragFloat3("プレビュー位置", &position_.x, 0.1f);
 		ImGui::SeparatorText("発生");
 		changed |= ImGui::Checkbox("連続発生（OFFなら一回だけ）", &settings_.loop);
+		changed |= ImGui::Checkbox("前の粒子を寿命まで残す", &settings_.keepParticles);
+		ImGui::TextDisabled("ON: 重ねて発生（炎・煙向け） / OFF: 次の発生時に消去");
+		ImGui::TextDisabled("上限512粒子に達すると、新規生成を見送ります。");
 		int count = static_cast<int>(settings_.count);
 		if (ImGui::DragInt("一回の発生数", &count, 1, 1, 512)) { settings_.count = static_cast<uint32_t>(std::clamp(count, 1, 512)); changed = true; }
 		changed |= ImGui::DragFloat("発生間隔（秒）", &settings_.interval, 0.01f, 0.01f, 60.0f);
@@ -120,7 +123,7 @@ namespace TKM {
 		ImGui::TextDisabled("色・サイズは寿命に沿って変化。ブレンドは既存の加算合成です。");
 		if (changed) { dirty_ = true; confirmOverwrite_ = false; }
 		if ((changed || previewChanged) && playing_) { Restart(); }
-		ImGui::TextDisabled("再生中に設定を変えると、変更内容で最初から再生します。");
+		ImGui::TextDisabled("再生・調整時も「前の粒子を寿命まで残す」に従います。形状・テクスチャ変更時は消去します。");
 		ImGui::SeparatorText("保存");
 		if (ImGui::Button("保存")) {
 			if (ParticleEffectStore::Exists(name_.data())) { confirmOverwrite_ = true; } else { Save(); }

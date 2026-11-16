@@ -12,6 +12,7 @@ namespace TKM {
 		int shape = 0; // NORMAL / RING / CYLINDER / RIBBON
 		uint32_t count = 24;
 		bool loop = false;
+		bool keepParticles = true; // 次の発生時も生存粒子を寿命まで残す
 		float interval = 0.15f;
 		Vector3 spawnExtent = { 0.3f, 0.3f, 0.3f };
 		Vector3 velocityMin = { -2.0f, 1.0f, -2.0f };

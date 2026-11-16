@@ -48,7 +48,8 @@ namespace TKM {
 		ParticleManager::GetInstance()->ClearGroup(kPreviewGroup);
 	}
 	bool ParticleEffects::Preview(const ParticleEffectSettings& settings, const Vector3& position) {
-		StopPreview();
+		// 放出タイマーだけ置き換える。粒子を残すかは共通のEmitEffectで決める。
+		std::erase_if(emitters_, [](const Emitter& e) { return e.group == kPreviewGroup; });
 		return Start(kPreviewGroup, settings, position);
 	}
 	void ParticleEffects::Update(float deltaTime) {

@@ -100,6 +100,7 @@ namespace TKM {
 			s.shape = j.at("shape").get<int>();
 			Require(j.at("count").is_number_integer() && j.at("count").get<int64_t>() >= 1 && j.at("count").get<int64_t>() <= 512, "Invalid count");
 			s.count = j.at("count").get<uint32_t>();
+			s.keepParticles = j.value("keepParticles", true); // 旧JSONは重ねて発生
 			s.loop = j.at("loop").get<bool>(); s.interval = j.at("interval").get<float>();
 			s.spawnExtent = Read3(j.at("spawnExtent"));
 			s.velocityMin = Read3(j.at("velocityMin")); s.velocityMax = Read3(j.at("velocityMax"));
@@ -116,7 +117,7 @@ namespace TKM {
 			const auto path = Path(name);
 			s.Validate(); ValidateTexture(s.texture);
 			Json j = { {"version", 1}, {"texture", s.texture}, {"shape", s.shape}, {"count", s.count},
-				{"loop", s.loop}, {"interval", s.interval}, {"spawnExtent", ToJson(s.spawnExtent)},
+				{"loop", s.loop}, {"keepParticles", s.keepParticles}, {"interval", s.interval}, {"spawnExtent", ToJson(s.spawnExtent)},
 				{"velocityMin", ToJson(s.velocityMin)}, {"velocityMax", ToJson(s.velocityMax)}, {"gravity", ToJson(s.gravity)},
 				{"lifeMin", s.lifeMin}, {"lifeMax", s.lifeMax}, {"startSize", s.startSize}, {"endSize", s.endSize},
 				{"startColor", ToJson(s.startColor)}, {"endColor", ToJson(s.endColor)} };

@@ -671,6 +671,11 @@ namespace TKM {
 		if (!particleGroups_.contains(name) && particleGroups_.size() >= kMaxEffectGroups) { return false; }
 		CreateParticleGroup(name, settings.texture, static_cast<ParticleType>(settings.shape));
 		auto& group = particleGroups_.at(name);
+		// 形状とテクスチャはグループ共有なので、変更時だけ古い見た目を消す。
+		if (group.type_ != static_cast<ParticleType>(settings.shape)
+			|| group.materialData_.textureFilePath_ != settings.texture) {
+			ClearGroup(name);
+		}
 		group.type_ = static_cast<ParticleType>(settings.shape);
 		group.materialData_.textureFilePath_ = settings.texture;
 		group.materialData_.textureIndex_ = TextureManager::GetInstance()->GetTextureIndexByFilePath(settings.texture);
@@ -682,8 +687,10 @@ namespace TKM {
 		if (it == particleGroups_.end()) { return; }
 		auto random = [&](float lo, float hi) { return std::uniform_real_distribution<float>(lo, hi)(randomEngine_); };
 		auto& particles = it->second.particles_;
+		if (!s.keepParticles) { ClearGroup(name); }
 		for (uint32_t i = 0; i < s.count; ++i) {
-			while (particles.size() >= kNumMaxInstance_) { particles.pop_front(); }
+			// 上限時も生存粒子を強制消去せず、新規生成を見送る。
+			if (particles.size() >= kNumMaxInstance_) { break; }
 			Particle p{};
 			p.transform_.translate_ = { position.x + random(-s.spawnExtent.x, s.spawnExtent.x),
 				position.y + random(-s.spawnExtent.y, s.spawnExtent.y), position.z + random(-s.spawnExtent.z, s.spawnExtent.z) };
