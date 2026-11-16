@@ -2,6 +2,8 @@
 #include "GameScene.h"
 #include "CameraManager.h"
 #include "ParticleManager.h"
+#include "DeltaTimeManager.h"
+#include "Logger.h"
 
 using namespace TKM;
 
@@ -17,6 +19,7 @@ void GameScene::Initialize() {
 	InitializeSprite();
 	spriteSettings_.Initialize();
 	InitializeCamera();
+	InitializeEnemies(); // カメラ初期化後に敵を生成する
 
 	/// ──────────────── パーティクル初期化 ───────────────
 	auto particleManager = TKM::ParticleManager::GetInstance();
@@ -28,6 +31,13 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Finalize() {
+	/// ──────── 敵の終了処理 ────────
+	if (enemyManager_) {
+		enemyManager_->Clear();
+		enemyManager_.reset();
+	}
+	enemyDataCatalog_.reset();
+
 	/// ──────────────── スプライト設定終了 ───────────────
 	spriteSettings_.Finalize();
 
@@ -47,6 +57,7 @@ void GameScene::Finalize() {
 }
 
 void GameScene::Update() {
+	const float deltaTime = TKM::DeltaTimeManager::GetInstance()->GetDeltaTime();
 
 #ifdef USE_IMGUI
 	// 描画用行列を作る前に、追従設定とデバッグカメラ切り替えを反映する
@@ -70,6 +81,11 @@ void GameScene::Update() {
 	/// ──────────────── スプライト更新 ───────────────
 	logoSprite_->Update();      // TKMAXロゴ更新
 	uvCheckerSprite_->Update(); // UVチェッカー更新
+
+	/// ──────── 敵更新 ────────
+	if (enemyManager_ && sphere_) {
+		enemyManager_->Update(deltaTime, sphere_->GetTranslate());
+	}
 
 	/// ──────────────── ライト更新 ───────────────
 	if (directionalLight_) {
@@ -98,6 +114,11 @@ void GameScene::Draw3D() {
 
 	if (player_) {
 		player_->Draw(dxCommon_);
+	}
+
+	/// ──────── 敵描画 ────────
+	if (enemyManager_) {
+		enemyManager_->Draw();
 	}
 
 	/// ──────────────── パーティクル描画 ───────────────
@@ -252,4 +273,37 @@ void GameScene::ImGuiDebug() {
 	// ──────────────── スプライト編集 ───────────────
 	spriteSettings_.ImGuiDebug();
 #endif
+}
+
+void GameScene::InitializeEnemies() {
+    // 敵データカタログを作成し、ディレクトリから敵データを読み込む
+	enemyDataCatalog_ = std::make_unique<EnemyDataCatalog>();
+	std::string errorMessage;
+
+    // 敵データディレクトリの読み込み
+	if (!enemyDataCatalog_->LoadDirectory("resources/data/enemy", errorMessage)) {
+		Logger::Log("[Enemy] Failed to load enemy data directory.\n" + errorMessage + "\n");
+		return;
+	}
+
+    // メインカメラを取得し、敵マネージャーを初期化する
+	TKM::Camera* mainCamera = TKM::CameraManager::GetInstance()->GetMainCamera();
+	if (!mainCamera) {
+		Logger::Log("[Enemy] Main camera is null.\n");
+		return;
+	}
+
+    // 敵マネージャーを作成し、初期化する
+	enemyManager_ = std::make_unique<EnemyManager>();
+	enemyManager_->Initialize(dxCommon_, mainCamera, *enemyDataCatalog_);
+
+	constexpr Vector3 kBasicVirusPosition = { -15.0f, 0.0f, 0.0f };
+
+    // BasicVirusをスポーンする
+	if (!enemyManager_->Spawn("BasicVirus", kBasicVirusPosition, errorMessage)) {
+		Logger::Log("[Enemy] Failed to spawn BasicVirus.\n" + errorMessage + "\n");
+		return;
+	}
+
+	Logger::Log("[Enemy] BasicVirus spawned successfully.\n");
 }

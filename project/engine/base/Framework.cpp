@@ -55,7 +55,7 @@ namespace TKM {
 		Input::GetInstance()->Initialize(windowsAPI_.get());
 
 		// Object3dCommonを初期化
-		Object3dCommon::GetInstance()->Initialize(dxCommon_.get()); 
+		Object3dCommon::GetInstance()->Initialize(dxCommon_.get());
 		// SpriteCommonを初期化
 		TKM::SpriteCommon::GetInstance()->Initialize(dxCommon_.get());
 		// デバッグ用ライン描画を初期化

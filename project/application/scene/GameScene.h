@@ -9,7 +9,9 @@
 
 #include <memory>
 
-#include "../../player.h"
+#include "player.h"
+#include "../actor/enemy/data/EnemyDataCatalog.h"
+#include "../actor/enemy/EnemyManager.h"
 
 //=============================================================
 // GameSceneクラス
@@ -79,6 +81,11 @@ public:
 	/// <returns></returns>
 	TKM::Camera* UpdateActiveCamera();
 
+	/// <summary>
+	/// 敵データを読み込み、動作確認用の敵を生成します。
+	/// </summary>
+	void InitializeEnemies();
+
 private:
 	//======================================================================
 	// 基本システム
@@ -108,4 +115,10 @@ private:
 	ObjectSettings objectSettings_; // オブジェクトの保存・編集設定
 	CollisionSettings collisionSettings_; // オブジェクトの当たり判定設定
 	SpriteSettings spriteSettings_; // スプライトの保存・編集設定
+
+	//======================================================================
+	// 敵データ・敵管理
+	//======================================================================
+	std::unique_ptr<EnemyDataCatalog> enemyDataCatalog_ = nullptr;
+	std::unique_ptr<EnemyManager> enemyManager_ = nullptr;
 };
