@@ -76,7 +76,7 @@ private:
 	std::unique_ptr<TKM::Object3d> object_ = nullptr;
 
 	// 追従対象カメラと相対オフセット
-	TKM::Camera* followCamera_ = nullptr;
+	TKM::FollowCamera followCamera_;
 	Vector3 cameraOffset_ = { 0.0f, 0.0f, -60.0f };
 
 	// 発射中の弾リスト
