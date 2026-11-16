@@ -17,6 +17,7 @@
     "lifeMax": 1.0,
     "lifeMin": 0.4000000059604645,
     "loop": true,
+    "scale": 5.900000095367432,
     "shape": 1,
     "spawnExtent": [
         0.15000000596046448,
