@@ -36,7 +36,7 @@ struct EnemyData {
 	//=========================================================
 	// 属性
 	//=========================================================
-	EnemyAttribute attribute = EnemyAttribute::Neutral; // 敵の属性
+	EnemyAttribute attribute = EnemyAttribute::Natural; // 敵の属性
 	EnemyAttribute weakness = EnemyAttribute::None;     // 弱点属性
 	EnemyAttribute resistance = EnemyAttribute::None;   // 耐性属性
 };

@@ -7,8 +7,8 @@ std::optional<EnemyAttribute> EnemyAttributeFromString(
 		return EnemyAttribute::None;
 	}
 
-	if (text == "Neutral") {
-		return EnemyAttribute::Neutral;
+	if (text == "Natural") {
+		return EnemyAttribute::Natural;
 	}
 
 	// 未知の文字列を特定の属性として扱わず、
@@ -23,8 +23,8 @@ std::string_view EnemyAttributeToString(
 	case EnemyAttribute::None:
 		return "None";
 
-	case EnemyAttribute::Neutral:
-		return "Neutral";
+	case EnemyAttribute::Natural:
+		return "Natural";
 
 	default:
 		return "Unknown";
