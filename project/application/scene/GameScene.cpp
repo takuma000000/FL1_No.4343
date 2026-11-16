@@ -52,15 +52,19 @@ void GameScene::Finalize() {
 
 void GameScene::Update() {
 
+#ifdef USE_IMGUI
+	// 描画用行列を作る前に、追従設定とデバッグカメラ切り替えを反映する
+	ImGuiDebug();
+#endif
+
+	/// ──────────────── カメラ更新 ───────────────
+	UpdateActiveCamera();
+
 	/// ──────────────── 3Dオブジェクト更新 ───────────────
-	// 先にプレイヤーを更新し、同時に追従カメラの座標を確定させる
+	// Player内で移動→追従カメラ行列→オブジェクト行列の順に更新する
 	if (player_) {
 		player_->Update();
 	}
-
-	/// ──────────────── カメラ更新 ───────────────
-	// 確定したカメラ座標をもとに同じフレーム内で行列更新・適用（1フレームの遅れも防止）
-	UpdateActiveCamera();
 
 	// テスト用Sphere更新
 	if (sphere_) {
@@ -79,9 +83,6 @@ void GameScene::Update() {
 	/// ──────────────── パーティクル更新 ───────────────
 	TKM::ParticleManager::GetInstance()->Update();
 
-#ifdef USE_IMGUI
-	ImGuiDebug();
-#endif
 }
 
 void GameScene::Draw() {
@@ -219,7 +220,7 @@ void GameScene::InitializeCamera() {
 	/// ──────────────── カメラマネージャー初期化 ───────────────
 	TKM::CameraManager::GetInstance()->Initialize(mainRot, mainPos, debugTarget);
 
-	// メインカメラの設定を読み込み、更新する
+	// 通常カメラの設定を読み込む（追従設定はFollowCameraが別JSONから読み込む）
 	auto mainCamera = TKM::CameraManager::GetInstance()->GetMainCamera();
 	if (mainCamera) {
 		mainCamera->SetSettingsPath("resources/data/mainCamera.json");
@@ -245,10 +246,9 @@ void GameScene::ImGuiDebug() {
 	// ──────────────── カメラ表示 ───────────────
 	// デバッグカメラの切り替え表示
 	TKM::CameraManager::GetInstance()->ImGuiDebug();
-	// メインカメラのデバッグ表示
-	if (auto camera =
-		TKM::CameraManager::GetInstance()->GetMainCamera()) {
-		camera->ImGuiDebug(); // メインカメラのデバッグ表示
+	// 追従中は最終座標ではなく、専用の追従パラメータを編集する
+	if (player_) {
+		player_->ImGuiFollowCamera();
 	}
 	// ──────────────── オブジェクト編集 ───────────────
 	objectSettings_.ImGuiDebug();

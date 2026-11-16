@@ -1,6 +1,7 @@
 #pragma once
 #include "MyGame.h"
 #include "Object3d.h"
+#include "FollowCamera.h"
 #include <memory>
 
 class Input;
@@ -22,9 +23,12 @@ public:
 
 	// 追従させるメインカメラとオフセット距離の設定
 	void SetFollowCamera(TKM::Camera* camera, const Vector3& offset) {
-		followCamera_ = camera;
-		cameraOffset_ = offset;
+		followCamera_.Initialize(camera, offset);
+		followCamera_.Update(pos_);
 	}
+
+	// 追従パラメータ専用の編集画面（通常カメラの最終座標とは分離）
+	void ImGuiFollowCamera() { followCamera_.ImGuiDebug(pos_); }
 
 	// ──────────────── ゲッター / セッター ────────────────
 	const Vector3& GetPos() const { return pos_; }
@@ -59,6 +63,5 @@ private:
 	std::unique_ptr<TKM::Object3d> object_ = nullptr;
 
 	// 追従対象カメラと相対オフセット
-	TKM::Camera* followCamera_ = nullptr;
-	Vector3 cameraOffset_ = { 0.0f, 0.0f, -60.0f };
+	TKM::FollowCamera followCamera_;
 };

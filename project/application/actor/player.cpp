@@ -54,6 +54,9 @@ void Player::Update() {
 
     }
 
+    // 追従カメラが設定されていれば、遅れなしで即座に一定距離を保って追従させる
+    followCamera_.Update(pos_);
+
     // 位置・回転・スケールの最新値を 3D オブジェクトへセットして行列更新
     if (object_) {
         object_->SetTranslate(pos_);
@@ -62,14 +65,6 @@ void Player::Update() {
         object_->Update();
     }
 
-    // 追従カメラが設定されていれば、遅れなしで即座に一定距離を保って追従させる
-    if (followCamera_) {
-        followCamera_->SetTranslate({
-            cameraOffset_.x,
-            cameraOffset_.y,
-            pos_.z + cameraOffset_.z
-            });
-    }
 
 }
 

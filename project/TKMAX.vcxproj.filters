@@ -119,6 +119,9 @@
     <ClCompile Include="engine\effect\line\LineRenderer.cpp">
       <Filter>engine\effect\line</Filter>
     </ClCompile>
+    <ClCompile Include="engine\3d\camera\FollowCamera.cpp">
+      <Filter>engine\3d\camera</Filter>
+    </ClCompile>
     <ClCompile Include="engine\3d\camera\Camera.cpp">
       <Filter>engine\3d\camera</Filter>
     </ClCompile>
@@ -319,6 +322,9 @@
     </ClInclude>
     <ClInclude Include="engine\effect\line\LineRenderer.h">
       <Filter>engine\effect\line</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\3d\camera\FollowCamera.h">
+      <Filter>engine\3d\camera</Filter>
     </ClInclude>
     <ClInclude Include="engine\3d\camera\Camera.h">
       <Filter>engine\3d\camera</Filter>
