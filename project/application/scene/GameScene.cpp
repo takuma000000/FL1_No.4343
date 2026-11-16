@@ -163,7 +163,7 @@ void GameScene::InitializeSprite() {
 	logoSprite_->Initialize(
 		TKM::SpriteCommon::GetInstance(),
 		dxCommon_,
-		"./resources/texture/TKMAX_logo.png"
+		"./resources/texture/nomura.jpg"
 	);
 
 	// 画像の中心を画面中央へ配置する
