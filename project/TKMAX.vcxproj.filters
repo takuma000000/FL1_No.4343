@@ -392,12 +392,13 @@
     <ClInclude Include="engine\3d\collision\Collider.h" />
     <ClInclude Include="engine\3d\collision\AABBCollider.h" />
     <ClInclude Include="engine\3d\collision\CollisionManager.h" />
-	<ClInclude Include="engine\3d\collision\CollisionCategory.h" />
-	<ClInclude Include="application\controller\CollisionSettings.h" />
-	<ClInclude Include="application\controller\SpriteSettings.h" />
-	<ClInclude Include="engine\imgui\SpriteEditor.h" />
-	<ClInclude Include="engine\imgui\SpriteGizmo.h" />
-	<ClInclude Include="engine\io\SpriteSave.h" />
+    <ClInclude Include="engine\3d\collision\CollisionCategory.h" />
+    <ClInclude Include="application\controller\CollisionSettings.h" />
+    <ClInclude Include="application\controller\SpriteSettings.h" />
+    <ClInclude Include="engine\imgui\SpriteEditor.h" />
+    <ClInclude Include="engine\imgui\SpriteGizmo.h" />
+    <ClInclude Include="engine\io\SpriteSave.h" />
+    <ClInclude Include="PlayerBullet.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

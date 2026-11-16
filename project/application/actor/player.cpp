@@ -12,6 +12,9 @@ Player::~Player() {
 }
 
 void Player::Initialize(TKM::DirectXCommon* dxCommon) {
+    
+    dxCommon_ = dxCommon;
+    
     pos_ = { 0.0f, 0.0f, 0.0f };
     rotation_ = { 0.0f, 0.0f, 0.0f };
     size_ = { 1.0f, 1.0f, 1.0f };
@@ -32,9 +35,39 @@ void Player::Initialize(TKM::DirectXCommon* dxCommon) {
 }
 
 void Player::SetCamera(TKM::Camera* camera) {
+
+    camera_ = camera;
+
     if (object_) {
         object_->SetCamera(camera);
     }
+
+    // すでに飛んでいる弾にもカメラを適用（デバッグカメラ切り替え対応）
+    for (auto& bullet : bullets_) {
+        bullet->SetCamera(camera);
+    }
+
+}
+
+void Player::Attack()
+{
+
+    if (!dxCommon_) {
+        return;
+    }
+
+    // プレイヤーの少し前方（+Z方向）から発射
+    Vector3 spawnPos = { pos_.x, pos_.y, pos_.z + 2.0f };
+    Vector3 velocity = { 0.0f, 0.0f, bulletSpeed_ };
+
+    auto newBullet = std::make_unique<PlayerBullet>();
+    newBullet->Initialize(dxCommon_, spawnPos, velocity);
+    if (camera_) {
+        newBullet->SetCamera(camera_);
+    }
+
+    bullets_.push_back(std::move(newBullet));
+
 }
 
 void Player::Update() {
@@ -52,6 +85,15 @@ void Player::Update() {
         if (input->PushKey(DIK_UP)) { pos_.z += moveSpeed_; }
         if (input->PushKey(DIK_DOWN)) { pos_.z -= moveSpeed_; }
 
+        // スペースキーで弾発射
+        if (shotCooldown_ > 0) {
+            shotCooldown_--;
+        }
+        if (input->PushKey(DIK_SPACE) && shotCooldown_ <= 0) {
+            Attack();
+            shotCooldown_ = 10; // 10フレーム間隔で連射（単発にしたい場合はTriggerKeyに変更）
+        }
+
     }
 
     // 追従カメラが設定されていれば、遅れなしで即座に一定距離を保って追従させる
@@ -66,6 +108,14 @@ void Player::Update() {
     }
 
 
+    // 弾の更新と、消滅した弾の削除
+    for (auto& bullet : bullets_) {
+        bullet->Update();
+    }
+    bullets_.remove_if([](const std::unique_ptr<PlayerBullet>& bullet) {
+        return !bullet->IsAlive();
+        });
+
 }
 
 void Player::Draw(TKM::DirectXCommon* dxCommon) {
@@ -77,6 +127,12 @@ void Player::Draw(TKM::DirectXCommon* dxCommon) {
     if (object_) {
         object_->Draw(dxCommon);
     }
+
+    // 発射された弾の描画
+    for (auto& bullet : bullets_) {
+        bullet->Draw(dxCommon);
+    }
+
 }
 
 #ifdef USE_IMGUI

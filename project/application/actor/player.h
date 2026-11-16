@@ -2,7 +2,9 @@
 #include "MyGame.h"
 #include "Object3d.h"
 #include "FollowCamera.h"
+#include "../../PlayerBullet.h"
 #include <memory>
+#include <list>
 
 class Input;
 
@@ -51,7 +53,18 @@ public:
 	float GetForwardSpeed() const { return forwardSpeed_; }
 	void SetForwardSpeed(float speed) { forwardSpeed_ = speed; }
 
+	// 発射された弾のリストを取得（当たり判定などで使用）
+	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets_; }
+
+	// 弾の発射処理
+	void Attack();
+
 private:
+
+	// 弾生成・描画カメラ受け渡し用に保持するポインタ
+	TKM::DirectXCommon* dxCommon_ = nullptr;
+	TKM::Camera* camera_ = nullptr;
+
 	Vector3 pos_;
 	Vector3 rotation_;
 	Vector3 size_;
@@ -63,5 +76,11 @@ private:
 	std::unique_ptr<TKM::Object3d> object_ = nullptr;
 
 	// 追従対象カメラと相対オフセット
-	TKM::FollowCamera followCamera_;
+	TKM::Camera* followCamera_ = nullptr;
+	Vector3 cameraOffset_ = { 0.0f, 0.0f, -60.0f };
+
+	// 発射中の弾リスト
+	std::list<std::unique_ptr<PlayerBullet>> bullets_;
+	float bulletSpeed_ = 1.5f;   // 弾のスピード
+	int shotCooldown_ = 0;       // 連射クールタイム用カウンタ
 };

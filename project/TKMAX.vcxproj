@@ -213,6 +213,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\imgui\ObjectEditor.cpp" />
     <ClCompile Include="application\controller\ObjectSettings.cpp" />
     <ClCompile Include="application\actor\Player.cpp" />
+    <ClCompile Include="PlayerBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
 	<ClInclude Include="engine\scene\SceneTransition.h" />
@@ -312,6 +313,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\imgui\ObjectEditor.h" />
     <ClInclude Include="application\controller\ObjectSettings.h" />
     <ClInclude Include="application\actor\Player.h" />
+    <ClInclude Include="PlayerBullet.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="engine\func\math\Transform.h" />
     <ClInclude Include="engine\state\StateMachine.h" />
