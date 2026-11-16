@@ -6,6 +6,8 @@
 #include "BaseScene.h"
 #include "Transform.h"
 
+#include <vector>
+
 class SpriteCommon;
 class BaseScene;
 
@@ -66,6 +68,7 @@ namespace TKM {
 		void Draw();
 		/// <summary>
 		/// ImGuiデバッグ表示。
+		/// 呼び出し側でImGui::BeginとImGui::Endを行います。
 		/// </summary>
 		void ImGuiDebug();
 
@@ -125,6 +128,20 @@ namespace TKM {
 		/// </summary>
 		/// <returns></returns>
 		static int GetActiveCount() { return activeCount_; }
+		/// <summary>
+		/// 現在存在している全スプライトを取得します。
+		/// </summary>
+		static const std::vector<Sprite*>& GetActiveSprites() {
+			return activeSprites_;
+		}
+		/// <summary>
+		/// エディター上で使用する識別名を取得します。
+		/// </summary>
+		const std::string& GetEditorName() const { return editorName_; }
+		/// <summary>
+		/// エディターの自動登録対象か確認します。
+		/// </summary>
+		bool IsEditorEnabled() const { return editorEnabled_; }
 		/// <summary>
 		/// 親シーンの取得。
 		/// </summary>
@@ -192,6 +209,10 @@ namespace TKM {
 		/// </summary>
 		/// <param name="enable"></param>
 		void SetAutoAdjustTextureSize(bool enable);
+		/// <summary>
+		/// エディターへの自動登録を有効・無効にします。
+		/// </summary>
+		void SetEditorEnabled(bool enable) { editorEnabled_ = enable; }
 		/// <summary>
 		/// 発光の有効 / 無効を設定。
 		/// </summary>
@@ -282,6 +303,9 @@ namespace TKM {
 		// 内部状態
 		//======================================================================
 		inline static int activeCount_ = 0; // アクティブスプライト数
+		inline static std::vector<Sprite*> activeSprites_; // 現在存在するスプライト一覧
+		std::string editorName_; // エディターと保存データで使用する識別名
+		bool editorEnabled_ = true; // エディターへの自動登録フラグ
 		//======================================================================
 		// 内部処理
 		//======================================================================

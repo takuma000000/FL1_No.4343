@@ -5,6 +5,8 @@
 #include <dxgi1_6.h>
 
 #include "ImGuiManager.h"
+#include "CameraManager.h"
+#include "CollisionManager.h"
 
 namespace TKM {
 	void MyGame::Initialize() {
@@ -14,6 +16,7 @@ namespace TKM {
 
 		// Initialize sceneManager_
 		sceneManager_ = std::make_unique<TKM::SceneManager>();
+		sceneManager_->Initialize(dxCommon_.get());
 
 		//シーンファクトリーの生成、マネージャにセット
 		sceneFactory_ = std::make_unique<TKM::SceneFactory>(dxCommon_.get(), srvManager_.get());
@@ -59,6 +62,10 @@ namespace TKM {
 		//シーンマネージャーの更新
 		sceneManager_->Update();
 
+		// シーン内オブジェクトの更新後に当たり判定を行う
+		// 最新の位置とサイズを使って判定するため、この位置で呼び出す
+		CollisionManager::GetInstance()->Update();
+
 		// ウィンドウメッセージの処理
 		if (windowsAPI_->ProcessMessage()) {
 			SetEndRequest(true); // Frameworkの終了フラグを設定
@@ -79,6 +86,14 @@ namespace TKM {
 		srvManager_->PreDraw();
 		sceneManager_->Draw3D();
 
+		// 登録されているコライダーをラインで表示する
+		if (auto* activeCamera =
+			CameraManager::GetInstance()->GetActiveCamera()) {
+			CollisionManager::GetInstance()->DrawDebug(
+				activeCamera->GetViewProjectionMatrix()
+			);
+		}
+
 		// ② Swapchain に切り替え
 		dxCommon_->BeginDrawToSwapchain();
 
@@ -90,10 +105,13 @@ namespace TKM {
 		srvManager_->PreDraw();
 		sceneManager_->DrawSprite();
 
-		// ⑤ ImGui（好みでUIの後でも前でもOK）
+		// ⑤ シーン切り替えフェードを最前面へ描画
+		sceneManager_->DrawTransition();
+
+		// ⑥ ImGui（デバッグ操作はフェード中も表示する）
 		imguiManager_->Draw();
 
-		// ⑥ フレーム終了
+		// ⑦ フレーム終了
 		dxCommon_->PostDraw();
 	}
 }

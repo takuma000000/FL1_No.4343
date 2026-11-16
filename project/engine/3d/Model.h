@@ -32,6 +32,14 @@ namespace TKM {
 
 		ModelData modelData_; // 読み込み済みモデルデータ
 
+		//=============================================================
+		// モデルの当たり判定範囲
+		//=============================================================
+
+		Vector3 localBoundsCenter_{}; // モデル本来の中心座標
+		Vector3 localBoundsSize_{};   // モデル本来の全体サイズ
+		bool hasLocalBounds_ = false; // 有効な範囲を計算できたか
+
 		using MaterialMap = std::unordered_map<std::string, MaterialData>; // マテリアル名とデータの対応表
 
 		//=============================================================
@@ -84,6 +92,11 @@ namespace TKM {
 		/// </summary>
 		void MaterialResource(DirectXCommon* dxCommon);
 
+		/// <summary>
+		/// 読み込んだ全頂点からモデルの中心とサイズを計算します。
+		/// </summary>
+		void CalculateLocalBounds();
+
 	public:
 		//=============================================================
 		// 生成・禁止事項
@@ -103,10 +116,14 @@ namespace TKM {
 			: modelCommon_(other.modelCommon_),
 			dxCommon_(other.dxCommon_),
 			modelData_(std::move(other.modelData_)),
+			localBoundsCenter_(other.localBoundsCenter_),
+			localBoundsSize_(other.localBoundsSize_),
+			hasLocalBounds_(other.hasLocalBounds_),
 			vertexResource_(std::move(other.vertexResource_)),
 			materialResource_(std::move(other.materialResource_)) {
 			other.modelCommon_ = nullptr;
 			other.dxCommon_ = nullptr;
+			other.hasLocalBounds_ = false;
 		}
 
 		Model& operator=(Model&& other) noexcept {
@@ -114,10 +131,14 @@ namespace TKM {
 				modelCommon_ = other.modelCommon_;
 				dxCommon_ = other.dxCommon_;
 				modelData_ = std::move(other.modelData_);
+				localBoundsCenter_ = other.localBoundsCenter_;
+				localBoundsSize_ = other.localBoundsSize_;
+				hasLocalBounds_ = other.hasLocalBounds_;
 				vertexResource_ = std::move(other.vertexResource_);
 				materialResource_ = std::move(other.materialResource_);
 				other.modelCommon_ = nullptr;
 				other.dxCommon_ = nullptr;
+				other.hasLocalBounds_ = false;
 			}
 			return *this;
 		}
@@ -158,6 +179,21 @@ namespace TKM {
 		/// テクスチャパスを取得します。
 		/// </summary>
 		std::string GetTexturePath() const { return modelData_.material_.textureFilePath_; }
+
+		/// <summary>
+		/// モデル本来の中心座標を取得します。
+		/// </summary>
+		const Vector3& GetLocalBoundsCenter() const { return localBoundsCenter_; }
+
+		/// <summary>
+		/// モデル本来の全体サイズを取得します。
+		/// </summary>
+		const Vector3& GetLocalBoundsSize() const { return localBoundsSize_; }
+
+		/// <summary>
+		/// 有効なモデル範囲を持っているか取得します。
+		/// </summary>
+		bool HasLocalBounds() const { return hasLocalBounds_; }
 
 		/// <summary>
 		/// スケールを取得します。

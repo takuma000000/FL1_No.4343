@@ -113,32 +113,21 @@ namespace TKM {
 	}
 
 	uint32_t TextureManager::GetTextureIndexByFilePath(const std::string& filePath) {
-		//読み込み済みテクスチャを検索
-		if (textureDatas_.contains(filePath)) {
-			//読み込み済みなら要素番号を返す
-			uint32_t textureIndex = textureDatas_[filePath].srvIndex_;
-			return textureIndex;
-		}
-
-		assert(0);
-		return 0;
+		// 未読み込みの場合は指定されたパスから自動で読み込む
+		LoadTexture(filePath);
+		return textureDatas_.at(filePath).srvIndex_;
 	}
 
 	D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(const std::string& filePath) {
-		//テクスチャ枚数上限チェック
-		assert(srvManager_->Available());
-
-		TextureData& textureData = textureDatas_[filePath]; //テクスチャデータの参照を取得
-		return textureData.srvHnadleGPU_;
+		// 未読み込みの場合は指定されたパスから自動で読み込む
+		LoadTexture(filePath);
+		return textureDatas_.at(filePath).srvHnadleGPU_;
 	}
 
 	const DirectX::TexMetadata& TextureManager::GetMetadata(const std::string& filePath) {
-		//テクスチャ枚数上限チェック
-		assert(srvManager_->Available());
-
-		//テクスチャデータの参照を取得
-		TextureData& textureData = textureDatas_[filePath];
-		return textureData.metadata_;
+		// 未読み込みの場合は指定されたパスから自動で読み込む
+		LoadTexture(filePath);
+		return textureDatas_.at(filePath).metadata_;
 	}
 
 	TextureManager* TextureManager::GetInstance() {

@@ -1,5 +1,6 @@
 #include "AuraVolumeRenderer.h"
 #include "DirectXCommon.h"
+#include "DeltaTimeManager.h"
 
 #ifdef USE_IMGUI
 #include <imgui.h>
@@ -27,7 +28,8 @@ namespace TKM {
 
 		drawCallsThisFrame_++;
 
-		time_ += 1.0f / 60.0f;
+		// 共通のDeltaTimeでオーラの経過時間を進める
+		time_ += DeltaTimeManager::GetInstance()->GetDeltaTime();
 
 		float radius = (collider.x * 0.5f) * radiusMul_;
 		float height = (collider.y * 0.5f) * heightMul_;

@@ -19,6 +19,7 @@ namespace TKM {
 		///シングルトン-----------------------------------------------
 		//コンストラクタ、デストラクタの隠蔽
 		ModelManager() = default;
+		~ModelManager();
 		//コピーコンストラクタの封印
 		ModelManager(ModelManager&) = delete;
 		//コピー代入演算子の封印
@@ -30,7 +31,7 @@ namespace TKM {
 		//=============================================================
 		std::map<std::string, std::unique_ptr<TKM::Model>> models_;
 		//モデル共通部
-		TKM::ModelCommon* modelCommon_ = nullptr;
+		std::unique_ptr<TKM::ModelCommon> modelCommon_;
 		TKM::DirectXCommon* dxCommon_ = nullptr;
 
 	public:
@@ -50,7 +51,8 @@ namespace TKM {
 		/// <param name="dxCommon"></param>
 		void LoadModel(const std::string& filePath, TKM::DirectXCommon* dxCommon);
 		/// <summary>
-		/// モデルを検索します。
+		/// モデルを取得します。未読み込みの場合は自動で読み込みます。
+		/// パスはresources/objからの相対パスです。
 		/// </summary>
 		/// <param name="filePath"></param>
 		/// <returns></returns>

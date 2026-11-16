@@ -1,6 +1,7 @@
 #define NOMINMAX
 #include "Sprite.h"
 #include <algorithm>
+#include <filesystem>
 
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -9,9 +10,11 @@
 namespace TKM {
 	Sprite::Sprite() {
 		++activeCount_; //アクティブスプライト数をインクリメント
+		activeSprites_.push_back(this); // 全スプライトの自動編集用一覧へ登録
 	}
 
 	Sprite::~Sprite() {
+		std::erase(activeSprites_, this); // 自動編集用一覧から登録解除
 		--activeCount_; //アクティブスプライト数をデクリメント
 	}
 
@@ -69,6 +72,36 @@ namespace TKM {
 		dxCommon_ = dxCommon;
 		this->textureFilePath_ = textureFilePath;
 
+		// 編集対象のスプライトだけ識別名を生成する
+		// フェードなどの内部スプライトは通常スプライトの連番へ影響させない
+		editorName_.clear();
+		if (editorEnabled_) {
+			const std::string baseName =
+				std::filesystem::path(textureFilePath).filename().string();
+			editorName_ = baseName.empty() ? "Sprite" : baseName;
+
+			const std::string nameWithoutNumber = editorName_;
+			int duplicateNumber = 2;
+			const auto isNameUsed = [this](const std::string& name) {
+				return std::any_of(
+					activeSprites_.begin(),
+					activeSprites_.end(),
+					[this, &name](const Sprite* sprite) {
+						return sprite
+							&& sprite != this
+							&& sprite->editorEnabled_
+							&& sprite->editorName_ == name;
+					}
+				);
+			};
+
+			while (isNameUsed(editorName_)) {
+				editorName_ = nameWithoutNumber
+					+ " #" + std::to_string(duplicateNumber);
+				++duplicateNumber;
+			}
+		}
+
 		//VertexResourceを作る
 		vertexResource_ = dxCommon_->CreateBufferResource(sizeof(VertexData) * 4);
 		//IndexResourceを作る
@@ -117,11 +150,24 @@ namespace TKM {
 		transformSprite_ = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} }; // スプライトの変換情報
 		cameraTransform_ = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,-10.0f} }; // カメラの変換情報
 
-		//単位行列を書き込んでおく
-		textureIndex_ = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
+		// 指定されたテクスチャが未読み込みなら自動で読み込む
+		TextureManager::GetInstance()->LoadTexture(textureFilePath_);
+		textureIndex_ =
+			TextureManager::GetInstance()->GetTextureIndexByFilePath(
+				textureFilePath_
+			);
 	}
 
 	void Sprite::Update() {
+		// テクスチャサイズへ自動調整する場合は、行列計算より先に反映する
+		if (autoAdjustTextureSize_) {
+			AdjustTextureSize();
+		}
+
+		// 最新の編集値を行列計算より先にTransformへ反映する
+		transformSprite_.translate_ = { position_.x,position_.y,0.0f };
+		transformSprite_.rotate_ = { 0.0f,0.0f,rotation_ };
+		transformSprite_.scale_ = { size_.x,size_.y,1.0f };
 
 		float left = 0.0f - anchorPoint_.x; // アンカーポイントを考慮した左端座標
 		float right = 1.0f - anchorPoint_.x; // アンカーポイントを考慮した右端座標
@@ -180,14 +226,6 @@ namespace TKM {
 		transformationMatrixData_->wvp = MyMath::Multiply(worldMatrixSprite, MyMath::Multiply(viewMatrixSprite, projectionMatrixSprite)); // WVP行列の計算
 		transformationMatrixData_->World = worldMatrixSprite; // ワールド行列の設定
 
-		//反映処理
-		transformSprite_.translate_ = { position_.x,position_.y,0.0f };
-		transformSprite_.rotate_ = { 0.0f,0.0f,rotation_ };
-		transformSprite_.scale_ = { size_.x,size_.y,1.0f };
-
-		if (autoAdjustTextureSize_) {
-			AdjustTextureSize();
-		}
 	}
 
 	void Sprite::Draw() {
@@ -224,11 +262,48 @@ namespace TKM {
 
 	void Sprite::ImGuiDebug() {
 #ifdef USE_IMGUI
-		// ImGui ウィジェット: スプライトの座標操作
-		ImGui::Begin("Sprite");
-		// スプライトの座標を操作するスライダー
-		ImGui::SliderFloat2("Sprite Position", &position_.x, 0.0f, 500.0f, "%.1f");
-		ImGui::End();
+		// 位置
+		ImGui::DragFloat2(
+			"位置",
+			&position_.x,
+			1.0f
+		);
+
+		// 回転
+		ImGui::DragFloat(
+			"回転",
+			&rotation_,
+			0.01f
+		);
+
+		// サイズ
+		ImGui::DragFloat2(
+			"サイズ",
+			&size_.x,
+			1.0f,
+			1.0f,
+			4096.0f,
+			"%.1f"
+		);
+
+		// 色
+		ImGui::ColorEdit4(
+			"色",
+			&materialData_->color.x
+		);
+
+		// アンカーポイント
+		ImGui::DragFloat2(
+			"アンカー",
+			&anchorPoint_.x,
+			0.01f,
+			0.0f,
+			1.0f
+		);
+
+		// 反転
+		ImGui::Checkbox("左右反転", &isFlipX_);
+		ImGui::Checkbox("上下反転", &isFlipY_);
 #endif
 	}
 

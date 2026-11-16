@@ -5,7 +5,7 @@ void ObjectSettings::Initialize(
 	Player* player
 ) {
 	// 保存先を設定
-	objectSave_.SetSettingsPath("resources/data/GAME.json");
+	objectSave_.SetSettingsPath("resources/data/game.json");
 
 	// テスト用Sphereを保存対象へ登録
 	if (sphere) {
