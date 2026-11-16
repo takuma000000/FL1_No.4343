@@ -119,11 +119,16 @@ namespace TKM {
 				// ワールド行列計算
 				//=====================================================
 				// パーティクルごとのスケール行列を作成する
-				const float sizeMultiplier = p.usesEffectSettings_ ? particleGroup->sizeMultiplier_ : 1.0f;
+				const float sizeMultiplier = p.usesEffectSettings_ ? particleGroup->effectScale_ : 1.0f;
 				Matrix4x4 scaleMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform_.scale_ * sizeMultiplier);
 
 				// パーティクルごとの平行移動行列を作成する
-				Matrix4x4 translateMatrix = MyMath::MakeTranslateMatrix((*particleIterator).transform_.translate_);
+				// シミュレーションは元の単位で保ち、発生位置からの距離を描画時に拡大する。
+				// これで発生範囲・速度・重力による軌跡も粒と同じ倍率になり、途中変更も即時反映できる。
+				const Vector3 drawPosition = p.usesEffectSettings_
+					? p.emissionOrigin_ + (p.transform_.translate_ - p.emissionOrigin_) * sizeMultiplier
+					: p.transform_.translate_;
+				Matrix4x4 translateMatrix = MyMath::MakeTranslateMatrix(drawPosition);
 
 				// パーティクルごとの回転行列を作成する
 				Matrix4x4 rotateMatrix = MyMath::MakeRotateMatrix((*particleIterator).transform_.rotate_);
@@ -684,10 +689,10 @@ namespace TKM {
 		return true;
 	}
 
-	void ParticleManager::SetEffectSizeMultiplier(const std::string& name, float multiplier) {
+	void ParticleManager::SetEffectScale(const std::string& name, float multiplier) {
 		if (!std::isfinite(multiplier) || multiplier <= 0.0f || multiplier > 100.0f) { return; }
 		auto it = particleGroups_.find(name);
-		if (it != particleGroups_.end()) { it->second.sizeMultiplier_ = multiplier; }
+		if (it != particleGroups_.end()) { it->second.effectScale_ = multiplier; }
 	}
 
 	void ParticleManager::EmitEffect(const std::string& name, const ParticleEffectSettings& s, const Vector3& position) {
@@ -707,6 +712,7 @@ namespace TKM {
 			p.lifeTime_ = random(s.lifeMin, s.lifeMax);
 			p.color_ = s.startColor;
 			p.usesEffectSettings_ = true;
+			p.emissionOrigin_ = position;
 			p.gravity_ = s.gravity;
 			p.startSize_ = s.startSize; p.endSize_ = s.endSize;
 			p.startColor_ = s.startColor; p.endColor_ = s.endColor;

@@ -13,7 +13,10 @@ namespace TKM {
 		bool Reload(const std::string& name);
 		// 再生中の同名エフェクトの発生位置を更新する。既に出た粒子は移動させない。
 		void SetPosition(const std::string& name, const Vector3& position);
-		// 再生開始後に指定。生存中・今後発生する粒の大きさに即時反映（位置・速度は維持）。
+		// 再生開始後に指定。発生位置を基準に粒・範囲・移動距離をまとめて拡大。
+		// 寿命・発生間隔・粒数は変更しない。生存中の粒子にも即時反映。
+		void SetScale(const std::string& name, float scale);
+		// 以前の呼び出しとの互換用。演出全体の倍率として扱う。
 		void SetSizeMultiplier(const std::string& name, float multiplier);
 		void Stop(const std::string& name);
 		void StopAll();

@@ -54,6 +54,9 @@ if (!effects->Play("enemyExplosion", enemyPosition)) {
 // 毎フレームPlayを呼ぶとEmitterが重複するので、一度だけPlayして使います。
 effects->SetPosition("enemyExplosion", enemyPosition);
 
+// 演出全体を拡大（粒・発生範囲・移動距離）。寿命や発生間隔はそのまま。
+effects->SetScale("enemyExplosion", 3.0f);
+
 // 連続発生の停止と、その名前の生存粒子の消去。
 effects->Stop("enemyExplosion");
 ```
@@ -82,3 +85,8 @@ Linux上で、JSON保存・復元・不正値拒否、再生スケジュール�
 粒子の重力・色・サイズ補間・寿命・上限を、GPU部分を代替した単体検証で確認しています。
 ImGui編集コードの構文検査とVisual StudioプロジェクトのXML検査も行っています。
 Windows / DirectX12での全体ビルドと実画面の操作は未検証です。
+
+ゲーム中の「Playerオーラ」→「演出全体の倍率」で0.1～100倍に調整できます。
+各粒子が生まれた発生位置を基準に、その周囲の広がり・軌跡・粒のサイズを同じ倍率で拡大します。
+倍率変更は生存中の粒子にも即時反映し、粒子の時間や放出タイマーをリセットしません。
+このゲーム内倍率はJSONへ保存しません。元のplayer_aura設定は変更されません。

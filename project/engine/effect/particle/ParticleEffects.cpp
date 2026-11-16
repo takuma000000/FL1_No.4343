@@ -40,8 +40,11 @@ namespace TKM {
 		}
 	}
 
+	void ParticleEffects::SetScale(const std::string& name, float scale) {
+		ParticleManager::GetInstance()->SetEffectScale("__effect_" + name, scale);
+	}
 	void ParticleEffects::SetSizeMultiplier(const std::string& name, float multiplier) {
-		ParticleManager::GetInstance()->SetEffectSizeMultiplier("__effect_" + name, multiplier);
+		SetScale(name, multiplier);
 	}
 
 	void ParticleEffects::Stop(const std::string& name) {

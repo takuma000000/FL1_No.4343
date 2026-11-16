@@ -74,6 +74,7 @@ namespace TKM {
 			float currentTime_;
 			// 保存エフェクトだけで使う。従来のSpawner粒子の挙動は維持する。
 			bool usesEffectSettings_ = false;
+			Vector3 emissionOrigin_{}; // 生まれた位置を中心に演出全体を拡大する
 			Vector3 gravity_{};
 			float startSize_ = 1.0f, endSize_ = 1.0f;
 			Vector4 startColor_{}, endColor_{};
@@ -88,7 +89,7 @@ namespace TKM {
 			uint32_t kNumInstance_;
 			ParticleForGPU* instancingData_;
 			ParticleType type_;
-			float sizeMultiplier_ = 1.0f; // ゲーム内での粒サイズ調整（保存設定とは独立）
+			float effectScale_ = 1.0f; // ゲーム内での演出全体の拡大率（保存設定とは独立）
 		};
 
 		//=============================================================
@@ -182,7 +183,7 @@ namespace TKM {
 		// 保存エフェクトとプレビューで共用する。既存グループのGPUバッファは再利用。
 		bool PrepareEffectGroup(const std::string& name, const ParticleEffectSettings& settings);
 		void EmitEffect(const std::string& name, const ParticleEffectSettings& settings, const Vector3& position);
-		void SetEffectSizeMultiplier(const std::string& name, float multiplier);
+		void SetEffectScale(const std::string& name, float multiplier);
 
 		/// <summary>
 		/// パーティクルグループを取得します。

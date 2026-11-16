@@ -83,7 +83,7 @@ void GameScene::Update() {
 	// Player内で移動→追従カメラ行列→オブジェクト行列の順に更新する
 	if (player_) {
 		player_->Update();
-		TKM::ParticleEffects::GetInstance()->SetSizeMultiplier(kPlayerAuraEffect, playerAuraSizeMultiplier_);
+		TKM::ParticleEffects::GetInstance()->SetScale(kPlayerAuraEffect, playerAuraScale_);
 		// 移動後の位置を渡し、次に生まれる粒子をPlayerの位置から発生させる。
 		TKM::ParticleEffects::GetInstance()->SetPosition(kPlayerAuraEffect, player_->GetPos());
 	}
@@ -276,9 +276,9 @@ void GameScene::InitializeCamera() {
 void GameScene::ImGuiDebug() {
 #ifdef USE_IMGUI
 	ImGui::Begin("Playerオーラ");
-	ImGui::DragFloat("粒の大きさ倍率", &playerAuraSizeMultiplier_, 0.1f, 0.1f, 100.0f, "%.1f倍", ImGuiSliderFlags_AlwaysClamp);
-	if (ImGui::Button("元の大きさに戻す")) { playerAuraSizeMultiplier_ = 1.0f; }
-	ImGui::TextDisabled("1倍は保存済みの大きさ。発生位置や速度は変わりません。");
+	ImGui::DragFloat("演出全体の倍率", &playerAuraScale_, 0.1f, 0.1f, 100.0f, "%.1f倍", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::Button("元の大きさに戻す")) { playerAuraScale_ = 1.0f; }
+	ImGui::TextDisabled("粒・広がり・飛ぶ距離をまとめて拡大します。寿命や発生間隔は同じです。");
 	ImGui::End();
 
 	// ──────────────── カメラ表示 ───────────────
