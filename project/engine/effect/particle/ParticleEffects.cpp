@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "ParticleEffects.h"
 #include "ParticleManager.h"
 #include <algorithm>
