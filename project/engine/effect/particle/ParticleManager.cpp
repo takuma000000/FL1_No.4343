@@ -7,6 +7,7 @@
 #include "MyMath.h"
 #include <numbers>
 #include <algorithm>
+#include <cmath>
 
 namespace TKM {
 
@@ -118,7 +119,8 @@ namespace TKM {
 				// ワールド行列計算
 				//=====================================================
 				// パーティクルごとのスケール行列を作成する
-				Matrix4x4 scaleMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform_.scale_);
+				const float sizeMultiplier = p.usesEffectSettings_ ? particleGroup->sizeMultiplier_ : 1.0f;
+				Matrix4x4 scaleMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform_.scale_ * sizeMultiplier);
 
 				// パーティクルごとの平行移動行列を作成する
 				Matrix4x4 translateMatrix = MyMath::MakeTranslateMatrix((*particleIterator).transform_.translate_);
@@ -680,6 +682,12 @@ namespace TKM {
 		group.materialData_.textureFilePath_ = settings.texture;
 		group.materialData_.textureIndex_ = TextureManager::GetInstance()->GetTextureIndexByFilePath(settings.texture);
 		return true;
+	}
+
+	void ParticleManager::SetEffectSizeMultiplier(const std::string& name, float multiplier) {
+		if (!std::isfinite(multiplier) || multiplier <= 0.0f || multiplier > 100.0f) { return; }
+		auto it = particleGroups_.find(name);
+		if (it != particleGroups_.end()) { it->second.sizeMultiplier_ = multiplier; }
 	}
 
 	void ParticleManager::EmitEffect(const std::string& name, const ParticleEffectSettings& s, const Vector3& position) {

@@ -88,6 +88,7 @@ namespace TKM {
 			uint32_t kNumInstance_;
 			ParticleForGPU* instancingData_;
 			ParticleType type_;
+			float sizeMultiplier_ = 1.0f; // ゲーム内での粒サイズ調整（保存設定とは独立）
 		};
 
 		//=============================================================
@@ -181,6 +182,7 @@ namespace TKM {
 		// 保存エフェクトとプレビューで共用する。既存グループのGPUバッファは再利用。
 		bool PrepareEffectGroup(const std::string& name, const ParticleEffectSettings& settings);
 		void EmitEffect(const std::string& name, const ParticleEffectSettings& settings, const Vector3& position);
+		void SetEffectSizeMultiplier(const std::string& name, float multiplier);
 
 		/// <summary>
 		/// パーティクルグループを取得します。

@@ -102,6 +102,7 @@ private:
 	std::unique_ptr<TKM::Object3d> sphere_ = nullptr; // 球体
 
 	std::unique_ptr<Player> player_ = nullptr;
+	float playerAuraSizeMultiplier_ = 1.0f; // 保存した粒サイズに掛ける倍率
 
 	//======================================================================
 	// 2Dスプライト

@@ -40,6 +40,10 @@ namespace TKM {
 		}
 	}
 
+	void ParticleEffects::SetSizeMultiplier(const std::string& name, float multiplier) {
+		ParticleManager::GetInstance()->SetEffectSizeMultiplier("__effect_" + name, multiplier);
+	}
+
 	void ParticleEffects::Stop(const std::string& name) {
 		const std::string group = "__effect_" + name;
 		std::erase_if(emitters_, [&](const Emitter& e) { return e.group == group; });

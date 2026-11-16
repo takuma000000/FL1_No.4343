@@ -13,6 +13,8 @@ namespace TKM {
 		bool Reload(const std::string& name);
 		// 再生中の同名エフェクトの発生位置を更新する。既に出た粒子は移動させない。
 		void SetPosition(const std::string& name, const Vector3& position);
+		// 再生開始後に指定。生存中・今後発生する粒の大きさに即時反映（位置・速度は維持）。
+		void SetSizeMultiplier(const std::string& name, float multiplier);
 		void Stop(const std::string& name);
 		void StopAll();
 		// エディタの固定スロット。再調整してもGPU用グループを増殖させない。
