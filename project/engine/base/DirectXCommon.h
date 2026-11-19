@@ -13,6 +13,7 @@
 #include "SystemIncludes.h"
 
 // PostEffect
+#include "PostEffectPreview.h"
 namespace TKM {
 	class RadialBlurEffect;
 	class VignettingEffect;
@@ -641,9 +642,13 @@ namespace TKM {
 			float noiseSpeed,
 			uint32_t telegraph);
 		/// <summary>
-		/// ポストエフェクトなしで RenderTexture → Swapchain へ描画
+		/// ゲーム設定またはImGuiで選択したポストエフェクトを適用してSwapchainへ描画
 		/// </summary>
 		void DrawPostEffectToSwapchain();
+		void SetPostEffectPreview(PostEffectPreview selection) {
+			if (postEffectPreview_ != selection) { previousFrameReady_ = false; }
+			postEffectPreview_ = selection;
+		}
 		/// <summary>
 		/// 
 		/// </summary>
@@ -975,6 +980,7 @@ namespace TKM {
 		// RadialBlur 用 PSO
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> radialBlurPipelineState_;
 		bool                                         radialBlurInitialized_ = false;
+		PostEffectPreview postEffectPreview_ = PostEffectPreview::Game;
 		TKM::RadialBlurEffect* radialBlurEffect_ = nullptr; // 現在シーンの RadialBlurEffect（なければ nullptr）
 
 		// Vignetting 用 PSO

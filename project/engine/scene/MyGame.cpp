@@ -7,12 +7,14 @@
 #include "ImGuiManager.h"
 #include "CameraManager.h"
 #include "CollisionManager.h"
+#include "DeltaTimeManager.h"
 
 namespace TKM {
 	void MyGame::Initialize() {
 
 		//*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 		TKM::Framework::Initialize(); //基底クラスの初期化処理
+		postEffectEditor_.Initialize(dxCommon_.get());
 
 		// Initialize sceneManager_
 		sceneManager_ = std::make_unique<TKM::SceneManager>();
@@ -43,6 +45,7 @@ namespace TKM {
 		////*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
 		// 終了処理
+		postEffectEditor_.Finalize();
 		imguiManager_->Finalize();
 
 		//基底クラスの終了処理
@@ -70,6 +73,8 @@ namespace TKM {
 		if (windowsAPI_->ProcessMessage()) {
 			SetEndRequest(true); // Frameworkの終了フラグを設定
 		}
+
+		postEffectEditor_.Update(DeltaTimeManager::GetInstance()->GetDeltaTime());
 
 		// ** ImGui処理終了 **
 		imguiManager_->End();

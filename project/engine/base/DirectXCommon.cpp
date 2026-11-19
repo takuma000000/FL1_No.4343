@@ -2378,7 +2378,7 @@ namespace TKM {
 			};
 
 		// 1. RadialBlur
-		if (radialBlurEffect_ && radialBlurEffect_->IsActive()) {
+		if (ShouldApplyPostEffect(postEffectPreview_, PostEffectPreview::RadialBlur, radialBlurEffect_ && radialBlurEffect_->IsActive())) {
 			if (!radialBlurInitialized_) {
 				InitializeRadialBlurPipeline();
 			}
@@ -2388,7 +2388,7 @@ namespace TKM {
 		}
 
 		// 2. Ripple
-		if (rippleEffect_ && rippleEffect_->IsActive()) {
+		if (ShouldApplyPostEffect(postEffectPreview_, PostEffectPreview::Ripple, rippleEffect_ && rippleEffect_->IsActive())) {
 			if (!rippleInitialized_) {
 				InitializeWaterRipplePipeline();
 			}
@@ -2398,7 +2398,7 @@ namespace TKM {
 		}
 
 		// 3. Vignetting
-		if (vignettingEffect_ && vignettingEffect_->IsActive()) {
+		if (ShouldApplyPostEffect(postEffectPreview_, PostEffectPreview::Vignetting, vignettingEffect_ && vignettingEffect_->IsActive())) {
 			if (!vignettingInitialized_) {
 				InitializeVignettingPipeline();
 			}
@@ -2408,7 +2408,7 @@ namespace TKM {
 		}
 
 		// 4. Aura
-		if (auraEffect_ && auraEffect_->IsActive()) {
+		if (ShouldApplyPostEffect(postEffectPreview_, PostEffectPreview::Aura, auraEffect_ && auraEffect_->IsActive())) {
 			if (!auraInitialized_) {
 				InitializeAuraPipeline();
 			}
@@ -2418,7 +2418,7 @@ namespace TKM {
 		}
 
 		// 5. Fog
-		if (fogEffect_ && fogEffect_->IsActive()) {
+		if (ShouldApplyPostEffect(postEffectPreview_, PostEffectPreview::Fog, fogEffect_ && fogEffect_->IsActive())) {
 			if (!fogInitialized_) {
 				InitializeFogPipeline();
 			}
@@ -2428,7 +2428,7 @@ namespace TKM {
 		}
 
 		// 6. Noise
-		if (noiseEffect_ && noiseEffect_->IsActive()) {
+		if (ShouldApplyPostEffect(postEffectPreview_, PostEffectPreview::Noise, noiseEffect_ && noiseEffect_->IsActive())) {
 			if (!noiseInitialized_) {
 				InitializeNoisePipeline();
 			}
@@ -2438,7 +2438,7 @@ namespace TKM {
 		}
 
 		// 7. SpeedLine
-		if (speedLineEffect_ && speedLineEffect_->IsActive()) {
+		if (ShouldApplyPostEffect(postEffectPreview_, PostEffectPreview::SpeedLine, speedLineEffect_ && speedLineEffect_->IsActive())) {
 			if (!speedLineInitialized_) {
 				InitializeSpeedLinePipeline();
 			}
@@ -2448,10 +2448,14 @@ namespace TKM {
 		}
 
 		// 8. MotionBlur
-		if (motionBlurEffect_ && motionBlurEffect_->IsActive()) {
-			ApplyMotionBlur(srcTex, srcSrv, dstTex, getRtvFor(dstTex));
-			std::swap(srcTex, dstTex);
-			std::swap(srcSrv, dstSrv);
+		if (ShouldApplyPostEffect(postEffectPreview_, PostEffectPreview::MotionBlur, motionBlurEffect_ && motionBlurEffect_->IsActive())) {
+			if (!motionBlurInitialized_) { InitializeMotionBlurPipeline(); }
+			// 選択切り替え直後は履歴を用意する。未描画のdstへ入れ替えない。
+			if (previousFrameReady_) {
+				ApplyMotionBlur(srcTex, srcSrv, dstTex, getRtvFor(dstTex));
+				std::swap(srcTex, dstTex);
+				std::swap(srcSrv, dstSrv);
+			}
 		}
 
 		// 最後は srcTex を Swapchain へ
