@@ -1,5 +1,6 @@
 #pragma once
 #include "ObjectSave.h"
+#include "ObjectGizmo.h"
 
 #include <functional>
 #include <string>
@@ -16,6 +17,8 @@ namespace TKM {
 	public:
 		// オブジェクト固有のImGuiを表示する処理
 		using ImGuiCallback = std::function<void()>;
+		struct Bounds { Vector3 center{}, size{}; };
+		using BoundsGetter = std::function<Bounds()>;
 
 		/// <summary>
 		/// オブジェクト保存機能を設定します。
@@ -31,7 +34,8 @@ namespace TKM {
 		/// <returns>登録できた場合はtrue</returns>
 		bool RegisterObject(
 			const std::string& name,
-			ImGuiCallback callback
+			ImGuiCallback callback,
+			BoundsGetter boundsGetter = {}
 		);
 
 		/// <summary>
@@ -49,6 +53,7 @@ namespace TKM {
 		/// オブジェクト編集画面を表示します。
 		/// </summary>
 		void ImGuiDebug();
+		void UpdateGizmo(const Camera& camera);
 
 	private:
 		//=============================================================
@@ -58,6 +63,7 @@ namespace TKM {
 		struct Entry {
 			std::string name_;
 			ImGuiCallback callback_;
+			BoundsGetter boundsGetter_;
 		};
 
 		std::vector<Entry> entries_;
@@ -70,6 +76,7 @@ namespace TKM {
 		//=============================================================
 
 		ObjectSave* objectSave_ = nullptr;
+		ObjectGizmo gizmo_;
 	};
 
 } // namespace TKM

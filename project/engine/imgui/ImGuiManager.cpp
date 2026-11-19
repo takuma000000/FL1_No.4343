@@ -1,7 +1,7 @@
 #include "ImGuiManager.h"
-
 #ifdef USE_IMGUI
 #include "imgui.h"
+#include "../../externals/ImGuizmo/ImGuizmo.h"
 #include <imgui_impl_win32.h>
 #include <imgui_impl_dx12.h>
 #endif
@@ -98,6 +98,7 @@ namespace TKM {
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
+		ImGuizmo::BeginFrame();
 #endif
 	}
 

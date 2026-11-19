@@ -88,6 +88,26 @@ namespace TKM {
 		entries_.clear();
 	}
 
+	bool ObjectSave::TryGetValues(const std::string& id, Values& values) const {
+		const auto it = entries_.find(id);
+		if (it == entries_.end()) { return false; }
+		values = it->second.getter_();
+		return true;
+	}
+
+	bool ObjectSave::ApplyValues(const std::string& id, const Values& values) {
+		const auto it = entries_.find(id);
+		if (it == entries_.end()) { return false; }
+		try {
+			ValidateObjectValues(values);
+			it->second.setter_(values);
+			return true;
+		} catch (const std::exception& error) {
+			settingsMessage_ = std::string("編集失敗: ") + error.what();
+			return false;
+		}
+	}
+
 	bool ObjectSave::SaveSettings() {
 		try {
 			if (settingsPath_.empty()) {
