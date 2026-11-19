@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "ObjectEditor.h"
 #include "ObjectGizmoMath.h"
 #include <limits>
