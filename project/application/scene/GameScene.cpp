@@ -8,10 +8,6 @@
 
 using namespace TKM;
 
-namespace {
-	constexpr const char* kPlayerAuraEffect = "player_aura";
-}
-
 void GameScene::Initialize() {
 	/// ──────────────── NULLチェック ────────────────
 	assert(this != nullptr && "this is nullptr in GameScene::Initialize");
@@ -31,7 +27,7 @@ void GameScene::Initialize() {
 	particleManager->Initialize(dxCommon_, srvManager_, TKM::CameraManager::GetInstance()->GetMainCamera());
 	// 一度だけ再生を開始する。連続発生の間隔・見た目は保存したJSONに従う。
 	auto* effects = TKM::ParticleEffects::GetInstance();
-	effects->Play(kPlayerAuraEffect, player_->GetPos());
+	effects->Play("player_aura", player_->GetPos());
 
 	/// ──────────────── ライトの初期化 ───────────────
 	directionalLight_ = std::make_unique<DirectionalLight>();
@@ -80,7 +76,7 @@ void GameScene::Update() {
 	if (player_) {
 		player_->Update();
 		// 移動後の位置を渡し、次に生まれる粒子をPlayerの位置から発生させる。
-		TKM::ParticleEffects::GetInstance()->SetPosition(kPlayerAuraEffect, player_->GetPos());
+		TKM::ParticleEffects::GetInstance()->SetPosition("player_aura", player_->GetPos());
 	}
 
 	// テスト用Sphere更新
@@ -173,7 +169,7 @@ void GameScene::InitializeSprite() {
 	logoSprite_->Initialize(
 		TKM::SpriteCommon::GetInstance(),
 		dxCommon_,
-		"./resources/texture/nomura.jpg"
+		"./resources/texture/TKMAX_logo.png"
 	);
 
 	// 画像の中心を画面中央へ配置する
