@@ -1,7 +1,5 @@
 #define NOMINMAX
 #include "ObjectEditor.h"
-#include "ObjectGizmoMath.h"
-#include <limits>
 
 #include <algorithm>
 #include <utility>
@@ -18,8 +16,7 @@ namespace TKM {
 
 	bool ObjectEditor::RegisterObject(
 		const std::string& name,
-		ImGuiCallback callback,
-		BoundsGetter boundsGetter
+		ImGuiCallback callback
 	) {
 		if (name.empty() || !callback) {
 			return false;
@@ -41,8 +38,7 @@ namespace TKM {
 		entries_.push_back(
 			Entry{
 				name,
-				std::move(callback),
-				std::move(boundsGetter)
+				std::move(callback)
 			}
 		);
 
@@ -57,13 +53,11 @@ namespace TKM {
 			}
 		);
 
-		gizmo_.Clear();
 		// 登録解除後は選択をNoneへ戻す
 		selectedIndex_ = 0;
 	}
 
 	void ObjectEditor::Clear() {
-		gizmo_.Clear();
 		entries_.clear();
 		selectedIndex_ = 0;
 	}
@@ -71,7 +65,6 @@ namespace TKM {
 	void ObjectEditor::ImGuiDebug() {
 #ifdef USE_IMGUI
 		ImGui::Begin("オブジェクト編集");
-		gizmo_.ImGuiControls();
 
 		// ──────────────── オブジェクト保存 ───────────────
 		if (objectSave_) {
@@ -162,45 +155,6 @@ namespace TKM {
 		}
 
 		ImGui::End();
-#endif
-	}
-
-	void ObjectEditor::UpdateGizmo(const Camera& camera) {
-#ifdef USE_IMGUI
-		if (!objectSave_ || !gizmo_.IsEnabled()) { return; }
-		if (selectedIndex_ > 0 && selectedIndex_ <= static_cast<int>(entries_.size())) {
-			ObjectSave::Values values{};
-			const auto& name = entries_[selectedIndex_ - 1].name_;
-			if (objectSave_->TryGetValues(name, values) && gizmo_.Manipulate(values, camera, selectedIndex_)) {
-				objectSave_->ApplyValues(name, values);
-			}
-		}
-		if (!gizmo_.CanPick()) { return; }
-		const auto* viewport = ImGui::GetMainViewport();
-		const auto mouse = ImGui::GetMousePos();
-		ObjectGizmoMath::Ray ray;
-		if (!ObjectGizmoMath::MakeRay(mouse.x - viewport->Pos.x, mouse.y - viewport->Pos.y,
-			viewport->Size.x, viewport->Size.y, camera.GetViewProjectionMatrix(), ray)) { return; }
-		float closest = std::numeric_limits<float>::max();
-		int picked = 0;
-		for (int i = 0; i < static_cast<int>(entries_.size()); ++i) {
-			const auto& entry = entries_[i];
-			ObjectSave::Values values{};
-			if (!entry.boundsGetter_ || !objectSave_->TryGetValues(entry.name_, values)
-				|| (values.visible_.has_value() && !*values.visible_)) { continue; }
-			const auto bounds = entry.boundsGetter_();
-			float distance = 0;
-			if (ObjectGizmoMath::HitBounds(ray, bounds.center, bounds.size, distance) && distance < closest) {
-				closest = distance; picked = i + 1;
-			}
-		}
-		selectedIndex_ = picked;
-		if (picked != 0) {
-			ImGui::GetIO().WantCaptureMouse = true;
-			ImGui::SetNextFrameWantCaptureMouse(true);
-		}
-#else
-		(void)camera;
 #endif
 	}
 

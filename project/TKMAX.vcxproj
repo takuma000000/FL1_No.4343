@@ -119,11 +119,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
 	<ClCompile Include="engine\imgui\SpriteGizmo.cpp" />
 	<ClCompile Include="engine\io\SpriteSave.cpp" />
 	<ClCompile Include="application\controller\CollisionSettings.cpp" />
-    <ClCompile Include="engine\imgui\ObjectGizmo.cpp" />
-    <ClCompile Include="engine\imgui\ObjectGizmoMath.cpp" />
-    <ClCompile Include="externals\ImGuizmo\ImGuizmo.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="engine\effect\particle\ParticleEffectSettings.cpp" />
     <ClCompile Include="engine\effect\particle\ParticleEffects.cpp" />
     <ClCompile Include="engine\effect\particle\ParticleEditor.cpp" />
@@ -229,9 +224,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
 	<ClInclude Include="engine\io\SpriteSave.h" />
 	<ClInclude Include="application\controller\CollisionSettings.h" />
 	<ClInclude Include="engine\3d\collision\CollisionCategory.h" />
-    <ClInclude Include="engine\imgui\ObjectGizmo.h" />
-    <ClInclude Include="engine\imgui\ObjectGizmoMath.h" />
-    <ClInclude Include="externals\ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="engine\effect\particle\ParticleEffectSettings.h" />
     <ClInclude Include="engine\effect\particle\ParticleEffects.h" />
     <ClInclude Include="engine\effect\particle\ParticleEditor.h" />

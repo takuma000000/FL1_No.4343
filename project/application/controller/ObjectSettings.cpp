@@ -1,5 +1,4 @@
 #include "ObjectSettings.h"
-#include "CameraManager.h"
 
 void ObjectSettings::Initialize(
 	TKM::Object3d* sphere,
@@ -69,10 +68,6 @@ void ObjectSettings::Initialize(
 			"Player",
 			[player]() {
 				player->ImGuiDebug();
-			},
-			[player]() {
-				const auto* object = player->GetObject3d();
-				return TKM::ObjectEditor::Bounds{ object->GetWorldBoundsCenter(), object->GetWorldBoundsSize() };
 			}
 		);
 	}
@@ -83,9 +78,6 @@ void ObjectSettings::Initialize(
 			"Sphere",
 			[sphere]() {
 				sphere->ImGuiDebug();
-			},
-			[sphere]() {
-				return TKM::ObjectEditor::Bounds{ sphere->GetWorldBoundsCenter(), sphere->GetWorldBoundsSize() };
 			}
 		);
 	}
@@ -105,8 +97,5 @@ void ObjectSettings::Finalize() {
 void ObjectSettings::ImGuiDebug() {
 #ifdef USE_IMGUI
 	objectEditor_.ImGuiDebug();
-	if (const auto* camera = TKM::CameraManager::GetInstance()->GetActiveCamera()) {
-		objectEditor_.UpdateGizmo(*camera);
-	}
 #endif
 }

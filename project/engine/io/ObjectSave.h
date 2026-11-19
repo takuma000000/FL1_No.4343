@@ -58,10 +58,6 @@ namespace TKM {
 		/// </summary>
 		void Clear();
 
-		// ギズモも保存時と同じGetter/Setterを通して実体を編集する。
-		bool TryGetValues(const std::string& id, Values& values) const;
-		bool ApplyValues(const std::string& id, const Values& values);
-
 		/// <summary>
 		/// 登録されているオブジェクトを保存します。
 		/// </summary>
