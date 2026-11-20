@@ -142,18 +142,9 @@ namespace TKM {
 
 #if defined(_DEBUG) && defined(USE_IMGUI)
 	void ImGuiManager::BuildDebugWorkspace() {
-		bool reset = false;
-		if (ImGui::BeginMainMenuBar()) {
-			if (ImGui::BeginMenu("表示")) {
-				reset = ImGui::MenuItem("レイアウトを初期化");
-				ImGui::EndMenu();
-			}
-			ImGui::EndMainMenuBar();
-		}
 		const auto* viewport = ImGui::GetMainViewport();
 		const auto dock = ImHashStr("TKMAX_DebugWorkspace");
-		if (reset || !ImGui::DockBuilderGetNode(dock)) {
-			ImGui::DockBuilderRemoveNode(dock);
+		if (!ImGui::DockBuilderGetNode(dock)) {
 			ImGui::DockBuilderAddNode(dock, ImGuiDockNodeFlags_DockSpace);
 			ImGui::DockBuilderSetNodeSize(dock, viewport->WorkSize);
 			ImGuiID center = dock, left = 0, bottom = 0;
