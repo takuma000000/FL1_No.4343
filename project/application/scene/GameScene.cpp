@@ -5,6 +5,7 @@
 #include "ParticleEffects.h"
 #include "DeltaTimeManager.h"
 #include "Logger.h"
+#include "CollisionManager.h"
 
 using namespace TKM;
 
@@ -107,6 +108,18 @@ void GameScene::Update() {
 
 	/// ──────────────── パーティクル更新 ───────────────
 	TKM::ParticleManager::GetInstance()->Update();
+
+	/// ──────── 当たり判定更新 & ダメージ処理 ────────
+	auto* collisionManager = TKM::CollisionManager::GetInstance();
+	collisionManager->Update();
+
+	if (player_ && enemyManager_ && !enemyManager_->GetEnemies().empty()) {
+		auto* playerCollider = collisionManager->GetAABBCollider("Player");
+		auto* enemyCollider = collisionManager->GetAABBCollider("Enemy");
+		if (playerCollider && enemyCollider && playerCollider->IsColliding(*enemyCollider)) {
+			player_->Damage(1);
+		}
+	}
 
 }
 

@@ -59,6 +59,19 @@ public:
 	// 弾の発射処理
 	void Attack();
 
+	// ──────────────── HP関連のゲッター / セッター / 操作 ────────────────
+	int GetHp() const { return hp_; }
+	int GetMaxHp() const { return maxHp_; }
+	void SetMaxHp(int maxHp) {
+		maxHp_ = maxHp;
+		if (hp_ > maxHp_) {
+			hp_ = maxHp_;
+		}
+	}
+
+	// ダメージを受ける処理（無敵時間中は無効）
+	void Damage(int amount = 1);
+
 private:
 
 	// 弾生成・描画カメラ受け渡し用に保持するポインタ
@@ -83,4 +96,11 @@ private:
 	std::list<std::unique_ptr<PlayerBullet>> bullets_;
 	float bulletSpeed_ = 1.5f;   // 弾のスピード
 	int shotCooldown_ = 0;       // 連射クールタイム用カウンタ
+
+	// HP・無敵時間関連
+	int maxHp_ = 5;              // 最大HP
+	int hp_ = 5;                 // 現在のHP
+	int invincibleTimer_ = 0;    // ダメージ後の無敵フレーム残り時間
+	static constexpr int kMaxInvincibleTime = 60; // 被弾後の無敵時間（60フレーム = 約1秒）
+
 };
