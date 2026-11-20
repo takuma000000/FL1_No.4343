@@ -81,8 +81,8 @@ void GameScene::Update() {
 	uvCheckerSprite_->Update(); // UVチェッカー更新
 
 	/// ──────── 敵更新 ────────
-	if (enemyManager_ && sphere_) {
-		enemyManager_->Update(deltaTime, sphere_->GetTranslate());
+	if (enemyManager_ && player_) {
+		enemyManager_->Update(deltaTime, player_->GetPos());
 	}
 
 	/// ──────────────── ライト更新 ───────────────
