@@ -1,4 +1,4 @@
-# Blender 5.2.3 LTS MTL File: 'enemy.blend'
+# Blender 5.2.3 LTS MTL File: '2ndEnemy.blend'
 # www.blender.org
 
 newmtl マテリアル
@@ -9,7 +9,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Kd weekestEnemy.png
+map_Kd 3rdEnemy.png
 
 newmtl マテリアル.001
 Ns 250.000000
