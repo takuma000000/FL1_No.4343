@@ -35,6 +35,9 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Finalize() {
+	/// ──────────────── 当たり判定設定終了 ───────────────
+	collisionSettings_.Finalize();
+
 	/// ──────── 敵の終了処理 ────────
 	if (enemyManager_) {
 		enemyManager_->Clear();
@@ -44,9 +47,6 @@ void GameScene::Finalize() {
 
 	/// ──────────────── スプライト設定終了 ───────────────
 	spriteSettings_.Finalize();
-
-	/// ──────────────── 当たり判定設定終了 ───────────────
-	collisionSettings_.Finalize();
 
 	/// ──────────────── オブジェクト設定終了 ───────────────
 	objectSettings_.Finalize();
@@ -89,8 +89,11 @@ void GameScene::Update() {
 	uvCheckerSprite_->Update(); // UVチェッカー更新
 
 	/// ──────── 敵更新 ────────
-	if (enemyManager_ && sphere_) {
-		enemyManager_->Update(deltaTime, sphere_->GetTranslate());
+	if (enemyManager_) {
+		if (sphere_) {
+			enemyManager_->Update(deltaTime, sphere_->GetTranslate());
+		}
+		collisionSettings_.SyncEnemyColliders(*enemyManager_);
 	}
 
 	/// ──────────────── ライト更新 ───────────────
@@ -311,5 +314,6 @@ void GameScene::InitializeEnemies() {
 		return;
 	}
 
+	collisionSettings_.SyncEnemyColliders(*enemyManager_);
 	Logger::Log("[Enemy] BasicVirus spawned successfully.\n");
 }

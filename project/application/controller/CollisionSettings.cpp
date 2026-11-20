@@ -1,6 +1,10 @@
 #include "CollisionSettings.h"
 #include "CollisionCategory.h"
 #include "CollisionManager.h"
+#include "Enemy.h"
+#include "EnemyManager.h"
+
+#include <cstdint>
 
 using namespace TKM;
 
@@ -74,7 +78,44 @@ void CollisionSettings::RegisterPair(
 	);
 }
 
+void CollisionSettings::SyncEnemyColliders(const EnemyManager& enemyManager) {
+	auto* collisionManager = CollisionManager::GetInstance();
+	std::set<std::string> activeIds;
+	for (const auto& enemy : enemyManager.GetEnemies()) {
+		const auto* actor = enemy.get();
+		const auto id = "Enemy_" + std::to_string(reinterpret_cast<std::uintptr_t>(actor));
+		if (!enemyColliderIds_.contains(id)) {
+			// 設定上の半径を使い、敵の座標を中心とするAABBを作る。
+			auto* collider = collisionManager->RegisterAABB(
+				id,
+				[actor]() { return actor->GetPosition(); },
+				[actor]() {
+					const float diameter = actor->GetCollisionRadius() * 2.0f;
+					return Vector3{ diameter, diameter, diameter };
+				}
+			);
+			if (!collider) {
+				continue;
+			}
+			collider->SetCategory(CollisionCategory::Enemy);
+		}
+		activeIds.insert(id);
+	}
+
+	for (const auto& id : enemyColliderIds_) {
+		if (!activeIds.contains(id)) {
+			collisionManager->Unregister(id);
+		}
+	}
+	enemyColliderIds_.swap(activeIds);
+}
+
 void CollisionSettings::Finalize() {
+	for (const auto& id : enemyColliderIds_) {
+		CollisionManager::GetInstance()->Unregister(id);
+	}
+	enemyColliderIds_.clear();
+
 	// Playerのコライダー登録を解除する
 	CollisionManager::GetInstance()->Unregister(
 		"Player"
