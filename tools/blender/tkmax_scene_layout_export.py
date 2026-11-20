@@ -113,10 +113,21 @@ if bpy is not None:
             raise ValueError(f"{image.name}: tiled/movie/sequence textures are not supported")
         directory.mkdir(parents=True, exist_ok=True)
         temporary = directory / ("temporary_" + uuid.uuid4().hex + ".png")
-        copy = image.copy() if image else bpy.data.images.new("TKMAX_export_color", width=1, height=1, alpha=True)
+        # Image.copy() may not copy a file image's loaded pixel buffer. Changing
+        # that copy's path before save() then prevents Blender from loading it.
+        # Read the source first and explicitly fill a new image instead.
+        pixels = image.pixels[:] if image is not None else color
+        width, height = tuple(image.size) if image is not None else (1, 1)
+        if width < 1 or height < 1 or len(pixels) != width * height * 4:
+            raise ValueError(f"{image.name}: image pixels could not be read; reopen the source image in Blender")
+        copy = bpy.data.images.new("TKMAX_export_texture", width=width, height=height, alpha=True,
+                                   float_buffer=image.is_float if image is not None else False)
         try:
-            if image is None:
-                copy.pixels = color
+            if image is not None:
+                copy.colorspace_settings.name = image.colorspace_settings.name
+                copy.alpha_mode = image.alpha_mode
+            copy.pixels.foreach_set(pixels)
+            copy.update()
             copy.filepath_raw, copy.file_format = str(temporary), 'PNG'
             copy.save()
             data = temporary.read_bytes()
