@@ -91,7 +91,9 @@ namespace TKM {
 	bool LoadSceneLayoutData(const std::string& filePath, SceneLayoutData& out, std::string& error) {
 		try {
 			constexpr uintmax_t kMaxJsonBytes = 8 * 1024 * 1024;
-			const auto path = std::filesystem::u8path(filePath);
+			// char8_tの文字列でUTF-8を明示する（日本語パスにも対応）。
+			const std::u8string utf8Path(filePath.begin(), filePath.end());
+			const std::filesystem::path path(utf8Path);
 			Require(std::filesystem::file_size(path) <= kMaxJsonBytes, "SceneLayout JSON is too large");
 			std::ifstream file(path); Require(static_cast<bool>(file), "Cannot open scene layout file");
 			Json j; file >> j;
