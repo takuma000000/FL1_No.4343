@@ -1,12 +1,9 @@
 #pragma once
-#include <set>
-#include <string>
-
 #include "CollisionCategory.h"
 #include "Object3d.h"
 #include "player.h"
 
-class EnemyManager;
+class Enemy;
 
 //=============================================================
 // CollisionSettingsクラス
@@ -22,10 +19,11 @@ public:
 	/// <param name="player">Player</param>
 	void Initialize(
 		TKM::Object3d* plane,
-		Player* player
+		Player* player,
+		const Enemy* enemy
 	);
 
-	void SyncEnemyColliders(const EnemyManager& enemyManager);
+	void UnregisterEnemy();
 
 	/// <summary>
 	/// 登録したコライダーを解除します。
@@ -38,7 +36,8 @@ private:
 	/// </summary>
 	void RegisterColliders(
 		TKM::Object3d* plane,
-		Player* player
+		Player* player,
+		const Enemy* enemy
 	);
 
 	/// <summary>
@@ -54,6 +53,4 @@ private:
 		TKM::CollisionCategory first,
 		TKM::CollisionCategory second
 	);
-
-	std::set<std::string> enemyColliderIds_;
 };

@@ -2,20 +2,19 @@
 #include "CollisionCategory.h"
 #include "CollisionManager.h"
 #include "Enemy.h"
-#include "EnemyManager.h"
-
-#include <cstdint>
 
 using namespace TKM;
 
 void CollisionSettings::Initialize(
 	TKM::Object3d* plane,
-	Player* player
+	Player* player,
+	const Enemy* enemy
 ) {
 	// 1. ゲーム内で使用するコライダーを登録する
 	RegisterColliders(
 		plane,
-		player
+		player,
+		enemy
 	);
 
 	// 2. 当たり判定を行う組み合わせを登録する
@@ -24,7 +23,8 @@ void CollisionSettings::Initialize(
 
 void CollisionSettings::RegisterColliders(
 	TKM::Object3d* plane,
-	Player* player
+	Player* player,
+	const Enemy* enemy
 ) {
 	// 登録に必要なオブジェクトが未生成の場合は処理しない
 	if (!plane || !player) {
@@ -55,6 +55,19 @@ void CollisionSettings::RegisterColliders(
 		plane,
 		CollisionCategory::Plane
 	);
+
+	//======================================================================
+	// Enemy
+	//======================================================================
+	// EnemyのObject3dと種類を登録する。
+	// モデルの中心とサイズは頂点情報から自動計算される。
+	if (enemy) {
+		collisionManager->RegisterAABB(
+			"Enemy",
+			enemy->GetObject3d(),
+			CollisionCategory::Enemy
+		);
+	}
 }
 
 void CollisionSettings::RegisterCollisionPairs() {
@@ -78,43 +91,14 @@ void CollisionSettings::RegisterPair(
 	);
 }
 
-void CollisionSettings::SyncEnemyColliders(const EnemyManager& enemyManager) {
-	auto* collisionManager = CollisionManager::GetInstance();
-	std::set<std::string> activeIds;
-	for (const auto& enemy : enemyManager.GetEnemies()) {
-		// 敵ごとに識別名を分ける。
-		const auto id = "Enemy_" + std::to_string(reinterpret_cast<std::uintptr_t>(enemy->GetObject3d()));
-		if (!enemyColliderIds_.contains(id)) {
-			//======================================================================
-			// Enemy
-			//======================================================================
-			// EnemyのObject3dと種類を登録する。
-			// モデルの中心とサイズは頂点情報から自動計算される。
-			auto* collider = collisionManager->RegisterAABB(
-				id,
-				enemy->GetObject3d(),
-				CollisionCategory::Enemy
-			);
-			if (!collider) {
-				continue;
-			}
-		}
-		activeIds.insert(id);
-	}
-
-	for (const auto& id : enemyColliderIds_) {
-		if (!activeIds.contains(id)) {
-			collisionManager->Unregister(id);
-		}
-	}
-	enemyColliderIds_.swap(activeIds);
+void CollisionSettings::UnregisterEnemy() {
+	CollisionManager::GetInstance()->Unregister(
+		"Enemy"
+	);
 }
 
 void CollisionSettings::Finalize() {
-	for (const auto& id : enemyColliderIds_) {
-		CollisionManager::GetInstance()->Unregister(id);
-	}
-	enemyColliderIds_.clear();
+	UnregisterEnemy();
 
 	// Playerのコライダー登録を解除する
 	CollisionManager::GetInstance()->Unregister(

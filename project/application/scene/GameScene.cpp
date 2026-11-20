@@ -15,12 +15,15 @@ void GameScene::Initialize() {
 
 	/// ──────────────── 各種初期化処理 ───────────────
 	InitializeObjects();
-	collisionSettings_.Initialize(sphere_.get(), player_.get());
 	objectSettings_.Initialize(sphere_.get(), player_.get());
 	InitializeSprite();
 	spriteSettings_.Initialize();
 	InitializeCamera();
 	InitializeEnemies(); // カメラ初期化後に敵を生成する
+	const Enemy* enemy = enemyManager_ && !enemyManager_->GetEnemies().empty()
+		? enemyManager_->GetEnemies().front().get()
+		: nullptr;
+	collisionSettings_.Initialize(sphere_.get(), player_.get(), enemy);
 
 	/// ──────────────── パーティクル初期化 ───────────────
 	auto particleManager = TKM::ParticleManager::GetInstance();
@@ -89,11 +92,12 @@ void GameScene::Update() {
 	uvCheckerSprite_->Update(); // UVチェッカー更新
 
 	/// ──────── 敵更新 ────────
-	if (enemyManager_) {
-		if (sphere_) {
-			enemyManager_->Update(deltaTime, sphere_->GetTranslate());
+	if (enemyManager_ && sphere_) {
+		const bool hadEnemy = !enemyManager_->GetEnemies().empty();
+		enemyManager_->Update(deltaTime, sphere_->GetTranslate());
+		if (hadEnemy && enemyManager_->GetEnemies().empty()) {
+			collisionSettings_.UnregisterEnemy();
 		}
-		collisionSettings_.SyncEnemyColliders(*enemyManager_);
 	}
 
 	/// ──────────────── ライト更新 ───────────────
@@ -314,6 +318,5 @@ void GameScene::InitializeEnemies() {
 		return;
 	}
 
-	collisionSettings_.SyncEnemyColliders(*enemyManager_);
 	Logger::Log("[Enemy] BasicVirus spawned successfully.\n");
 }
