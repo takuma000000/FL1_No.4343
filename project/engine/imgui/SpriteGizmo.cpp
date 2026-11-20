@@ -6,6 +6,7 @@
 
 #ifdef USE_IMGUI
 #include "imgui.h"
+#include "DebugGameView.h"
 #endif
 
 namespace {
@@ -103,7 +104,7 @@ namespace TKM {
 			return false;
 		}
 
-		const ImVec2 mouse = ImGui::GetMousePos();
+		const ImVec2 mouse = DebugGameView::MousePosition();
 		const Geometry geometry = CalculateGeometry(*sprite);
 		const Vector2 relative = {
 			mouse.x - geometry.center_.x,
@@ -125,10 +126,10 @@ namespace TKM {
 		const Geometry& geometry
 	) const {
 #ifdef USE_IMGUI
-		const ImVec2 mousePosition = ImGui::GetMousePos();
+		const ImVec2 mousePosition = DebugGameView::MousePosition();
 		const Vector2 mouse = { mousePosition.x, mousePosition.y };
-		constexpr float kHitRadius = 10.0f;
-		constexpr float kHitRadiusSquared = kHitRadius * kHitRadius;
+		const float kHitRadius = 10.0f * DebugGameView::GameUnitsPerPixel();
+		const float kHitRadiusSquared = kHitRadius * kHitRadius;
 
 		if (DistanceSquared(mouse, geometry.rotateHandle_)
 			<= kHitRadiusSquared) {
@@ -158,7 +159,7 @@ namespace TKM {
 		Handle handle
 	) {
 #ifdef USE_IMGUI
-		const ImVec2 mouse = ImGui::GetMousePos();
+		const ImVec2 mouse = DebugGameView::MousePosition();
 		activeSprite_ = sprite;
 		activeHandle_ = handle;
 		startMouse_ = { mouse.x, mouse.y };
@@ -172,7 +173,7 @@ namespace TKM {
 
 	void SpriteGizmo::ApplyOperation(Sprite* sprite) {
 #ifdef USE_IMGUI
-		const ImVec2 mousePosition = ImGui::GetMousePos();
+		const ImVec2 mousePosition = DebugGameView::MousePosition();
 		const Vector2 mouse = { mousePosition.x, mousePosition.y };
 
 		if (activeHandle_ == Handle::Move) {
@@ -276,9 +277,15 @@ namespace TKM {
 
 	void SpriteGizmo::Draw(const Sprite& sprite) const {
 #ifdef USE_IMGUI
-		const Geometry geometry = CalculateGeometry(sprite);
-		// ゲーム画面より手前、ImGuiウィンドウより奥へGizmoを描画する
-		ImDrawList* drawList = ImGui::GetBackgroundDrawList();
+		Geometry geometry = CalculateGeometry(sprite);
+		ImDrawList* drawList = DebugGameView::DrawList();
+		if (!drawList) { return; }
+		// ゲーム座標から縮小表示先へ変換し、ゲームビュー内だけに描画する。
+		for (auto& corner : geometry.corners_) { corner = DebugGameView::ToScreen(corner); }
+		for (auto& handle : geometry.handles_) { handle = DebugGameView::ToScreen(handle); }
+		geometry.topCenter_ = DebugGameView::ToScreen(geometry.topCenter_);
+		geometry.rotateHandle_ = DebugGameView::ToScreen(geometry.rotateHandle_);
+		DebugGameView::PushClip();
 
 		const ImU32 lineColor = IM_COL32(40, 130, 255, 255);
 		const ImU32 handleFill = IM_COL32(255, 255, 255, 255);
@@ -340,12 +347,13 @@ namespace TKM {
 			lineColor,
 			"R"
 		);
+		DebugGameView::PopClip();
 #endif
 	}
 
 	void SpriteGizmo::Update(Sprite* sprite) {
 #ifdef USE_IMGUI
-		if (!sprite) {
+		if (!sprite || !DebugGameView::DrawList()) {
 			Clear();
 			return;
 		}
@@ -358,7 +366,7 @@ namespace TKM {
 
 		if (activeHandle_ == Handle::None
 			&& ImGui::IsMouseClicked(ImGuiMouseButton_Left)
-			&& !ImGui::GetIO().WantCaptureMouse) {
+			&& DebugGameView::CanUseMouse()) {
 			const Geometry geometry = CalculateGeometry(*sprite);
 			Handle handle = HitTestHandle(geometry);
 

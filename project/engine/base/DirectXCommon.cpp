@@ -38,7 +38,7 @@ namespace TKM {
 		resourceDesc.Height = height;//Textureの高さ
 		resourceDesc.MipLevels = 1;//MipMapの数
 		resourceDesc.DepthOrArraySize = 1;//奥行き or 配列Textureの配列数
-		resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//DepthStencilとして利用可能なフォーマット
+		resourceDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;//DSVはD24、輪郭線のSRVはR24として同じ深度を参照する
 		resourceDesc.SampleDesc.Count = 1;//サンプリングカウント。1固定
 		resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;//2次元
 		resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;//DepthStencilとして使う通知
@@ -50,7 +50,7 @@ namespace TKM {
 		//深度値のクリア設定
 		D3D12_CLEAR_VALUE depthClearValue{};
 		depthClearValue.DepthStencil.Depth = 1.0f;//1.0f( 最大値 )でクリア
-		depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//フォーマット。Resourceと合わせる。
+		depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//Typelessリソースに対して、DSVと同じ形式を指定
 
 		//Resourceの生成
 		Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
@@ -276,9 +276,8 @@ namespace TKM {
 			commandList_->ResourceBarrier(1, &barrier);
 		}
 
-		// SwapChain の現在の RTV 取得
-		UINT backBufferIndex = swapChain_->GetCurrentBackBufferIndex();
-		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHandles_[backBufferIndex];
+		// 完成画面の描画先（Debugはゲームビュー、Releaseはバックバッファ）
+		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = GetSceneOutputRTV();
 		commandList_->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
 
 		// パイプライン / RootSignature 設定
@@ -311,6 +310,17 @@ namespace TKM {
 
 	void DirectXCommon::BeginDrawToSwapchain() {
 
+#if defined(_DEBUG) && defined(USE_IMGUI)
+		if (debugGameViewTexture_ && debugGameViewState_ != D3D12_RESOURCE_STATE_RENDER_TARGET) {
+			D3D12_RESOURCE_BARRIER transition{};
+			transition.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+			transition.Transition = { debugGameViewTexture_.Get(), D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+				debugGameViewState_, D3D12_RESOURCE_STATE_RENDER_TARGET };
+			commandList_->ResourceBarrier(1, &transition);
+			debugGameViewState_ = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		}
+#endif
+
 		// 現在のバックバッファインデックス取得
 		UINT backBufferIndex = swapChain_->GetCurrentBackBufferIndex();
 
@@ -323,26 +333,69 @@ namespace TKM {
 		barrier_.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		commandList_->ResourceBarrier(1, &barrier_);
 
-		// RTV / DSV を Swapchain 用にセット
-		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHandles_[backBufferIndex];
-		D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart();
-		commandList_->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
+		// 3Dの深度は輪郭線で参照するので保持する。前面UIは深度テストを使わない。
+		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = GetSceneOutputRTV();
+		commandList_->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
 
 		// 画面クリア（お好みの色でOK）
 		float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f };
 		commandList_->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-		commandList_->ClearDepthStencilView(
-			dsvHandle,
-			D3D12_CLEAR_FLAG_DEPTH,
-			1.0f,
-			0,
-			0,
-			nullptr
-		);
+		// 深度のクリアは次フレームのPreDrawで行う。
 
 		// ビューポート / シザー設定
 		commandList_->RSSetViewports(1, &viewport_);
 		commandList_->RSSetScissorRects(1, &scissorRect_);
+	}
+
+	D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetSceneOutputRTV() const {
+#if defined(_DEBUG) && defined(USE_IMGUI)
+		if (debugGameViewTexture_) { return debugGameViewRtvHeap_->GetCPUDescriptorHandleForHeapStart(); }
+#endif
+		return rtvHandles_[swapChain_->GetCurrentBackBufferIndex()];
+	}
+#if defined(_DEBUG) && defined(USE_IMGUI)
+	void DirectXCommon::InitializeDebugGameView() {
+		debugGameViewTexture_ = CreateRenderTextureResource(device_, WindowsAPI::GetClientWidth(), WindowsAPI::GetClientHeight(),
+			DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, { 0.1f, 0.25f, 0.5f, 1.0f });
+		debugGameViewTexture_->SetName(L"Debug Game View (final composition)");
+		debugGameViewRtvHeap_ = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1, false);
+		device_->CreateRenderTargetView(debugGameViewTexture_.Get(), &rtvDesc_, debugGameViewRtvHeap_->GetCPUDescriptorHandleForHeapStart());
+		debugGameViewState_ = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	}
+	void DirectXCommon::EndDebugGameView() {
+		D3D12_RESOURCE_BARRIER transition{};
+		transition.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		transition.Transition = { debugGameViewTexture_.Get(), D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE };
+		commandList_->ResourceBarrier(1, &transition);
+		debugGameViewState_ = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+		const auto rtv = rtvHandles_[swapChain_->GetCurrentBackBufferIndex()];
+		commandList_->OMSetRenderTargets(1, &rtv, false, nullptr);
+		const float background[] = { 0.025f, 0.025f, 0.03f, 1.0f };
+		commandList_->ClearRenderTargetView(rtv, background, 0, nullptr);
+	}
+	void DirectXCommon::ResizeDebugSwapchain(UINT width, UINT height) {
+		if (width == 0 || height == 0) { return; }
+		const auto desc = swapChainResources_[0]->GetDesc();
+		if (desc.Width == width && desc.Height == height) { return; }
+		// PostDrawで前フレームのGPU完了とコマンドリストのリセットを済ませている。
+		for (auto& resource : swapChainResources_) { resource.Reset(); }
+		DXGI_SWAP_CHAIN_DESC1 swapDesc{};
+		HRESULT hr = swapChain_->GetDesc1(&swapDesc); assert(SUCCEEDED(hr));
+		hr = swapChain_->ResizeBuffers(swapDesc.BufferCount, width, height, swapDesc.Format, swapDesc.Flags);
+		assert(SUCCEEDED(hr));
+		for (UINT i = 0; i < static_cast<UINT>(swapChainResources_.size()); ++i) {
+			hr = swapChain_->GetBuffer(i, IID_PPV_ARGS(&swapChainResources_[i])); assert(SUCCEEDED(hr));
+			device_->CreateRenderTargetView(swapChainResources_[i].Get(), &rtvDesc_, rtvHandles_[i]);
+		}
+		// ゲーム用のRenderTexture・深度・Viewportは1280x720のまま維持する。
+	}
+#endif
+
+	void DirectXCommon::BeginDebugDraw() {
+		const auto rtv = GetSceneOutputRTV();
+		const auto dsv = dsvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart();
+		commandList_->OMSetRenderTargets(1, &rtv, false, &dsv);
 	}
 
 	void DirectXCommon::InitializeCopyImagePipeline() {
@@ -2378,7 +2431,7 @@ namespace TKM {
 			};
 
 		// 1. RadialBlur
-		if (radialBlurEffect_ && radialBlurEffect_->IsActive()) {
+		if (ShouldApplyPostEffect(postEffectPreview_, PostEffectPreview::RadialBlur, radialBlurEffect_ && radialBlurEffect_->IsActive())) {
 			if (!radialBlurInitialized_) {
 				InitializeRadialBlurPipeline();
 			}
@@ -2388,7 +2441,7 @@ namespace TKM {
 		}
 
 		// 2. Ripple
-		if (rippleEffect_ && rippleEffect_->IsActive()) {
+		if (ShouldApplyPostEffect(postEffectPreview_, PostEffectPreview::Ripple, rippleEffect_ && rippleEffect_->IsActive())) {
 			if (!rippleInitialized_) {
 				InitializeWaterRipplePipeline();
 			}
@@ -2398,7 +2451,7 @@ namespace TKM {
 		}
 
 		// 3. Vignetting
-		if (vignettingEffect_ && vignettingEffect_->IsActive()) {
+		if (ShouldApplyPostEffect(postEffectPreview_, PostEffectPreview::Vignetting, vignettingEffect_ && vignettingEffect_->IsActive())) {
 			if (!vignettingInitialized_) {
 				InitializeVignettingPipeline();
 			}
@@ -2408,7 +2461,7 @@ namespace TKM {
 		}
 
 		// 4. Aura
-		if (auraEffect_ && auraEffect_->IsActive()) {
+		if (ShouldApplyPostEffect(postEffectPreview_, PostEffectPreview::Aura, auraEffect_ && auraEffect_->IsActive())) {
 			if (!auraInitialized_) {
 				InitializeAuraPipeline();
 			}
@@ -2418,7 +2471,7 @@ namespace TKM {
 		}
 
 		// 5. Fog
-		if (fogEffect_ && fogEffect_->IsActive()) {
+		if (ShouldApplyPostEffect(postEffectPreview_, PostEffectPreview::Fog, fogEffect_ && fogEffect_->IsActive())) {
 			if (!fogInitialized_) {
 				InitializeFogPipeline();
 			}
@@ -2428,7 +2481,7 @@ namespace TKM {
 		}
 
 		// 6. Noise
-		if (noiseEffect_ && noiseEffect_->IsActive()) {
+		if (ShouldApplyPostEffect(postEffectPreview_, PostEffectPreview::Noise, noiseEffect_ && noiseEffect_->IsActive())) {
 			if (!noiseInitialized_) {
 				InitializeNoisePipeline();
 			}
@@ -2438,7 +2491,7 @@ namespace TKM {
 		}
 
 		// 7. SpeedLine
-		if (speedLineEffect_ && speedLineEffect_->IsActive()) {
+		if (ShouldApplyPostEffect(postEffectPreview_, PostEffectPreview::SpeedLine, speedLineEffect_ && speedLineEffect_->IsActive())) {
 			if (!speedLineInitialized_) {
 				InitializeSpeedLinePipeline();
 			}
@@ -2448,8 +2501,19 @@ namespace TKM {
 		}
 
 		// 8. MotionBlur
-		if (motionBlurEffect_ && motionBlurEffect_->IsActive()) {
-			ApplyMotionBlur(srcTex, srcSrv, dstTex, getRtvFor(dstTex));
+		if (ShouldApplyPostEffect(postEffectPreview_, PostEffectPreview::MotionBlur, motionBlurEffect_ && motionBlurEffect_->IsActive())) {
+			if (!motionBlurInitialized_) { InitializeMotionBlurPipeline(); }
+			// 選択切り替え直後は履歴を用意する。未描画のdstへ入れ替えない。
+			if (previousFrameReady_) {
+				ApplyMotionBlur(srcTex, srcSrv, dstTex, getRtvFor(dstTex));
+				std::swap(srcTex, dstTex);
+				std::swap(srcSrv, dstSrv);
+			}
+		}
+
+		if (postEffectPreview_ == PostEffectPreview::Comic) {
+			InitializeComicPipeline();
+			ApplyComic(srcTex, srcSrv, dstTex, getRtvFor(dstTex));
 			std::swap(srcTex, dstTex);
 			std::swap(srcSrv, dstSrv);
 		}

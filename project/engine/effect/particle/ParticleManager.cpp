@@ -1,11 +1,12 @@
 #define NOMINMAX
 #include "ParticleManager.h"
 #include "TextureManager.h"
-#include "ParticleSpawner.h"
+#include "ParticleEffects.h"
 #include "DeltaTimeManager.h"
 #include "MyMath.h"
 #include <numbers>
 #include <algorithm>
+#include <cmath>
 
 namespace TKM {
 
@@ -20,6 +21,9 @@ namespace TKM {
 		dxCommon_ = dxCommon;
 		srvManager_ = srvManager;
 		camera_ = camera;
+
+		// シーンを行き来しても、描画リソースやSRVを作り直さない。
+		if (graphicsPipelineState_) { return; }
 
 		//=============================================================
 		// 加速度フィールド初期化
@@ -46,9 +50,9 @@ namespace TKM {
 		//=============================================================
 		// ランダムエンジン初期化
 		//=============================================================
-		// ローカルの乱数エンジンを初期化する
+		// 実際の生成に使うメンバーの乱数エンジンを初期化する
 		std::random_device seedGenerator;
-		std::mt19937 randomEngine(seedGenerator());
+		randomEngine_.seed(seedGenerator());
 
 		//=============================================================
 		// 描画リソース初期化
@@ -60,10 +64,10 @@ namespace TKM {
 		WriteResource();    // 頂点データをGPUリソースへ書き込む
 	}
 
-	void ParticleManager::Update() {
-		// 共通のDeltaTimeを取得
-		const float deltaTime =
-			DeltaTimeManager::GetInstance()->GetDeltaTime();
+	void ParticleManager::Update(float deltaTime) {
+		if (!camera_ || !graphicsPipelineState_) { return; }
+		if (deltaTime < 0.0f) { deltaTime = DeltaTimeManager::GetInstance()->GetDeltaTime(); }
+		ParticleEffects::GetInstance()->Update(deltaTime);
 
 		//=============================================================
 		// ビルボード行列更新
@@ -86,6 +90,21 @@ namespace TKM {
 			//=========================================================
 			for (std::list<Particle>::iterator particleIterator = particleGroup->particles_.begin(); particleIterator != particleGroup->particles_.end();) {
 
+				// エフェクト設定の粒子は、移動・色・サイズを行列生成前に更新する。
+				Particle& p = *particleIterator;
+				if (p.usesEffectSettings_) {
+					p.currentTime_ += deltaTime;
+					p.transform_.translate_ += p.velocity_ * deltaTime + p.gravity_ * (0.5f * deltaTime * deltaTime);
+					p.velocity_ += p.gravity_ * deltaTime;
+					const float t = std::clamp(p.currentTime_ / p.lifeTime_, 0.0f, 1.0f);
+					const float size = p.startSize_ + (p.endSize_ - p.startSize_) * t;
+					p.transform_.scale_ = { size, size, size };
+					p.color_ = { p.startColor_.x + (p.endColor_.x - p.startColor_.x) * t,
+						p.startColor_.y + (p.endColor_.y - p.startColor_.y) * t,
+						p.startColor_.z + (p.endColor_.z - p.startColor_.z) * t,
+						p.startColor_.w + (p.endColor_.w - p.startColor_.w) * t };
+				}
+
 				//=====================================================
 				// 寿命チェック
 				//=====================================================
@@ -99,10 +118,16 @@ namespace TKM {
 				// ワールド行列計算
 				//=====================================================
 				// パーティクルごとのスケール行列を作成する
-				Matrix4x4 scaleMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform_.scale_);
+				const float sizeMultiplier = p.usesEffectSettings_ ? particleGroup->effectScale_ : 1.0f;
+				Matrix4x4 scaleMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform_.scale_ * sizeMultiplier);
 
 				// パーティクルごとの平行移動行列を作成する
-				Matrix4x4 translateMatrix = MyMath::MakeTranslateMatrix((*particleIterator).transform_.translate_);
+				// シミュレーションは元の単位で保ち、発生位置からの距離を描画時に拡大する。
+				// これで発生範囲・速度・重力による軌跡も粒と同じ倍率になり、途中変更も即時反映できる。
+				const Vector3 drawPosition = p.usesEffectSettings_
+					? p.emissionOrigin_ + (p.transform_.translate_ - p.emissionOrigin_) * sizeMultiplier
+					: p.transform_.translate_;
+				Matrix4x4 translateMatrix = MyMath::MakeTranslateMatrix(drawPosition);
 
 				// パーティクルごとの回転行列を作成する
 				Matrix4x4 rotateMatrix = MyMath::MakeRotateMatrix((*particleIterator).transform_.rotate_);
@@ -135,7 +160,7 @@ namespace TKM {
 					// 加速度フィールド適用
 					//=================================================
 					// 指定範囲内にいるパーティクルだけ加速度を加える
-					if (IsCollision(acc.area_, (*particleIterator).transform_.translate_)) {
+					if (!p.usesEffectSettings_ && IsCollision(acc.area_, (*particleIterator).transform_.translate_)) {
 						(*particleIterator).velocity_ += acc.acc_ * deltaTime;
 					}
 
@@ -143,10 +168,10 @@ namespace TKM {
 					// 位置・時間更新
 					//=================================================
 					// 速度をもとに位置を更新する
-					(*particleIterator).transform_.translate_ += (*particleIterator).velocity_ * deltaTime;
+					if (!p.usesEffectSettings_) { (*particleIterator).transform_.translate_ += (*particleIterator).velocity_ * deltaTime; }
 
 					// 生存時間の経過を進める
-					(*particleIterator).currentTime_ += deltaTime;
+					if (!p.usesEffectSettings_) { (*particleIterator).currentTime_ += deltaTime; }
 
 					//=================================================
 					// インスタンスデータ書き込み
@@ -162,7 +187,7 @@ namespace TKM {
 					const std::string& g = particleGroupIterator->first;
 
 					// 基本アルファをGPU用カラーに反映する
-					particleGroup->instancingData_[particleGroupIterator->second.kNumInstance_].color_.w = alpha;
+					if (!p.usesEffectSettings_) { particleGroup->instancingData_[particleGroupIterator->second.kNumInstance_].color_.w = alpha; }
 
 					// 寿命に対する進行率を0.0f～1.0fで作る
 					float t = (*particleIterator).currentTime_ / (*particleIterator).lifeTime_;
@@ -586,6 +611,7 @@ namespace TKM {
 	}
 
 	void ParticleManager::ClearAllGroups() {
+		ParticleEffects::GetInstance()->StopAll();
 		// 全グループのパーティクルを削除する
 		for (auto& it : particleGroups_) {
 			// パーティクル本体をクリアする
@@ -620,9 +646,9 @@ namespace TKM {
 		//=============================================================
 		// インスタンシング用バッファ作成
 		//=============================================================
-		newGroup.kNumInstance_ = kNumMaxInstance_;
+		newGroup.kNumInstance_ = 0;
 
-		size_t bufferSize = sizeof(ParticleForGPU) * newGroup.kNumInstance_;
+		size_t bufferSize = sizeof(ParticleForGPU) * kNumMaxInstance_;
 		newGroup.instancingResource_ = dxCommon_->CreateBufferResource(bufferSize);
 
 		// GPUへ渡すインスタンスデータを書き込めるようにMapしておく
@@ -636,7 +662,7 @@ namespace TKM {
 		srvManager_->CreateSRVforStructureBuffer(
 			instanceSrvIndex,
 			newGroup.instancingResource_.Get(),
-			newGroup.kNumInstance_,
+			kNumMaxInstance_,
 			sizeof(ParticleForGPU)
 		);
 
@@ -644,6 +670,53 @@ namespace TKM {
 
 		// 作成したグループを登録する
 		particleGroups_[name] = newGroup;
+	}
+
+	bool ParticleManager::PrepareEffectGroup(const std::string& name, const ParticleEffectSettings& settings) {
+		if (!dxCommon_ || !srvManager_ || !graphicsPipelineState_) { return false; }
+		if (!particleGroups_.contains(name) && particleGroups_.size() >= kMaxEffectGroups) { return false; }
+		CreateParticleGroup(name, settings.texture, static_cast<ParticleType>(settings.shape));
+		auto& group = particleGroups_.at(name);
+		// 形状とテクスチャはグループ共有なので、変更時だけ古い見た目を消す。
+		if (group.type_ != static_cast<ParticleType>(settings.shape)
+			|| group.materialData_.textureFilePath_ != settings.texture) {
+			ClearGroup(name);
+		}
+		group.type_ = static_cast<ParticleType>(settings.shape);
+		group.materialData_.textureFilePath_ = settings.texture;
+		group.materialData_.textureIndex_ = TextureManager::GetInstance()->GetTextureIndexByFilePath(settings.texture);
+		return true;
+	}
+
+	void ParticleManager::SetEffectScale(const std::string& name, float multiplier) {
+		if (!std::isfinite(multiplier) || multiplier <= 0.0f || multiplier > 100.0f) { return; }
+		auto it = particleGroups_.find(name);
+		if (it != particleGroups_.end()) { it->second.effectScale_ = multiplier; }
+	}
+
+	void ParticleManager::EmitEffect(const std::string& name, const ParticleEffectSettings& s, const Vector3& position) {
+		auto it = particleGroups_.find(name);
+		if (it == particleGroups_.end()) { return; }
+		auto random = [&](float lo, float hi) { return std::uniform_real_distribution<float>(lo, hi)(randomEngine_); };
+		auto& particles = it->second.particles_;
+		if (!s.keepParticles) { ClearGroup(name); }
+		for (uint32_t i = 0; i < s.count; ++i) {
+			// 上限時も生存粒子を強制消去せず、新規生成を見送る。
+			if (particles.size() >= kNumMaxInstance_) { break; }
+			Particle p{};
+			p.transform_.translate_ = { position.x + random(-s.spawnExtent.x, s.spawnExtent.x),
+				position.y + random(-s.spawnExtent.y, s.spawnExtent.y), position.z + random(-s.spawnExtent.z, s.spawnExtent.z) };
+			p.transform_.scale_ = { s.startSize, s.startSize, s.startSize };
+			p.velocity_ = { random(s.velocityMin.x, s.velocityMax.x), random(s.velocityMin.y, s.velocityMax.y), random(s.velocityMin.z, s.velocityMax.z) };
+			p.lifeTime_ = random(s.lifeMin, s.lifeMax);
+			p.color_ = s.startColor;
+			p.usesEffectSettings_ = true;
+			p.emissionOrigin_ = position;
+			p.gravity_ = s.gravity;
+			p.startSize_ = s.startSize; p.endSize_ = s.endSize;
+			p.startColor_ = s.startColor; p.endColor_ = s.endColor;
+			particles.push_back(p);
+		}
 	}
 
 	void ParticleManager::MakeBillboardMatrix() {
@@ -659,66 +732,6 @@ namespace TKM {
 		billboardMatrix_.m[3][2] = 0.0f;
 	}
 
-	void ParticleManager::Emit(const std::string name, const Vector3& pos, uint32_t count) {
-		// 指定されたグループが存在することを確認する
-		assert(particleGroups_.find(name) != particleGroups_.end());
-
-		// 指定グループを取得する
-		ParticleGroup& group = particleGroups_[name];
-
-		// 生成しすぎを防ぐための上限を作る
-		const size_t kHardCap = std::max<size_t>(group.kNumInstance_, 200);
-
-		for (uint32_t i = 0; i < count; ++i) {
-			// 上限を超えている場合は古いパーティクルから削除する
-			while (group.particles_.size() >= kHardCap) {
-				group.particles_.pop_front();
-			}
-
-			// グループ名と中心位置から新しいパーティクルを作成する
-			Particle newParticle = MakeNewParticle(randomEngine_, name, pos);
-
-			// グループへ追加する
-			group.particles_.push_back(newParticle);
-		}
-	}
-
-	void ParticleManager::EmitWithTransform(const std::string& name, const Transform& tr, const Vector4& color, uint32_t count) {
-		// 指定グループを探す
-		auto it = particleGroups_.find(name);
-
-		// グループがなければ発生させない
-		if (it == particleGroups_.end()) {
-			return;
-		}
-
-		ParticleGroup& group = it->second;
-
-		// 生成しすぎを防ぐための上限を作る
-		const size_t kHardCap = std::max<size_t>(group.kNumInstance_, 200);
-
-		for (uint32_t i = 0; i < count; ++i) {
-			// 上限を超えている場合は古いパーティクルから削除する
-			while (group.particles_.size() >= kHardCap) {
-				group.particles_.pop_front();
-			}
-
-			// 指定Transformをそのまま使うパーティクルを作成する
-			Particle p{};
-			p.transform_ = tr;
-			p.velocity_ = { 0.0f, 0.0f, 0.0f };
-			p.color_ = color;
-			p.lifeTime_ = 0.1f;
-			p.currentTime_ = 0.0f;
-
-			// 生まれた瞬間の時間を0秒にする
-			p.currentTime_ = 0.0f;
-
-			// グループへ追加する
-			group.particles_.push_back(p);
-		}
-	}
-
 	void ParticleManager::ClearGroup(const std::string& name) {
 		// 指定グループを探す
 		auto it = particleGroups_.find(name);
@@ -730,11 +743,7 @@ namespace TKM {
 
 		// 指定グループ内のパーティクルを削除する
 		it->second.particles_.clear();
-	}
-
-	ParticleManager::Particle ParticleManager::MakeNewParticle(std::mt19937& rng, const std::string& groupName, const Vector3& center) {
-		// 具体的な生成内容はParticleSpawner側に任せる
-		return ParticleSpawner::MakeNewParticle(rng, groupName, center);
+		it->second.kNumInstance_ = 0;
 	}
 
 	void ParticleManager::CreateRingVertices() {

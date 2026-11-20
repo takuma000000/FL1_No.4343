@@ -5,6 +5,7 @@
 
 #ifdef USE_IMGUI
 #include "imgui.h"
+#include "DebugGameView.h"
 #endif
 
 namespace TKM {
@@ -144,7 +145,7 @@ namespace TKM {
 		// ──────────────── 画面上のスプライト選択 ───────────────
 		// ImGuiウィンドウの操作中でなければ、画像クリックで選択する。
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)
-			&& !ImGui::GetIO().WantCaptureMouse) {
+			&& DebugGameView::CanUseMouse()) {
 			for (int index = static_cast<int>(entries_.size()) - 1;
 				index >= 0;
 				--index) {

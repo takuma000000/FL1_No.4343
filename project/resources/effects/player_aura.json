@@ -1,0 +1,46 @@
+{
+    "count": 40,
+    "endColor": [
+        1.0,
+        1.0,
+        1.0,
+        0.0
+    ],
+    "endSize": 0.1899999976158142,
+    "gravity": [
+        0.0,
+        -2.0,
+        0.0
+    ],
+    "interval": 0.15000000596046448,
+    "keepParticles": true,
+    "lifeMax": 1.0,
+    "lifeMin": 0.4000000059604645,
+    "loop": true,
+    "scale": 5.900000095367432,
+    "shape": 1,
+    "spawnExtent": [
+        0.15000000596046448,
+        0.15000000596046448,
+        0.15000000596046448
+    ],
+    "startColor": [
+        0.0,
+        0.031055927276611328,
+        1.0,
+        1.0
+    ],
+    "startSize": 0.2800000011920929,
+    "texture": "resources/texture/gradationLine.png",
+    "velocityMax": [
+        3.0,
+        4.0,
+        3.0
+    ],
+    "velocityMin": [
+        -3.0,
+        -1.0,
+        -3.0
+    ],
+    "version": 1
+}

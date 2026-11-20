@@ -40,7 +40,7 @@ namespace TKM {
 		descriptorRange2[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;//Offsetを自動計算
 
 		//RootParameter作成。PixelShaderのMaterialとVertexShaderのTransform
-		D3D12_ROOT_PARAMETER rootParameters[9] = {}; //ルートパラメータは全部で9個
+		D3D12_ROOT_PARAMETER rootParameters[10] = {}; // 漫画調の共通設定を含め10個
 		rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;	//CBVを使う
 		rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;	//PixelShaderで使う
 		rootParameters[0].Descriptor.ShaderRegister = 0;	//レジスタ番号0とバインド
@@ -78,6 +78,11 @@ namespace TKM {
 		rootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;	//PixelShaderで使う
 		rootParameters[8].Descriptor.ShaderRegister = 5;//レジスタ番号5を使う
 		rootParameters[8].Descriptor.RegisterSpace = 0;
+
+		rootParameters[9].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		rootParameters[9].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+		rootParameters[9].Descriptor.ShaderRegister = 6;
+		rootParameters[9].Descriptor.RegisterSpace = 0;
 
 		descriptionRootSignature_.pParameters = rootParameters;	//ルートパラメータ配列へのポインタ
 		descriptionRootSignature_.NumParameters = _countof(rootParameters);	//配列の長さ

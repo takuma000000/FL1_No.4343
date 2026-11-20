@@ -74,6 +74,12 @@ public:
     const Vector3& GetPosition() const { return position_; }
 
     /// <summary>
+	/// 敵の3Dモデルを取得する。
+    /// </summary>
+	/// <returns>敵の3Dモデル</returns>
+    const TKM::Object3d* GetObject3d() const { return object3d_.get(); }
+
+    /// <summary>
     /// 敵の現在HPを取得する。
     /// </summary>
     /// <returns>敵の現在HP</returns>

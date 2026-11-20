@@ -6,6 +6,7 @@
 
 #ifdef USE_IMGUI
 #include "imgui.h"
+#include "DebugGameView.h"
 #endif
 
 namespace TKM {
@@ -21,8 +22,9 @@ namespace TKM {
 			pitch_ = std::atan2f(toTarget.y, lenXZ);
 		}
 
+		// pitch_は上向きが正。回転行列のX角は下向きが正なので反転する。
 		SetTranslate(pos_); // カメラ位置セット
-		SetRotate({ pitch_, yaw_, 0.0f }); // カメラ回転セット
+		SetRotate({ -pitch_, yaw_, 0.0f }); // カメラ回転セット
 		Camera::Update();
 
 		// マウス初期位置
@@ -53,7 +55,7 @@ namespace TKM {
 		bool canControlCamera = true; // ImGui操作中はカメラ操作を無効化する
 
 #ifdef USE_IMGUI
-		canControlCamera = !ImGui::GetIO().WantCaptureMouse; // ImGuiがマウス操作を奪っている場合はカメラ操作を無効化
+		canControlCamera = DebugGameView::CanUseMouse(); // ゲーム画像上だけで操作し、周囲のImGui操作と分ける
 #endif
 
 		// ===================== 操作状態 =====================
@@ -99,7 +101,7 @@ namespace TKM {
 		if (isRotating_) {
 			const float mouseRotateSpeed = 0.003f;
 			yaw_ += dx * mouseRotateSpeed;
-			pitch_ += dy * mouseRotateSpeed;
+			pitch_ -= dy * mouseRotateSpeed;
 
 			const float limit = 1.55f;
 			pitch_ = std::clamp(pitch_, -limit, limit);
@@ -115,7 +117,7 @@ namespace TKM {
 
 		// ===================== カメラ更新 =====================
 		SetTranslate(pos_);
-		SetRotate({ pitch_, yaw_, 0.0f });
+		SetRotate({ -pitch_, yaw_, 0.0f });
 		Camera::Update();
 	}
 }

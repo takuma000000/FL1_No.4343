@@ -7,12 +7,15 @@
 #include "ImGuiManager.h"
 #include "CameraManager.h"
 #include "CollisionManager.h"
+#include "LineRenderer.h"
+#include "DeltaTimeManager.h"
 
 namespace TKM {
 	void MyGame::Initialize() {
 
 		//*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 		TKM::Framework::Initialize(); //基底クラスの初期化処理
+		postEffectEditor_.Initialize(dxCommon_.get());
 
 		// Initialize sceneManager_
 		sceneManager_ = std::make_unique<TKM::SceneManager>();
@@ -43,6 +46,7 @@ namespace TKM {
 		////*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
 		// 終了処理
+		postEffectEditor_.Finalize();
 		imguiManager_->Finalize();
 
 		//基底クラスの終了処理
@@ -71,6 +75,8 @@ namespace TKM {
 			SetEndRequest(true); // Frameworkの終了フラグを設定
 		}
 
+		postEffectEditor_.Update(DeltaTimeManager::GetInstance()->GetDeltaTime());
+
 		// ** ImGui処理終了 **
 		imguiManager_->End();
 
@@ -81,12 +87,16 @@ namespace TKM {
 	}
 
 	void MyGame::Draw() {
+		if (const auto* camera = CameraManager::GetInstance()->GetActiveCamera()) {
+			dxCommon_->SetComicProjection(camera->GetProjectionMatrix());
+		}
+
 		// ① 3Dを RenderTexture に描く（ポスト対象）
 		dxCommon_->PreDraw();
 		srvManager_->PreDraw();
 		sceneManager_->Draw3D();
 
-		// 登録されているコライダーをラインで表示する
+		// 登録されているコライダーのラインを描画予約する
 		if (auto* activeCamera =
 			CameraManager::GetInstance()->GetActiveCamera()) {
 			CollisionManager::GetInstance()->DrawDebug(
@@ -100,6 +110,9 @@ namespace TKM {
 		// ③ RenderTexture → Swapchain（ポスト適用）
 		srvManager_->PreDraw();
 		dxCommon_->DrawPostEffectToSwapchain();
+
+		// 予約したグリッド・当たり判定ラインは、ポスト処理後にまとめて描画する。
+		LineRenderer::GetInstance()->Flush();
 
 		// ④ UI(Sprite)を Swapchain に直描き（ポスト対象外）
 		srvManager_->PreDraw();

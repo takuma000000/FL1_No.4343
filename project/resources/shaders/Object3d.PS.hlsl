@@ -1,4 +1,19 @@
 #include "Object3d.hlsli"
+#include "ComicParameters.hlsli"
+ConstantBuffer<ComicParameters> gComic : register(b6);
+
+float ToonDiffuse(float brightness)
+{
+    if (gComic.toonEnabled == 0) { return brightness; }
+    const float bands = max((float)gComic.shadeSteps - 1.0f, 1.0f);
+    const float stepped = floor(saturate(brightness) * bands + 0.5f) / bands;
+    return lerp(brightness, stepped, saturate(gComic.toonBlend));
+}
+float ToonSpecular(float brightness)
+{
+    return gComic.toonEnabled != 0
+        ? lerp(brightness, step(0.5f, brightness), saturate(gComic.toonBlend)) : brightness;
+}
 
 Texture2D<float4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
@@ -83,14 +98,14 @@ PixelShaderOutput main(VertexShaderOutput input)
     if (gMaterial.enableLighting != 0)
     {
         float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
-        float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
+        float cos = ToonDiffuse(pow(NdotL * 0.5f + 0.5f, 2.0f));
         
         float3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
         float3 reflectLight = reflect(gDirectionalLight.direction, normalize(input.normal));
         
         float3 halfVector = normalize(-gDirectionalLight.direction + toEye);
         float HDotH = dot(normalize(input.normal), halfVector);
-        float specularPow = pow(saturate(HDotH), gMaterial.shininess);
+        float specularPow = ToonSpecular(pow(saturate(HDotH), gMaterial.shininess));
         
         // 拡散反射
         float3 directionalLight_Diffuse =
@@ -109,11 +124,11 @@ PixelShaderOutput main(VertexShaderOutput input)
         
         float3 pointLight_HalfVector = normalize(-pointLightDirection + toEye);
         float pointLight_NDotH = dot(normalize(input.normal), pointLight_HalfVector);
-        float pointLight_SpecularPow = pow(saturate(pointLight_NDotH), gMaterial.shininess);
+        float pointLight_SpecularPow = ToonSpecular(pow(saturate(pointLight_NDotH), gMaterial.shininess));
          
         float pointLight_NDotL = dot(normalize(input.normal), -pointLightDirection);
          
-        float pointLight_Cos = pow(pointLight_NDotL * 0.5 + 0.5f, 2.0f);
+        float pointLight_Cos = ToonDiffuse(pow(pointLight_NDotL * 0.5 + 0.5f, 2.0f));
         
         float3 pointLight_Diffuse = gMaterial.color.rgb * textureColor.rgb * gPointLight.color.rgb * pointLight_Cos * gPointLight.intensity * factor;
         
@@ -129,10 +144,10 @@ PixelShaderOutput main(VertexShaderOutput input)
         
         float3 spotLight_HalfVector = normalize(-gSpotLight.direction + toEye);
         float spotLight_NDotH = dot(normalize(input.normal), spotLight_HalfVector);
-        float spotLight_SpecularPow = pow(saturate(spotLight_NDotH), gMaterial.shininess);
+        float spotLight_SpecularPow = ToonSpecular(pow(saturate(spotLight_NDotH), gMaterial.shininess));
         
         float spotLight_NDotL = dot(normalize(input.normal), -gSpotLight.direction);
-        float spotLight_Cos = pow(spotLight_NDotL * 0.5 + 0.5f, 2.0f);
+        float spotLight_Cos = ToonDiffuse(pow(spotLight_NDotL * 0.5 + 0.5f, 2.0f));
         
         float cosAngle = dot(spotLightDirectionOnSurFace, gSpotLight.direction);
         float falloffFactor = saturate((cosAngle - gSpotLight.cosAngle) / (gSpotLight.cosFalloffStart - gSpotLight.cosAngle));

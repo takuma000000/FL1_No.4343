@@ -2,6 +2,7 @@
 #include "GameScene.h"
 #include "CameraManager.h"
 #include "ParticleManager.h"
+#include "ParticleEffects.h"
 #include "DeltaTimeManager.h"
 #include "Input.h"
 #include "Logger.h"
@@ -15,16 +16,22 @@ void GameScene::Initialize() {
 
 	/// ──────────────── 各種初期化処理 ───────────────
 	InitializeObjects();
-	collisionSettings_.Initialize(sphere_.get(), player_.get());
 	objectSettings_.Initialize(sphere_.get(), player_.get());
 	InitializeSprite();
 	spriteSettings_.Initialize();
 	InitializeCamera();
 	InitializeEnemies(); // カメラ初期化後に敵を生成する
+	const Enemy* enemy = enemyManager_ && !enemyManager_->GetEnemies().empty()
+		? enemyManager_->GetEnemies().front().get()
+		: nullptr;
+	collisionSettings_.Initialize(sphere_.get(), player_.get(), enemy);
 
 	/// ──────────────── パーティクル初期化 ───────────────
 	auto particleManager = TKM::ParticleManager::GetInstance();
 	particleManager->Initialize(dxCommon_, srvManager_, TKM::CameraManager::GetInstance()->GetMainCamera());
+	// 一度だけ再生を開始する。連続発生の間隔・見た目は保存したJSONに従う。
+	auto* effects = TKM::ParticleEffects::GetInstance();
+	effects->Play("player_aura", player_->GetPos());
 
 	/// ──────────────── ライトの初期化 ───────────────
 	directionalLight_ = std::make_unique<DirectionalLight>();
@@ -32,6 +39,9 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Finalize() {
+	/// ──────────────── 当たり判定設定終了 ───────────────
+	collisionSettings_.Finalize();
+
 	/// ──────── 敵の終了処理 ────────
 	if (enemyManager_) {
 		enemyManager_->Clear();
@@ -41,9 +51,6 @@ void GameScene::Finalize() {
 
 	/// ──────────────── スプライト設定終了 ───────────────
 	spriteSettings_.Finalize();
-
-	/// ──────────────── 当たり判定設定終了 ───────────────
-	collisionSettings_.Finalize();
 
 	/// ──────────────── オブジェクト設定終了 ───────────────
 	objectSettings_.Finalize();
@@ -76,6 +83,8 @@ void GameScene::Update() {
 	// 選択確定後にプレイヤーを更新する
 	if (player_ && enemySelectionConfirmed_) {
 		player_->Update();
+		// 移動後の位置を渡し、次に生まれる粒子をPlayerの位置から発生させる。
+		TKM::ParticleEffects::GetInstance()->SetPosition("player_aura", player_->GetPos());
 	}
 
 	// テスト用Sphere更新
@@ -91,7 +100,11 @@ void GameScene::Update() {
 
 	/// ──────── 敵更新 ────────
 	if (enemyManager_ && sphere_) {
+		const bool hadEnemy = !enemyManager_->GetEnemies().empty();
 		enemyManager_->Update(deltaTime, sphere_->GetTranslate());
+		if (hadEnemy && enemyManager_->GetEnemies().empty()) {
+			collisionSettings_.UnregisterEnemy();
+		}
 	}
 
 	/// ──────────────── ライト更新 ───────────────
@@ -336,30 +349,30 @@ void GameScene::ImGuiDebug() {
 }
 
 void GameScene::InitializeEnemies() {
-    // 敵データカタログを作成し、ディレクトリから敵データを読み込む
+	// 敵データカタログを作成し、ディレクトリから敵データを読み込む
 	enemyDataCatalog_ = std::make_unique<EnemyDataCatalog>();
 	std::string errorMessage;
 
-    // 敵データディレクトリの読み込み
+	// 敵データディレクトリの読み込み
 	if (!enemyDataCatalog_->LoadDirectory("resources/data/enemy", errorMessage)) {
 		Logger::Log("[Enemy] Failed to load enemy data directory.\n" + errorMessage + "\n");
 		return;
 	}
 
-    // メインカメラを取得し、敵マネージャーを初期化する
+	// メインカメラを取得し、敵マネージャーを初期化する
 	TKM::Camera* mainCamera = TKM::CameraManager::GetInstance()->GetMainCamera();
 	if (!mainCamera) {
 		Logger::Log("[Enemy] Main camera is null.\n");
 		return;
 	}
 
-    // 敵マネージャーを作成し、初期化する
+	// 敵マネージャーを作成し、初期化する
 	enemyManager_ = std::make_unique<EnemyManager>();
 	enemyManager_->Initialize(dxCommon_, mainCamera, *enemyDataCatalog_);
 
 	constexpr Vector3 kBasicVirusPosition = { -15.0f, 0.0f, 0.0f };
 
-    // BasicVirusをスポーンする
+	// BasicVirusをスポーンする
 	if (!enemyManager_->Spawn("BasicVirus", kBasicVirusPosition, errorMessage)) {
 		Logger::Log("[Enemy] Failed to spawn BasicVirus.\n" + errorMessage + "\n");
 		return;

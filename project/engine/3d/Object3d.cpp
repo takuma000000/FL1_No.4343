@@ -225,6 +225,8 @@ namespace TKM {
 		// 環境マップ用定数バッファをセット
 		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(8, environment_->GetGPUVirtualAddress());
 
+		dxCommon_->BindComicLighting(9); // 漫画調以外では通常のライティング
+
 		// モデルを描画
 		if (model_) {
 			// マルチマテリアルでない場合は、モデル全体で1つのテクスチャを使用する

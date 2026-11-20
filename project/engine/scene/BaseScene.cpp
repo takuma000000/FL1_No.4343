@@ -6,6 +6,7 @@
 #include "SceneManager.h"
 #include "AudioManager.h"
 #include "DeltaTimeManager.h"
+#include "ParticleEffects.h"
 
 #pragma comment(lib, "pdh.lib")
 
@@ -50,7 +51,8 @@ namespace TKM {
 			"TITLE",
 			"GAME",
 			"CLEAR",
-			"GAMEOVER"
+			"GAMEOVER",
+			"PARTICLE_EDITOR"
 		};
 
 		ImGui::Combo(
@@ -579,6 +581,9 @@ namespace TKM {
 		UpdateMemory();
 
 #ifdef USE_IMGUI
+		// 読み込み済みエフェクトの倍率を共通UIで調整・保存する
+		if (std::string(GetSceneName()) != "PARTICLE_EDITOR") { ParticleEffects::GetInstance()->ImGuiDebug(); }
+
 		// シーン遷移UI
 		ImGuiSceneChanger();
 

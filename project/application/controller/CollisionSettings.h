@@ -3,6 +3,8 @@
 #include "Object3d.h"
 #include "player.h"
 
+class Enemy;
+
 //=============================================================
 // CollisionSettingsクラス
 // ゲーム内オブジェクトのコライダー登録を管理するクラス。
@@ -17,8 +19,11 @@ public:
 	/// <param name="player">Player</param>
 	void Initialize(
 		TKM::Object3d* plane,
-		Player* player
+		Player* player,
+		const Enemy* enemy
 	);
+
+	void UnregisterEnemy();
 
 	/// <summary>
 	/// 登録したコライダーを解除します。
@@ -31,7 +36,8 @@ private:
 	/// </summary>
 	void RegisterColliders(
 		TKM::Object3d* plane,
-		Player* player
+		Player* player,
+		const Enemy* enemy
 	);
 
 	/// <summary>
