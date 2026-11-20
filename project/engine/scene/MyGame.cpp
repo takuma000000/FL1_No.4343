@@ -86,6 +86,10 @@ namespace TKM {
 	}
 
 	void MyGame::Draw() {
+		if (const auto* camera = CameraManager::GetInstance()->GetActiveCamera()) {
+			dxCommon_->SetComicProjection(camera->GetProjectionMatrix());
+		}
+
 		// ① 3Dを RenderTexture に描く（ポスト対象）
 		dxCommon_->PreDraw();
 		srvManager_->PreDraw();

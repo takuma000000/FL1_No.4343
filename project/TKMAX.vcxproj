@@ -119,6 +119,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
 	<ClCompile Include="engine\imgui\SpriteGizmo.cpp" />
 	<ClCompile Include="engine\io\SpriteSave.cpp" />
 	<ClCompile Include="application\controller\CollisionSettings.cpp" />
+    <ClCompile Include="engine\effect\post\ComicPipeline.cpp" />
     <ClCompile Include="engine\effect\post\PostEffectEditor.cpp" />
     <ClCompile Include="engine\effect\particle\ParticleEffectSettings.cpp" />
     <ClCompile Include="engine\effect\particle\ParticleEffects.cpp" />

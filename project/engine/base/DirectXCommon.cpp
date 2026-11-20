@@ -38,7 +38,7 @@ namespace TKM {
 		resourceDesc.Height = height;//Textureの高さ
 		resourceDesc.MipLevels = 1;//MipMapの数
 		resourceDesc.DepthOrArraySize = 1;//奥行き or 配列Textureの配列数
-		resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//DepthStencilとして利用可能なフォーマット
+		resourceDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;//DSVはD24、輪郭線のSRVはR24として同じ深度を参照する
 		resourceDesc.SampleDesc.Count = 1;//サンプリングカウント。1固定
 		resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;//2次元
 		resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;//DepthStencilとして使う通知
@@ -50,7 +50,7 @@ namespace TKM {
 		//深度値のクリア設定
 		D3D12_CLEAR_VALUE depthClearValue{};
 		depthClearValue.DepthStencil.Depth = 1.0f;//1.0f( 最大値 )でクリア
-		depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//フォーマット。Resourceと合わせる。
+		depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//Typelessリソースに対して、DSVと同じ形式を指定
 
 		//Resourceの生成
 		Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
@@ -323,22 +323,14 @@ namespace TKM {
 		barrier_.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		commandList_->ResourceBarrier(1, &barrier_);
 
-		// RTV / DSV を Swapchain 用にセット
+		// 3Dの深度は輪郭線で参照するので保持する。前面UIは深度テストを使わない。
 		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHandles_[backBufferIndex];
-		D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart();
-		commandList_->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
+		commandList_->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
 
 		// 画面クリア（お好みの色でOK）
 		float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f };
 		commandList_->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-		commandList_->ClearDepthStencilView(
-			dsvHandle,
-			D3D12_CLEAR_FLAG_DEPTH,
-			1.0f,
-			0,
-			0,
-			nullptr
-		);
+		// 深度のクリアは次フレームのPreDrawで行う。
 
 		// ビューポート / シザー設定
 		commandList_->RSSetViewports(1, &viewport_);
@@ -2456,6 +2448,13 @@ namespace TKM {
 				std::swap(srcTex, dstTex);
 				std::swap(srcSrv, dstSrv);
 			}
+		}
+
+		if (postEffectPreview_ == PostEffectPreview::Comic) {
+			InitializeComicPipeline();
+			ApplyComic(srcTex, srcSrv, dstTex, getRtvFor(dstTex));
+			std::swap(srcTex, dstTex);
+			std::swap(srcSrv, dstSrv);
 		}
 
 		// 最後は srcTex を Swapchain へ

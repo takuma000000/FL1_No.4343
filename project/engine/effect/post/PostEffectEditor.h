@@ -33,5 +33,9 @@ namespace TKM {
 		float speedIntensity_ = 1.0f;
 		Vector2 speedDirection_{ 1.0f, 0.0f };
 		float motionStrength_ = 0.3f;
+		bool comicOutline_ = true, comicToon_ = true;
+		Vector4 comicLineColor_{ 0, 0, 0, 1 };
+		float comicLineWidth_ = 1.0f, comicDepthThreshold_ = 0.015f, comicToonBlend_ = 1.0f;
+		int comicShadeSteps_ = 3;
 	};
 }

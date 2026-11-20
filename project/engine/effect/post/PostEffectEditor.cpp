@@ -15,7 +15,7 @@ namespace TKM {
 	void PostEffectEditor::ImGuiDebug() {
 #ifdef USE_IMGUI
 		ImGui::Begin("ポストエフェクト");
-		const char* names[] = { "ゲームの設定", "なし", "ラジアルブラー", "波紋", "ビネット", "オーラ（画面効果）", "霧", "ノイズ", "スピード線", "モーションブラー" };
+		const char* names[] = { "ゲームの設定", "なし", "ラジアルブラー", "波紋", "ビネット", "オーラ（画面効果）", "霧", "ノイズ", "スピード線", "モーションブラー", "漫画調（輪郭線＋トゥーン）" };
 		static_assert(IM_ARRAYSIZE(names) == static_cast<int>(PostEffectPreview::Count));
 		if (ImGui::Combo("表示する効果", &selected_, names, IM_ARRAYSIZE(names))) { time_ = 0.0f; }
 		if (ImGui::Button("ゲームの設定に戻す")) { selected_ = 0; time_ = 0.0f; }
@@ -52,6 +52,19 @@ namespace TKM {
 		case PostEffectPreview::MotionBlur:
 			ImGui::SliderFloat("残像の強さ", &motionStrength_, 0, 0.95f);
 			ImGui::TextUnformatted("オブジェクトやカメラを動かすと残像を確認できます。"); break;
+		case PostEffectPreview::Comic:
+			ImGui::Checkbox("輪郭線", &comicOutline_);
+			if (comicOutline_) {
+				ImGui::ColorEdit4("線の色", &comicLineColor_.x);
+				ImGui::SliderFloat("線の太さ（ピクセル）", &comicLineWidth_, 1, 5, "%.0f");
+				ImGui::SliderFloat("境界の判定しきい値", &comicDepthThreshold_, 0.001f, 0.1f, "%.3f");
+			}
+			ImGui::Checkbox("トゥーンの明暗", &comicToon_);
+			if (comicToon_) {
+				ImGui::SliderInt("明暗の段階数", &comicShadeSteps_, 2, 8);
+				ImGui::SliderFloat("トゥーンの強さ", &comicToonBlend_, 0, 1);
+			}
+			ImGui::TextWrapped("奥行きの境界に線を描き、ライトの明暗を段階化します。テクスチャの柄やUIには線を付けません。"); break;
 		default: break;
 		}
 		ImGui::Separator();
@@ -98,6 +111,10 @@ namespace TKM {
 		case PostEffectPreview::MotionBlur:
 			dxCommon_->InitializeMotionBlurPipeline();
 			dxCommon_->SetMotionBlurParam(motionStrength_); break;
+		case PostEffectPreview::Comic:
+			dxCommon_->InitializeComicPipeline();
+			dxCommon_->SetComicParam(comicLineColor_, comicLineWidth_, comicDepthThreshold_, comicShadeSteps_,
+				comicToonBlend_, comicToon_, comicOutline_ ? 1.0f : 0.0f); break;
 		default: break;
 		}
 	}
