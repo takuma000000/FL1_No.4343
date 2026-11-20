@@ -12,4 +12,6 @@ namespace TKM {
 	// GPUに触れる前に全データとOBJ/MTL/テクスチャの参照を検証する。
 	// 失敗してもoutは変更しない。
 	bool LoadSceneLayoutData(const std::string& filePath, SceneLayoutData& out, std::string& error);
+	bool ValidateSceneLayoutModel(const std::string& model, std::string& error);
+	bool SaveSceneLayoutData(const std::string& filePath, const SceneLayoutData& data, std::string& error);
 }

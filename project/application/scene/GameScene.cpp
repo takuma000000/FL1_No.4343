@@ -22,7 +22,6 @@ void GameScene::Initialize() {
 	InitializeCamera();
 	InitializeEnemies(); // カメラ初期化後に敵を生成する
 	sceneLayout_.Initialize(dxCommon_, TKM::CameraManager::GetInstance()->GetMainCamera());
-	sceneLayout_.Load("resources/layouts/layout.json");
 
 	/// ──────────────── パーティクル初期化 ───────────────
 	auto particleManager = TKM::ParticleManager::GetInstance();

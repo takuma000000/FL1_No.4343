@@ -187,8 +187,8 @@ if bpy is not None:
 
     def export_scene_layout(context, filepath, selected_only):
         output = Path(filepath).expanduser().resolve()
-        if output.parent.name != "layouts" or output.parent.parent.name != "resources":
-            raise ValueError("Choose project/resources/layouts/<name>.json as the export path")
+        if output.parent.name != "blender_exports" or output.parent.parent.name != "resources":
+            raise ValueError("Choose project/resources/blender_exports/<name>.json as the export path")
         project = output.parent.parent.parent
         if not (project / "resources" / "obj").is_dir():
             raise ValueError("Selected directory is not a TKMAX project (resources/obj is missing)")
@@ -241,7 +241,7 @@ if bpy is not None:
         bl_context = "scene"
 
         def draw(self, context):
-            self.layout.label(text="Export to project/resources/layouts/*.json")
+            self.layout.label(text="Export to project/resources/blender_exports/*.json")
             self.layout.operator(TKMAX_OT_export_scene_layout.bl_idname)
 
     def menu_export(self, context):

@@ -117,4 +117,37 @@ namespace TKM {
 			out = std::move(loaded); error.clear(); return true;
 		} catch (const std::exception& e) { error = filePath + ": " + e.what(); return false; }
 	}
+	bool ValidateSceneLayoutModel(const std::string& model, std::string& error) {
+		try { ValidateModel(model); error.clear(); return true; }
+		catch (const std::exception& e) { error = e.what(); return false; }
+	}
+	bool SaveSceneLayoutData(const std::string& filePath, const SceneLayoutData& data, std::string& error) {
+		const std::filesystem::path path(std::u8string(filePath.begin(), filePath.end()));
+		auto temporary = path; temporary += ".tmp";
+		auto backup = path; backup += ".bak";
+		bool backedUp = false;
+		try {
+			Require(path.extension() == ".json", "Save path must end in .json");
+			Require(!std::filesystem::exists(backup), "Backup already exists; recover or rename the .bak file first");
+			Json j = {{"format", "TKMAX_SCENE_LAYOUT"}, {"version", 1}, {"objects", Json::array()}, {"markers", Json::array()}};
+			auto transform = [](const SceneLayoutTransform& t) {
+				return Json{{"position", {t.position.x,t.position.y,t.position.z}}, {"rotation", {t.rotation.x,t.rotation.y,t.rotation.z}}, {"scale", {t.scale.x,t.scale.y,t.scale.z}}};
+			};
+			for (const auto& o : data.objects) { auto item = transform(o.transform); item["name"] = o.name; item["model"] = o.model; item["visible"] = o.visible; j["objects"].push_back(item); }
+			for (const auto& m : data.markers) { auto item = transform(m.transform); item["name"] = m.name; item["tag"] = m.tag; j["markers"].push_back(item); }
+			if (!path.parent_path().empty()) { std::filesystem::create_directories(path.parent_path()); }
+			{ std::ofstream file(temporary, std::ios::binary); file << j.dump(2) << '\n'; file.close(); Require(!file.fail(), "Failed to write layout"); }
+			SceneLayoutData checked;
+			Require(LoadSceneLayoutData(filePath + ".tmp", checked, error), error);
+			if (std::filesystem::exists(path)) { std::filesystem::rename(path, backup); backedUp = true; }
+			std::filesystem::rename(temporary, path);
+			if (backedUp) { std::error_code ignored; std::filesystem::remove(backup, ignored); }
+			error.clear(); return true;
+		} catch (const std::exception& e) {
+			error = e.what(); std::error_code ec;
+			if (backedUp) { std::filesystem::rename(backup, path, ec); if (ec) { error += "; previous file retained in .bak"; } }
+			std::filesystem::remove(temporary, ec); return false;
+		}
+	}
+
 }
