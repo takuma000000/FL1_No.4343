@@ -1,6 +1,7 @@
 #include "Enemy.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "Camera.h"
 #include "DirectXCommon.h"
@@ -42,13 +43,13 @@ void Enemy::Initialize(
 }
 
 void Enemy::Update(float deltaTime, const Vector3& targetPosition) {
+    // 攻撃を行ったかどうかのフラグをリセットする。
+    didAttackThisFrame_ = false;
+
     // 死亡後は移動やObject3dの更新を行わない。
     if (!IsAlive() || !object3d_) {
         return;
     }
-
-    // 攻撃を行ったかどうかのフラグをリセットする。
-    didAttackThisFrame_ = false;
 
     // 次の攻撃までの待機時間を更新する
     UpdateAttackCooldown(deltaTime);
@@ -91,24 +92,36 @@ void Enemy::TakeDamage(int damage) {
 }
 
 bool Enemy::IsWithinAttackRange(const Vector3& targetPosition) const {
-    const Vector3 difference = targetPosition - position_;
-    const float attackRangeSquared = data_.attackRange * data_.attackRange;
-
-    // 平方根を使わず、距離の二乗同士で判定する。
-    return difference.lengthSquared() <= attackRangeSquared;
-}
-
-void Enemy::UpdateMovement(float deltaTime, const Vector3& targetPosition) {
     Vector3 difference = targetPosition - position_;
 
-    // 地上敵は高さ方向へ追尾せず、XZ平面上だけを移動する。
+    // 地上敵はXZ平面上の距離で判定する。
     if (type_ != EnemyType::Flying) {
         difference.y = 0.0f;
     }
 
-    // 攻撃可能な距離まで接近した場合は、
-    // ターゲットを通り過ぎないように移動を停止する。
-    if (IsWithinAttackRange(targetPosition)) {
+    const float attackRangeSquared =
+        data_.attackRange * data_.attackRange;
+
+    return difference.lengthSquared() <= attackRangeSquared;
+}
+
+void Enemy::UpdateMovement(
+    float deltaTime,
+    const Vector3& targetPosition
+) {
+    Vector3 difference = targetPosition - position_;
+
+    // 地上敵はXZ平面上だけを移動する。
+    if (type_ != EnemyType::Flying) {
+        difference.y = 0.0f;
+    }
+
+    const float distance = std::sqrt(
+        difference.lengthSquared()
+    );
+
+    // すでに攻撃範囲内なら移動しない。
+    if (distance <= data_.attackRange) {
         return;
     }
 
@@ -117,29 +130,34 @@ void Enemy::UpdateMovement(float deltaTime, const Vector3& targetPosition) {
         { 0.0f, 0.0f, 0.0f }
     );
 
-    position_ += direction * data_.moveSpeed * deltaTime;
+    // 攻撃範囲へ到達するまでの残り距離。
+    const float remainingDistance =
+        distance - data_.attackRange;
+
+    // 1フレームの移動量を残り距離以下に制限する。
+    const float requestedMoveDistance =
+        data_.moveSpeed * (std::max)(0.0f, deltaTime);
+
+    const float actualMoveDistance = (std::min)(
+        requestedMoveDistance,
+        remainingDistance
+        );
+
+    position_ += direction * actualMoveDistance;
 }
 
 bool Enemy::IsWithinDetectionRange(const Vector3& targetPosition) const {
-    // 敵からターゲットまでの座標差を求める
-    const Vector3 difference = {
-        targetPosition.x - position_.x,
-        targetPosition.y - position_.y,
-        targetPosition.z - position_.z
-    };
+    Vector3 difference = targetPosition - position_;
 
-    // 平方根を使わずに距離を比較するため、
-    // ターゲットまでの距離の二乗を求める
-    const float distanceSquared =
-        difference.x * difference.x +
-        difference.y * difference.y +
-        difference.z * difference.z;
+    // 地上敵はXZ平面上の距離で判定する。
+    if (type_ != EnemyType::Flying) {
+        difference.y = 0.0f;
+    }
 
-    // 索敵範囲についても二乗値を求める
     const float detectionRangeSquared =
         data_.detectionRange * data_.detectionRange;
 
-    return distanceSquared <= detectionRangeSquared;
+    return difference.lengthSquared() <= detectionRangeSquared;
 }
 
 void Enemy::UpdateAttackCooldown(float deltaTime) {
