@@ -6,6 +6,7 @@
 
 #ifdef USE_IMGUI
 #include "imgui.h"
+#include "DebugGameView.h"
 #endif
 
 namespace TKM {
@@ -54,7 +55,7 @@ namespace TKM {
 		bool canControlCamera = true; // ImGui操作中はカメラ操作を無効化する
 
 #ifdef USE_IMGUI
-		canControlCamera = !ImGui::GetIO().WantCaptureMouse; // ImGuiがマウス操作を奪っている場合はカメラ操作を無効化
+		canControlCamera = DebugGameView::CanUseMouse(); // ゲーム画像上だけで操作し、周囲のImGui操作と分ける
 #endif
 
 		// ===================== 操作状態 =====================

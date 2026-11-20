@@ -2,6 +2,10 @@
 
 #ifdef USE_IMGUI
 #include "imgui.h"
+#include "DebugGameView.h"
+#if defined(_DEBUG)
+#include "imgui_internal.h"
+#endif
 #include <imgui_impl_win32.h>
 #include <imgui_impl_dx12.h>
 #endif
@@ -18,6 +22,10 @@ namespace TKM {
 		// ImGuiドッキング
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+#if defined(_DEBUG)
+		// ゲーム画面のドラッグをウィンドウ移動として扱わない。
+		io.ConfigWindowsMoveFromTitleBarOnly = true;
+#endif
 
 		// ===============================
 		// 日本語フォントの追加
@@ -59,10 +67,24 @@ namespace TKM {
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 		desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		desc.NumDescriptors = 1;
+#if defined(_DEBUG)
+		desc.NumDescriptors = 2; // slot 0: font / slot 1: completed game image
+#endif
 		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		//デスクリプタ―ヒープ
 		hr = dxCommon_->GetDevice()->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&srvHeap_));
 		assert(SUCCEEDED(hr));
+#if defined(_DEBUG)
+		dxCommon_->InitializeDebugGameView();
+		auto imageCPU = srvHeap_->GetCPUDescriptorHandleForHeapStart();
+		imageCPU.ptr += dxCommon_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		D3D12_SHADER_RESOURCE_VIEW_DESC imageDesc{};
+		imageDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		imageDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		imageDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		imageDesc.Texture2D.MipLevels = 1;
+		dxCommon_->GetDevice()->CreateShaderResourceView(dxCommon_->GetDebugGameViewTexture(), &imageDesc, imageCPU);
+#endif
 
 		// ImGuiのDirectX12初期化関数を呼び出す
 		ImGui_ImplDX12_Init(
@@ -85,6 +107,11 @@ namespace TKM {
 		ImGui_ImplWin32_Shutdown();
 		// ImGuiのコンテキストを破棄
 		ImGui::DestroyContext();
+#if defined(_DEBUG)
+		DebugGameView::drawList_ = nullptr;
+		DebugGameView::hovered_ = false;
+		DebugGameView::mapping_ = {};
+#endif
 
 		// デスクリプタヒープを解放
 		srvHeap_.Reset();
@@ -98,8 +125,67 @@ namespace TKM {
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
+#if defined(_DEBUG)
+		RECT client{};
+		GetClientRect(winApp_->GetHwnd(), &client);
+		dxCommon_->ResizeDebugSwapchain(static_cast<UINT>(client.right), static_cast<UINT>(client.bottom));
+		BuildDebugWorkspace();
+#endif
 #endif
 	}
+
+#if defined(_DEBUG) && defined(USE_IMGUI)
+	void ImGuiManager::BuildDebugWorkspace() {
+		bool reset = false;
+		if (ImGui::BeginMainMenuBar()) {
+			if (ImGui::BeginMenu("表示")) {
+				reset = ImGui::MenuItem("レイアウトを初期化");
+				ImGui::EndMenu();
+			}
+			ImGui::EndMainMenuBar();
+		}
+		const auto* viewport = ImGui::GetMainViewport();
+		const auto dock = ImHashStr("TKMAX_DebugWorkspace");
+		if (reset || !ImGui::DockBuilderGetNode(dock)) {
+			ImGui::DockBuilderRemoveNode(dock);
+			ImGui::DockBuilderAddNode(dock, ImGuiDockNodeFlags_DockSpace);
+			ImGui::DockBuilderSetNodeSize(dock, viewport->WorkSize);
+			ImGuiID center = dock, left = 0, bottom = 0;
+			ImGui::DockBuilderSplitNode(center, ImGuiDir_Left, 0.25f, &left, &center);
+			ImGui::DockBuilderSplitNode(center, ImGuiDir_Down, 0.28f, &bottom, &center);
+			ImGui::DockBuilderDockWindow("ゲームビュー", center);
+			for (const char* name : { "オブジェクト編集", "スプライト編集", "デバッグカメラ", "カメラ", "追従カメラ", "シーン移動", "音量", "ゲームパッド", "エフェクトサイズ調整", "スカイボックス" }) {
+				ImGui::DockBuilderDockWindow(name, left);
+			}
+			for (const char* name : { "情報", "ポストエフェクト", "パーティクルエディタ", "プレビュー表示", "モーションブラー", "霧(空間)", "霧 (Fog)", "煙ボリューム 3D", "ビネット（Vignetting）", "ノイズ（Noise）", "トレイル(リボン) 調整", "AuraEffect", "LaserBeam3D" }) {
+				ImGui::DockBuilderDockWindow(name, bottom);
+			}
+			ImGui::DockBuilderFinish(dock);
+		}
+		ImGui::DockSpaceOverViewport(dock, viewport);
+		DebugGameView::mapping_.size = {};
+		DebugGameView::hovered_ = false;
+		DebugGameView::drawList_ = nullptr;
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(12, 12, 15, 255));
+		if (ImGui::Begin("ゲームビュー", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+			const auto origin = ImGui::GetCursorScreenPos();
+			const auto available = ImGui::GetContentRegionAvail();
+			const auto mapping = GameViewMapping::Fit({ origin.x, origin.y }, { available.x, available.y },
+				{ float(WindowsAPI::GetClientWidth()), float(WindowsAPI::GetClientHeight()) });
+			if (mapping.Valid()) {
+				DebugGameView::mapping_ = mapping;
+				ImGui::SetCursorScreenPos({ mapping.origin.x, mapping.origin.y });
+				auto imageGPU = srvHeap_->GetGPUDescriptorHandleForHeapStart();
+				imageGPU.ptr += dxCommon_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+				ImGui::Image(static_cast<ImTextureID>(imageGPU.ptr), { mapping.size.x, mapping.size.y });
+				DebugGameView::hovered_ = ImGui::IsItemHovered() && GetForegroundWindow() == winApp_->GetHwnd();
+				DebugGameView::drawList_ = ImGui::GetWindowDrawList();
+			}
+		}
+		ImGui::End();
+		ImGui::PopStyleColor();
+	}
+#endif
 
 	void ImGuiManager::End() {
 #ifdef USE_IMGUI
@@ -109,6 +195,11 @@ namespace TKM {
 
 	void ImGuiManager::Draw() {
 #ifdef USE_IMGUI
+
+#if defined(_DEBUG)
+		// ゲームの全描画が終わってからSRVへ遷移し、ImGuiだけをバックバッファへ描く。
+		dxCommon_->EndDebugGameView();
+#endif
 		// コマンドリストの取得
 		ID3D12GraphicsCommandList* commandList = dxCommon_->GetCommandList();
 

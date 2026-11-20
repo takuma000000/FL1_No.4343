@@ -290,6 +290,9 @@
     <ClInclude Include="engine\func\math\Vector4.h">
       <Filter>engine\func\math</Filter>
     </ClInclude>
+    <ClInclude Include="engine\imgui\DebugGameView.h">
+      <Filter>engine\imgui</Filter>
+    </ClInclude>
     <ClInclude Include="engine\imgui\ImGuiManager.h">
       <Filter>engine\imgui</Filter>
     </ClInclude>

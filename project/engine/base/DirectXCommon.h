@@ -290,6 +290,15 @@ namespace TKM {
 		/// DirectXCommonの描画後処理を行う関数
 		/// </summary>
 		void PostDraw();
+#if defined(_DEBUG) && defined(USE_IMGUI)
+		// Debugの完成画面。Releaseの描画先・リソースは変更しない。
+		void InitializeDebugGameView();
+		ID3D12Resource* GetDebugGameViewTexture() const { return debugGameViewTexture_.Get(); }
+		void EndDebugGameView();
+		void ResizeDebugSwapchain(UINT width, UINT height);
+#endif
+		D3D12_CPU_DESCRIPTOR_HANDLE GetSceneOutputRTV() const;
+
 		// -------------------- デスクリプタヒープ生成 --------------------
 		/// <summary>
 		/// スワップチェーンの生成を行う関数
@@ -1123,6 +1132,11 @@ namespace TKM {
 
 		ThresholdParam* thresholdMappedData_ = nullptr;
 
+#if defined(_DEBUG) && defined(USE_IMGUI)
+		Microsoft::WRL::ComPtr<ID3D12Resource> debugGameViewTexture_;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> debugGameViewRtvHeap_;
+		D3D12_RESOURCE_STATES debugGameViewState_ = D3D12_RESOURCE_STATE_RENDER_TARGET;
+#endif
 		Microsoft::WRL::ComPtr<ID3D12Resource> renderTextureResource_;
 		// RenderTexture 用 SRV のインデックス
 		uint32_t renderTextureSrvIndex_ = 0;

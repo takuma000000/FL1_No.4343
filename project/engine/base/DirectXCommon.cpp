@@ -276,9 +276,8 @@ namespace TKM {
 			commandList_->ResourceBarrier(1, &barrier);
 		}
 
-		// SwapChain の現在の RTV 取得
-		UINT backBufferIndex = swapChain_->GetCurrentBackBufferIndex();
-		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHandles_[backBufferIndex];
+		// 完成画面の描画先（Debugはゲームビュー、Releaseはバックバッファ）
+		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = GetSceneOutputRTV();
 		commandList_->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
 
 		// パイプライン / RootSignature 設定
@@ -311,6 +310,17 @@ namespace TKM {
 
 	void DirectXCommon::BeginDrawToSwapchain() {
 
+#if defined(_DEBUG) && defined(USE_IMGUI)
+		if (debugGameViewTexture_ && debugGameViewState_ != D3D12_RESOURCE_STATE_RENDER_TARGET) {
+			D3D12_RESOURCE_BARRIER transition{};
+			transition.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+			transition.Transition = { debugGameViewTexture_.Get(), D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+				debugGameViewState_, D3D12_RESOURCE_STATE_RENDER_TARGET };
+			commandList_->ResourceBarrier(1, &transition);
+			debugGameViewState_ = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		}
+#endif
+
 		// 現在のバックバッファインデックス取得
 		UINT backBufferIndex = swapChain_->GetCurrentBackBufferIndex();
 
@@ -324,7 +334,7 @@ namespace TKM {
 		commandList_->ResourceBarrier(1, &barrier_);
 
 		// 3Dの深度は輪郭線で参照するので保持する。前面UIは深度テストを使わない。
-		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHandles_[backBufferIndex];
+		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = GetSceneOutputRTV();
 		commandList_->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
 
 		// 画面クリア（お好みの色でOK）
@@ -337,8 +347,53 @@ namespace TKM {
 		commandList_->RSSetScissorRects(1, &scissorRect_);
 	}
 
-	void DirectXCommon::BeginDebugDraw() {
+	D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetSceneOutputRTV() const {
+#if defined(_DEBUG) && defined(USE_IMGUI)
+		if (debugGameViewTexture_) { return debugGameViewRtvHeap_->GetCPUDescriptorHandleForHeapStart(); }
+#endif
+		return rtvHandles_[swapChain_->GetCurrentBackBufferIndex()];
+	}
+#if defined(_DEBUG) && defined(USE_IMGUI)
+	void DirectXCommon::InitializeDebugGameView() {
+		debugGameViewTexture_ = CreateRenderTextureResource(device_, WindowsAPI::GetClientWidth(), WindowsAPI::GetClientHeight(),
+			DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, { 0.1f, 0.25f, 0.5f, 1.0f });
+		debugGameViewTexture_->SetName(L"Debug Game View (final composition)");
+		debugGameViewRtvHeap_ = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1, false);
+		device_->CreateRenderTargetView(debugGameViewTexture_.Get(), &rtvDesc_, debugGameViewRtvHeap_->GetCPUDescriptorHandleForHeapStart());
+		debugGameViewState_ = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	}
+	void DirectXCommon::EndDebugGameView() {
+		D3D12_RESOURCE_BARRIER transition{};
+		transition.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		transition.Transition = { debugGameViewTexture_.Get(), D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE };
+		commandList_->ResourceBarrier(1, &transition);
+		debugGameViewState_ = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 		const auto rtv = rtvHandles_[swapChain_->GetCurrentBackBufferIndex()];
+		commandList_->OMSetRenderTargets(1, &rtv, false, nullptr);
+		const float background[] = { 0.025f, 0.025f, 0.03f, 1.0f };
+		commandList_->ClearRenderTargetView(rtv, background, 0, nullptr);
+	}
+	void DirectXCommon::ResizeDebugSwapchain(UINT width, UINT height) {
+		if (width == 0 || height == 0) { return; }
+		const auto desc = swapChainResources_[0]->GetDesc();
+		if (desc.Width == width && desc.Height == height) { return; }
+		// PostDrawで前フレームのGPU完了とコマンドリストのリセットを済ませている。
+		for (auto& resource : swapChainResources_) { resource.Reset(); }
+		DXGI_SWAP_CHAIN_DESC1 swapDesc{};
+		HRESULT hr = swapChain_->GetDesc1(&swapDesc); assert(SUCCEEDED(hr));
+		hr = swapChain_->ResizeBuffers(swapDesc.BufferCount, width, height, swapDesc.Format, swapDesc.Flags);
+		assert(SUCCEEDED(hr));
+		for (UINT i = 0; i < static_cast<UINT>(swapChainResources_.size()); ++i) {
+			hr = swapChain_->GetBuffer(i, IID_PPV_ARGS(&swapChainResources_[i])); assert(SUCCEEDED(hr));
+			device_->CreateRenderTargetView(swapChainResources_[i].Get(), &rtvDesc_, rtvHandles_[i]);
+		}
+		// ゲーム用のRenderTexture・深度・Viewportは1280x720のまま維持する。
+	}
+#endif
+
+	void DirectXCommon::BeginDebugDraw() {
+		const auto rtv = GetSceneOutputRTV();
 		const auto dsv = dsvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart();
 		commandList_->OMSetRenderTargets(1, &rtv, false, &dsv);
 	}

@@ -287,6 +287,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\base\WindowsAPI.h" />
     <ClInclude Include="engine\base\Framework.h" />
     <ClInclude Include="engine\imgui\ImGuiManager.h" />
+    <ClInclude Include="engine\imgui\DebugGameView.h" />
     <ClInclude Include="engine\scene\MyGame.h" />
     <ClInclude Include="engine\effect\particle\ParticleManager.h" />
     <ClInclude Include="engine\base\SrvManager.h" />
