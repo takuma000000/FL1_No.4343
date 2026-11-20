@@ -1,7 +1,8 @@
 #pragma once
 #include "CollisionCategory.h"
 #include "Object3d.h"
-#include "player.h"
+#include "Player.h"
+#include "Enemy.h"
 
 //=============================================================
 // CollisionSettingsクラス
@@ -17,7 +18,8 @@ public:
 	/// <param name="player">Player</param>
 	void Initialize(
 		TKM::Object3d* plane,
-		Player* player
+		Player* player,
+		Enemy* enemy
 	);
 
 	/// <summary>
@@ -31,7 +33,8 @@ private:
 	/// </summary>
 	void RegisterColliders(
 		TKM::Object3d* plane,
-		Player* player
+		Player* player,
+		Enemy* enemy
 	);
 
 	/// <summary>

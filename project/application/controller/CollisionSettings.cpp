@@ -6,7 +6,8 @@ using namespace TKM;
 
 void CollisionSettings::Initialize(
 	TKM::Object3d* plane,
-	Player* player
+	Player* player,
+	Enemy* enemy
 ) {
 	// 1. ゲーム内で使用するコライダーを登録する
 	RegisterColliders(
@@ -20,10 +21,11 @@ void CollisionSettings::Initialize(
 
 void CollisionSettings::RegisterColliders(
 	TKM::Object3d* plane,
-	Player* player
+	Player* player,
+	Enemy* enemy
 ) {
 	// 登録に必要なオブジェクトが未生成の場合は処理しない
-	if (!plane || !player) {
+	if (!plane || !player || !enemy) {
 		return;
 	}
 
@@ -50,6 +52,17 @@ void CollisionSettings::RegisterColliders(
 		"Plane",
 		plane,
 		CollisionCategory::Plane
+	);
+
+	//======================================================================
+	// Enemy
+	//======================================================================
+	// EnemyのObject3dと種類を登録する。
+	// モデルの中心とサイズは頂点情報から自動計算される。
+	collisionManager->RegisterAABB(
+		"Enemy",
+		enemy->GetObject3d(),
+		CollisionCategory::Enemy
 	);
 }
 
@@ -82,5 +95,10 @@ void CollisionSettings::Finalize() {
 	// Planeのコライダー登録を解除する
 	CollisionManager::GetInstance()->Unregister(
 		"Plane"
+	);
+
+	// Enemyのコライダー登録を解除する
+	CollisionManager::GetInstance()->Unregister(
+		"Enemy"
 	);
 }
