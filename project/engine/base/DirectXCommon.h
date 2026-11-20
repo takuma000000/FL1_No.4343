@@ -658,6 +658,7 @@ namespace TKM {
 		/// ゲーム設定またはImGuiで選択したポストエフェクトを適用してSwapchainへ描画
 		/// </summary>
 		void DrawPostEffectToSwapchain();
+		void BeginDebugDraw(); // ポスト処理後の補助線用にSwapchainと3D深度を再バインド
 		void InitializeComicPipeline();
 		void SetComicParam(const Vector4& color, float width, float threshold, int steps, float blend, bool toon, float outlineStrength);
 		void SetComicProjection(const Matrix4x4& projection);

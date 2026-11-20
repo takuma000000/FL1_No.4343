@@ -7,6 +7,7 @@
 #include "ImGuiManager.h"
 #include "CameraManager.h"
 #include "CollisionManager.h"
+#include "LineRenderer.h"
 #include "DeltaTimeManager.h"
 
 namespace TKM {
@@ -95,7 +96,7 @@ namespace TKM {
 		srvManager_->PreDraw();
 		sceneManager_->Draw3D();
 
-		// 登録されているコライダーをラインで表示する
+		// 登録されているコライダーのラインを描画予約する
 		if (auto* activeCamera =
 			CameraManager::GetInstance()->GetActiveCamera()) {
 			CollisionManager::GetInstance()->DrawDebug(
@@ -109,6 +110,9 @@ namespace TKM {
 		// ③ RenderTexture → Swapchain（ポスト適用）
 		srvManager_->PreDraw();
 		dxCommon_->DrawPostEffectToSwapchain();
+
+		// 予約したグリッド・当たり判定ラインは、ポスト処理後にまとめて描画する。
+		LineRenderer::GetInstance()->Flush();
 
 		// ④ UI(Sprite)を Swapchain に直描き（ポスト対象外）
 		srvManager_->PreDraw();

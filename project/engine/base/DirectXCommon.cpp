@@ -337,6 +337,12 @@ namespace TKM {
 		commandList_->RSSetScissorRects(1, &scissorRect_);
 	}
 
+	void DirectXCommon::BeginDebugDraw() {
+		const auto rtv = rtvHandles_[swapChain_->GetCurrentBackBufferIndex()];
+		const auto dsv = dsvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart();
+		commandList_->OMSetRenderTargets(1, &rtv, false, &dsv);
+	}
+
 	void DirectXCommon::InitializeCopyImagePipeline() {
 		if (copyImageInitialized_) { return; }
 

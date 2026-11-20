@@ -2,6 +2,8 @@
 #include "d3dx12.h"
 #include "MyMath.h"
 #include <cmath>
+#include <algorithm>
+#include <cstring>
 
 using Microsoft::WRL::ComPtr;
 
@@ -22,6 +24,7 @@ namespace TKM {
 
 		// 毎フレーム使う頂点配列の容量を先に確保しておく
 		vertices_.reserve(maxVertices_);
+		queuedVertices_.reserve(maxVertices_);
 
 		// ライン描画用の頂点バッファを作成する
 		CreateBuffer();
@@ -31,7 +34,7 @@ namespace TKM {
 	}
 
 	void LineRenderer::BeginFrame() {
-		// 1フレーム分のライン情報をクリアする
+		// 次の登録分をクリアする。Draw済みの予約はFlushまで保持する
 		vertices_.clear();
 	}
 
@@ -47,55 +50,39 @@ namespace TKM {
 	}
 
 	void LineRenderer::Draw(const Matrix4x4& viewProj) {
-		// 描画するラインがない、またはDirectXCommonがない場合は何もしない
-		if (vertices_.empty() || !dx_) {
-			return;
-		}
+		if (!dx_ || vertices_.empty()) { return; }
+		// 予約全体もVB容量内に制限し、ライン（2頂点）の途中で切らない。
+		size_t count = std::min(vertices_.size(), maxVertices_ - queuedVertices_.size());
+		count -= count % 2;
+		if (count == 0) { return; }
+		batches_.push_back({ viewProj, static_cast<uint32_t>(queuedVertices_.size()), static_cast<uint32_t>(count) });
+		queuedVertices_.insert(queuedVertices_.end(), vertices_.begin(), vertices_.begin() + count);
+	}
 
-		auto* device = dx_->GetDevice();
+	void LineRenderer::Flush() {
+		if (!dx_ || queuedVertices_.empty()) { return; }
 		auto* cmdList = dx_->GetCommandList();
-
-		// ---- 頂点データをVBに書き込む（基本は毎フレーム全書き換え） ----
-		{
-			Vertex* mapped = nullptr;
-			D3D12_RANGE readRange{ 0, 0 };
-
-			// CPUから頂点バッファへ書き込むためにMapする
-			vertexBuffer_->Map(0, &readRange, reinterpret_cast<void**>(&mapped));
-
-			// 今フレーム分のライン頂点をまとめてコピーする
-			memcpy(mapped, vertices_.data(), sizeof(Vertex) * vertices_.size());
-
-			// 書き込みが終わったのでUnmapする
-			vertexBuffer_->Unmap(0, nullptr);
-
-			// 今回描画する頂点数に合わせてVBビューを更新する
-			vbView_.BufferLocation = vertexBuffer_->GetGPUVirtualAddress();
-			vbView_.StrideInBytes = sizeof(Vertex);
-			vbView_.SizeInBytes = static_cast<UINT>(sizeof(Vertex) * vertices_.size());
-		}
-
-		// ---- パイプラインセットアップ ----
-		// ライン描画用のPSOとRootSignatureを設定する
+		// Swapchainへ直接描画し、3Dモデルの深度を使って前後関係だけ判定する。
+		dx_->BeginDebugDraw();
+		Vertex* mapped = nullptr;
+		D3D12_RANGE readRange{ 0, 0 };
+		vertexBuffer_->Map(0, &readRange, reinterpret_cast<void**>(&mapped));
+		// 複数のDrawでもVBへの書き込みは一回。同じGPUメモリの上書きを防ぐ。
+		std::memcpy(mapped, queuedVertices_.data(), sizeof(Vertex) * queuedVertices_.size());
+		vertexBuffer_->Unmap(0, nullptr);
+		vbView_.BufferLocation = vertexBuffer_->GetGPUVirtualAddress();
+		vbView_.StrideInBytes = sizeof(Vertex);
+		vbView_.SizeInBytes = static_cast<UINT>(sizeof(Vertex) * queuedVertices_.size());
 		cmdList->SetPipelineState(pso_.Get());
 		cmdList->SetGraphicsRootSignature(rootSig_.Get());
-
-		// ビュー射影行列をRootConstantsとして頂点シェーダへ渡す
-		cmdList->SetGraphicsRoot32BitConstants(
-			0,
-			sizeof(Matrix4x4) / 4,
-			&viewProj,
-			0
-		);
-
-		// ラインリストとして描画する
 		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
-
-		// 頂点バッファを設定する
 		cmdList->IASetVertexBuffers(0, 1, &vbView_);
-
-		// 登録されているライン頂点を描画する
-		cmdList->DrawInstanced(static_cast<UINT>(vertices_.size()), 1, 0, 0);
+		for (const auto& batch : batches_) {
+			cmdList->SetGraphicsRoot32BitConstants(0, sizeof(Matrix4x4) / 4, &batch.viewProjection, 0);
+			cmdList->DrawInstanced(batch.vertexCount, 1, batch.firstVertex, 0);
+		}
+		queuedVertices_.clear();
+		batches_.clear();
 	}
 
 	void LineRenderer::AddAABB(const Vector3& center, const Vector3& size, const Color& color) {
@@ -321,7 +308,7 @@ namespace TKM {
 		// 深度テストを有効にして、3D空間上の位置関係に合わせる
 		D3D12_DEPTH_STENCIL_DESC depthDesc{};
 		depthDesc.DepthEnable = TRUE;
-		depthDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+		depthDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO; // 補助線はモデルの深度を変更しない
 		depthDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 		depthDesc.StencilEnable = FALSE;
 
