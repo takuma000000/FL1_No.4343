@@ -23,6 +23,10 @@ namespace TKM {
 		// this を取得（以降のメッセージで使う）
 		auto self = reinterpret_cast<WindowsAPI*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
+		if (msg == WM_KEYDOWN && wparam == VK_ESCAPE) {
+			return SendMessage(hwnd, WM_CLOSE, 0, 0);
+		}
+
 		// 先にホイール量だけ拾う（ImGuiより前）
 		if (msg == WM_MOUSEWHEEL) {
 			int delta = GET_WHEEL_DELTA_WPARAM(wparam);
@@ -63,17 +67,14 @@ namespace TKM {
 
 		RegisterClass(&wc_);
 
-		RECT wrc = { 0,0,kClientWidth_ ,kClientHeight_ };
-		AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
-
 		hwnd_ = CreateWindow(
 			wc_.lpszClassName,
 			L"4343_抗体で健康体",
-			WS_OVERLAPPEDWINDOW,
-			CW_USEDEFAULT,
-			CW_USEDEFAULT,
-			wrc.right - wrc.left,
-			wrc.bottom - wrc.top,
+			WS_POPUP,
+			0,
+			0,
+			GetSystemMetrics(SM_CXSCREEN),
+			GetSystemMetrics(SM_CYSCREEN),
 			nullptr,
 			nullptr,
 			wc_.hInstance,

@@ -1,6 +1,7 @@
 #pragma once
 #define NOMINMAX
 #include <vector>
+#include <cstdint>
 #include <wrl.h>
 #include <d3d12.h>
 
@@ -43,14 +44,16 @@ namespace TKM {
 		//=============================================================
 
 		/// <summary>
-		/// フレーム開始処理を行います。
+		/// 次のライン登録を始めます。Draw済みの描画予約はFlushまで保持します。
 		/// </summary>
 		void BeginFrame();
 
 		/// <summary>
-		/// ラインを描画します。
+		/// ラインを描画予約します。実描画はポスト処理後のFlushで行います。
 		/// </summary>
-		void Draw(const Matrix4x4& viewProj);
+		void Draw(const Matrix4x4& viewProj); // 実描画はFlushまで予約する
+		// MyGameがポストエフェクト後に一度だけ呼ぶ。
+		void Flush();
 
 		//=============================================================
 		// ライン追加
@@ -116,6 +119,9 @@ namespace TKM {
 		//=============================================================
 
 		std::vector<Vertex> vertices_; // 頂点配列
+		struct Batch { Matrix4x4 viewProjection; uint32_t firstVertex, vertexCount; };
+		std::vector<Vertex> queuedVertices_;
+		std::vector<Batch> batches_;
 		size_t maxVertices_ = 0;       // 最大頂点数
 
 		//=============================================================

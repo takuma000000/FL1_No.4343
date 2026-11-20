@@ -62,7 +62,7 @@ namespace TKM {
 #ifdef USE_IMGUI
 		if (ImGui::Begin("モーションブラー")) {
 			ImGui::Checkbox("有効", &active_);
-			ImGui::SliderFloat("強度", &strength_, 0.0f, 0.95f);
+			ImGui::SliderFloat("強度", &strength_, 0.0f, 1.0f);
 		}
 		ImGui::End();
 #endif

@@ -69,6 +69,9 @@ namespace TKM {
 		void SetColorCrystalGlass();
 
 	private:
+#if defined(_DEBUG) && defined(USE_IMGUI)
+		void BuildDebugWorkspace();
+#endif
 		//=============================================================
 		// 共通参照
 		//=============================================================

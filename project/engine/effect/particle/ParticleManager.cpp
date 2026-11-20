@@ -1,7 +1,6 @@
 #define NOMINMAX
 #include "ParticleManager.h"
 #include "TextureManager.h"
-#include "ParticleSpawner.h"
 #include "ParticleEffects.h"
 #include "DeltaTimeManager.h"
 #include "MyMath.h"
@@ -733,66 +732,6 @@ namespace TKM {
 		billboardMatrix_.m[3][2] = 0.0f;
 	}
 
-	void ParticleManager::Emit(const std::string name, const Vector3& pos, uint32_t count) {
-		// 指定されたグループが存在することを確認する
-		assert(particleGroups_.find(name) != particleGroups_.end());
-
-		// 指定グループを取得する
-		ParticleGroup& group = particleGroups_[name];
-
-		// 生成しすぎを防ぐための上限を作る
-		const size_t kHardCap = std::max<size_t>(group.kNumInstance_, 200);
-
-		for (uint32_t i = 0; i < count; ++i) {
-			// 上限を超えている場合は古いパーティクルから削除する
-			while (group.particles_.size() >= kHardCap) {
-				group.particles_.pop_front();
-			}
-
-			// グループ名と中心位置から新しいパーティクルを作成する
-			Particle newParticle = MakeNewParticle(randomEngine_, name, pos);
-
-			// グループへ追加する
-			group.particles_.push_back(newParticle);
-		}
-	}
-
-	void ParticleManager::EmitWithTransform(const std::string& name, const Transform& tr, const Vector4& color, uint32_t count) {
-		// 指定グループを探す
-		auto it = particleGroups_.find(name);
-
-		// グループがなければ発生させない
-		if (it == particleGroups_.end()) {
-			return;
-		}
-
-		ParticleGroup& group = it->second;
-
-		// 生成しすぎを防ぐための上限を作る
-		const size_t kHardCap = std::max<size_t>(group.kNumInstance_, 200);
-
-		for (uint32_t i = 0; i < count; ++i) {
-			// 上限を超えている場合は古いパーティクルから削除する
-			while (group.particles_.size() >= kHardCap) {
-				group.particles_.pop_front();
-			}
-
-			// 指定Transformをそのまま使うパーティクルを作成する
-			Particle p{};
-			p.transform_ = tr;
-			p.velocity_ = { 0.0f, 0.0f, 0.0f };
-			p.color_ = color;
-			p.lifeTime_ = 0.1f;
-			p.currentTime_ = 0.0f;
-
-			// 生まれた瞬間の時間を0秒にする
-			p.currentTime_ = 0.0f;
-
-			// グループへ追加する
-			group.particles_.push_back(p);
-		}
-	}
-
 	void ParticleManager::ClearGroup(const std::string& name) {
 		// 指定グループを探す
 		auto it = particleGroups_.find(name);
@@ -805,11 +744,6 @@ namespace TKM {
 		// 指定グループ内のパーティクルを削除する
 		it->second.particles_.clear();
 		it->second.kNumInstance_ = 0;
-	}
-
-	ParticleManager::Particle ParticleManager::MakeNewParticle(std::mt19937& rng, const std::string& groupName, const Vector3& center) {
-		// 具体的な生成内容はParticleSpawner側に任せる
-		return ParticleSpawner::MakeNewParticle(rng, groupName, center);
 	}
 
 	void ParticleManager::CreateRingVertices() {

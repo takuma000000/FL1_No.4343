@@ -201,36 +201,6 @@ namespace TKM {
 		void MakeBillboardMatrix();
 
 		//=============================================================
-		// 放出・生成
-		//=============================================================
-
-		/// <summary>
-		/// パーティクルを放出します。
-		/// </summary>
-		/// <param name="name">グループ名</param>
-		/// <param name="pos">放出位置</param>
-		/// <param name="count">放出数</param>
-		void Emit(const std::string name, const Vector3& pos, uint32_t count);
-
-		/// <summary>
-		/// パーティクルを放出します。
-		/// </summary>
-		/// <param name="name">グループ名</param>
-		/// <param name="tr">Transform</param>
-		/// <param name="color">色</param>
-		/// <param name="count">放出数</param>
-		void EmitWithTransform(const std::string& name, const Transform& tr, const Vector4& color, uint32_t count);
-
-		/// <summary>
-		/// 新しいパーティクルを作成します。
-		/// </summary>
-		/// <param name="randomEngine">乱数生成器</param>
-		/// <param name="groupName">グループ名</param>
-		/// <param name="translate">生成位置</param>
-		/// <returns>生成したパーティクル</returns>
-		Particle MakeNewParticle(std::mt19937& randomEngine, const std::string& groupName, const Vector3& translate);
-
-		//=============================================================
 		// 形状頂点生成
 		//=============================================================
 

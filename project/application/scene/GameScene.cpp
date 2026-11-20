@@ -8,10 +8,6 @@
 
 using namespace TKM;
 
-namespace {
-	constexpr const char* kPlayerAuraEffect = "player_aura";
-}
-
 void GameScene::Initialize() {
 	/// ──────────────── NULLチェック ────────────────
 	assert(this != nullptr && "this is nullptr in GameScene::Initialize");
@@ -30,12 +26,8 @@ void GameScene::Initialize() {
 	auto particleManager = TKM::ParticleManager::GetInstance();
 	particleManager->Initialize(dxCommon_, srvManager_, TKM::CameraManager::GetInstance()->GetMainCamera());
 	// 一度だけ再生を開始する。連続発生の間隔・見た目は保存したJSONに従う。
-	if (player_) {
-		auto* effects = TKM::ParticleEffects::GetInstance();
-		if (!effects->Play(kPlayerAuraEffect, player_->GetPos())) {
-			Logger::Log("[Particle] player_aura: " + effects->GetLastError() + "\n");
-		}
-	}
+	auto* effects = TKM::ParticleEffects::GetInstance();
+	effects->Play("player_aura", player_->GetPos());
 
 	/// ──────────────── ライトの初期化 ───────────────
 	directionalLight_ = std::make_unique<DirectionalLight>();
@@ -84,7 +76,7 @@ void GameScene::Update() {
 	if (player_) {
 		player_->Update();
 		// 移動後の位置を渡し、次に生まれる粒子をPlayerの位置から発生させる。
-		TKM::ParticleEffects::GetInstance()->SetPosition(kPlayerAuraEffect, player_->GetPos());
+		TKM::ParticleEffects::GetInstance()->SetPosition("player_aura", player_->GetPos());
 	}
 
 	// テスト用Sphere更新
@@ -177,7 +169,7 @@ void GameScene::InitializeSprite() {
 	logoSprite_->Initialize(
 		TKM::SpriteCommon::GetInstance(),
 		dxCommon_,
-		"./resources/texture/nomura.jpg"
+		"./resources/texture/TKMAX_logo.png"
 	);
 
 	// 画像の中心を画面中央へ配置する
@@ -290,30 +282,30 @@ void GameScene::ImGuiDebug() {
 }
 
 void GameScene::InitializeEnemies() {
-    // 敵データカタログを作成し、ディレクトリから敵データを読み込む
+	// 敵データカタログを作成し、ディレクトリから敵データを読み込む
 	enemyDataCatalog_ = std::make_unique<EnemyDataCatalog>();
 	std::string errorMessage;
 
-    // 敵データディレクトリの読み込み
+	// 敵データディレクトリの読み込み
 	if (!enemyDataCatalog_->LoadDirectory("resources/data/enemy", errorMessage)) {
 		Logger::Log("[Enemy] Failed to load enemy data directory.\n" + errorMessage + "\n");
 		return;
 	}
 
-    // メインカメラを取得し、敵マネージャーを初期化する
+	// メインカメラを取得し、敵マネージャーを初期化する
 	TKM::Camera* mainCamera = TKM::CameraManager::GetInstance()->GetMainCamera();
 	if (!mainCamera) {
 		Logger::Log("[Enemy] Main camera is null.\n");
 		return;
 	}
 
-    // 敵マネージャーを作成し、初期化する
+	// 敵マネージャーを作成し、初期化する
 	enemyManager_ = std::make_unique<EnemyManager>();
 	enemyManager_->Initialize(dxCommon_, mainCamera, *enemyDataCatalog_);
 
 	constexpr Vector3 kBasicVirusPosition = { -15.0f, 0.0f, 0.0f };
 
-    // BasicVirusをスポーンする
+	// BasicVirusをスポーンする
 	if (!enemyManager_->Spawn("BasicVirus", kBasicVirusPosition, errorMessage)) {
 		Logger::Log("[Enemy] Failed to spawn BasicVirus.\n" + errorMessage + "\n");
 		return;

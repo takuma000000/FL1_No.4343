@@ -96,3 +96,14 @@ Windows / DirectX12での全体ビルドと実画面の操作は未検証です�
 生存中の粒子にも反映し、倍率だけの調整では寿命や放出タイマーをリセットしません。
 旧JSONにscaleがなければ1倍で読み込みます。保存後はPlay(name, position)だけで倍率を自動適用します。
 コードからはSetScaleで調整、SaveScale(name)で倍率だけ保存できます。
+
+## クラスの役割
+
+- ParticleEffectSettings / ParticleEffectStore: エフェクト設定とJSON保存・読込。
+- ParticleEffects: 名前による再生、連続発生、位置・倍率の変更、共通UI。
+- ParticleManager: GPUリソース、粒子の生成・更新・描画。
+- ParticleEditor: 専用エディタの操作パネル。
+- ParticleEditorScene: プレビュー空間と編集用カメラ。
+
+未使用の旧ParticleEmitter・ParticleGroupsCatalog・ParticleSpawnerは削除しています。
+旧Emit・EmitWithTransform・MakeNewParticleではなく、保存済み演出はParticleEffects::Playで再生します。

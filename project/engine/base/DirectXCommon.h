@@ -13,6 +13,7 @@
 #include "SystemIncludes.h"
 
 // PostEffect
+#include "PostEffectPreview.h"
 namespace TKM {
 	class RadialBlurEffect;
 	class VignettingEffect;
@@ -31,6 +32,19 @@ namespace TKM {
 namespace TKM {
 	class DirectXCommon {
 	public:
+		// ComicParameters.hlsliと同じ配置。光の段階化と深度輪郭線で共用する。
+		struct ComicParameters {
+			Matrix4x4 projectionInverse;
+			Vector4 lineColor;
+			float lineWidth, depthThreshold;
+			int32_t shadeSteps;
+			float toonBlend;
+			uint32_t toonEnabled;
+			float outlineStrength;
+			Vector2 padding;
+		};
+		static_assert(sizeof(ComicParameters) == 112);
+
 		// OutlineParameter構造体
 		struct OutlineParameter {
 			Matrix4x4 projectionInverse;
@@ -276,6 +290,15 @@ namespace TKM {
 		/// DirectXCommonの描画後処理を行う関数
 		/// </summary>
 		void PostDraw();
+#if defined(_DEBUG) && defined(USE_IMGUI)
+		// Debugの完成画面。Releaseの描画先・リソースは変更しない。
+		void InitializeDebugGameView();
+		ID3D12Resource* GetDebugGameViewTexture() const { return debugGameViewTexture_.Get(); }
+		void EndDebugGameView();
+		void ResizeDebugSwapchain(UINT width, UINT height);
+#endif
+		D3D12_CPU_DESCRIPTOR_HANDLE GetSceneOutputRTV() const;
+
 		// -------------------- デスクリプタヒープ生成 --------------------
 		/// <summary>
 		/// スワップチェーンの生成を行う関数
@@ -641,9 +664,19 @@ namespace TKM {
 			float noiseSpeed,
 			uint32_t telegraph);
 		/// <summary>
-		/// ポストエフェクトなしで RenderTexture → Swapchain へ描画
+		/// ゲーム設定またはImGuiで選択したポストエフェクトを適用してSwapchainへ描画
 		/// </summary>
 		void DrawPostEffectToSwapchain();
+		void BeginDebugDraw(); // ポスト処理後の補助線用にSwapchainと3D深度を再バインド
+		void InitializeComicPipeline();
+		void SetComicParam(const Vector4& color, float width, float threshold, int steps, float blend, bool toon, float outlineStrength);
+		void SetComicProjection(const Matrix4x4& projection);
+		void BindComicLighting(UINT rootParameterIndex);
+		void ApplyComic(ID3D12Resource* input, uint32_t inputSrv, ID3D12Resource* output, D3D12_CPU_DESCRIPTOR_HANDLE outputRtv);
+		void SetPostEffectPreview(PostEffectPreview selection) {
+			if (postEffectPreview_ != selection) { previousFrameReady_ = false; }
+			postEffectPreview_ = selection;
+		}
 		/// <summary>
 		/// 
 		/// </summary>
@@ -975,6 +1008,7 @@ namespace TKM {
 		// RadialBlur 用 PSO
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> radialBlurPipelineState_;
 		bool                                         radialBlurInitialized_ = false;
+		PostEffectPreview postEffectPreview_ = PostEffectPreview::Game;
 		TKM::RadialBlurEffect* radialBlurEffect_ = nullptr; // 現在シーンの RadialBlurEffect（なければ nullptr）
 
 		// Vignetting 用 PSO
@@ -1080,6 +1114,14 @@ namespace TKM {
 		//======================================================================
 		// 定数バッファ / ポストエフェクト関連リソース
 		//======================================================================
+		void InitializeComicParameters();
+		Microsoft::WRL::ComPtr<ID3D12RootSignature> comicRootSignature_;
+		Microsoft::WRL::ComPtr<ID3D12PipelineState> comicPipelineState_;
+		Microsoft::WRL::ComPtr<ID3D12Resource> comicConstantBuffer_;
+		ComicParameters* comicMappedData_ = nullptr;
+		uint32_t comicDepthSrvIndex_ = 0;
+		bool comicToonRequested_ = true;
+
 		// -------------------- ConstantBuffer --------------------
 		Microsoft::WRL::ComPtr<ID3D12Resource> outlineConstantBuffer_;
 		OutlineParameter* outlineMappedData_ = nullptr;
@@ -1090,6 +1132,11 @@ namespace TKM {
 
 		ThresholdParam* thresholdMappedData_ = nullptr;
 
+#if defined(_DEBUG) && defined(USE_IMGUI)
+		Microsoft::WRL::ComPtr<ID3D12Resource> debugGameViewTexture_;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> debugGameViewRtvHeap_;
+		D3D12_RESOURCE_STATES debugGameViewState_ = D3D12_RESOURCE_STATE_RENDER_TARGET;
+#endif
 		Microsoft::WRL::ComPtr<ID3D12Resource> renderTextureResource_;
 		// RenderTexture 用 SRV のインデックス
 		uint32_t renderTextureSrvIndex_ = 0;

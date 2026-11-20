@@ -8,6 +8,7 @@
 #include "AbstractSceneFactory.h"
 #include "SceneManager.h"
 #include <memory>
+#include "PostEffectEditor.h"
 
 //=============================================================
 // MyGameクラス
@@ -56,6 +57,7 @@ namespace TKM {
 		// 状態・管理
 		//=============================================================
 
+		PostEffectEditor postEffectEditor_;
 		bool endRequest_ = false;                                   // 終了フラグ
 		std::unique_ptr<TKM::SceneManager> sceneManager_ = nullptr; // シーンマネージャ
 	};
