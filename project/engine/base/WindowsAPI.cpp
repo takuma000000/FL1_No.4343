@@ -23,6 +23,10 @@ namespace TKM {
 		// this を取得（以降のメッセージで使う）
 		auto self = reinterpret_cast<WindowsAPI*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
+		if (msg == WM_KEYDOWN && wparam == VK_ESCAPE) {
+			return SendMessage(hwnd, WM_CLOSE, 0, 0);
+		}
+
 		// 先にホイール量だけ拾う（ImGuiより前）
 		if (msg == WM_MOUSEWHEEL) {
 			int delta = GET_WHEEL_DELTA_WPARAM(wparam);
