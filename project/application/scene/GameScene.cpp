@@ -292,6 +292,12 @@ void GameScene::ImGuiDebug() {
 	// 追従中は最終座標ではなく、専用の追従パラメータを編集する
 	if (player_) {
 		player_->ImGuiFollowCamera();
+
+		// ──────────────── プレイヤー編集・HP確認 ───────────────
+		ImGui::Begin("Player");
+		player_->ImGuiDebug();
+		ImGui::End();
+
 	}
 	// ──────────────── オブジェクト編集 ───────────────
 	objectSettings_.ImGuiDebug();
