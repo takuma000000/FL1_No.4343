@@ -82,12 +82,17 @@ void CollisionSettings::SyncEnemyColliders(const EnemyManager& enemyManager) {
 	auto* collisionManager = CollisionManager::GetInstance();
 	std::set<std::string> activeIds;
 	for (const auto& enemy : enemyManager.GetEnemies()) {
-		const auto* object = enemy->GetObject3d();
-		const auto id = "Enemy_" + std::to_string(reinterpret_cast<std::uintptr_t>(object));
+		// 敵ごとに識別名を分ける。
+		const auto id = "Enemy_" + std::to_string(reinterpret_cast<std::uintptr_t>(enemy->GetObject3d()));
 		if (!enemyColliderIds_.contains(id)) {
+			//======================================================================
+			// Enemy
+			//======================================================================
+			// EnemyのObject3dと種類を登録する。
+			// モデルの中心とサイズは頂点情報から自動計算される。
 			auto* collider = collisionManager->RegisterAABB(
 				id,
-				object,
+				enemy->GetObject3d(),
 				CollisionCategory::Enemy
 			);
 			if (!collider) {
