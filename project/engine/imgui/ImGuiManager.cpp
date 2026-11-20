@@ -81,7 +81,13 @@ namespace TKM {
 		D3D12_SHADER_RESOURCE_VIEW_DESC imageDesc{};
 		imageDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 		imageDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		imageDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		// 完成済みのゲーム画面は不透明として表示する。粒子などが残した
+		// アルファでImGuiが再合成すると、粒子の領域が暗くなってしまう。
+		imageDesc.Shader4ComponentMapping = D3D12_ENCODE_SHADER_4_COMPONENT_MAPPING(
+			D3D12_SHADER_COMPONENT_MAPPING_FROM_MEMORY_COMPONENT_0,
+			D3D12_SHADER_COMPONENT_MAPPING_FROM_MEMORY_COMPONENT_1,
+			D3D12_SHADER_COMPONENT_MAPPING_FROM_MEMORY_COMPONENT_2,
+			D3D12_SHADER_COMPONENT_MAPPING_FORCE_VALUE_1);
 		imageDesc.Texture2D.MipLevels = 1;
 		dxCommon_->GetDevice()->CreateShaderResourceView(dxCommon_->GetDebugGameViewTexture(), &imageDesc, imageCPU);
 #endif
