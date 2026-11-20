@@ -8,11 +8,11 @@
 // 敵の種類を定義するための列挙型
 //=============================================================
 enum class EnemyType {
-	Normal,
-	Flying,
-	Shooter,
-	Tank,
-	Boss,
+    Normal,
+    Flying,
+    Shooter,
+    Tank,
+    Boss,
 };
 
 //==============================================================
@@ -25,7 +25,7 @@ enum class EnemyType {
 /// </summary>
 /// <param name="text"> 変換する文字列 </param>
 std::optional<EnemyType> EnemyTypeFromString(
-	std::string_view text
+    std::string_view text
 );
 
 /// <summary>
@@ -34,5 +34,5 @@ std::optional<EnemyType> EnemyTypeFromString(
 /// </summary>
 /// <param name="type"> 変換するEnemyType </param>
 std::string_view EnemyTypeToString(
-	EnemyType type
+    EnemyType type
 );

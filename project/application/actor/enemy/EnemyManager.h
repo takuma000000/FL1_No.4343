@@ -1,10 +1,11 @@
 #pragma once
 
+#include <cstdint>
 #include <cstddef>
 #include <filesystem>
 #include <memory>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "Vector3.h"
 
@@ -17,8 +18,10 @@ namespace TKM {
 }
 
 struct EnemyAttackEvent {
+    // 同じ種類の敵が複数いても区別できる、生成個体ごとのID。
+    std::uint64_t enemyInstanceId = 0;
 
-    // 攻撃を行った敵のID。
+    // JSONに定義された敵の種類ID（例: BasicVirus）。
     std::string enemyId;
 
     // 攻撃が発生したときの敵の座標。
@@ -62,7 +65,11 @@ public:
     /// <param name="position">敵を生成する座標</param>
     /// <param name="errorMessage">生成に失敗した理由</param>
     /// <returns>生成に成功した場合はtrue</returns>
-    bool Spawn(const std::string& enemyId, const Vector3& position, std::string& errorMessage);
+    bool Spawn(
+        const std::string& enemyId,
+        const Vector3& position,
+        std::string& errorMessage
+    );
 
     /// <summary>
     /// 所有するすべての敵を更新する。
@@ -116,4 +123,7 @@ private:
     // Updateの開始時に毎フレーム空にする。
     std::vector<EnemyAttackEvent> attackEvents_;
 
+    // 次に生成する敵へ割り当てるID。
+    // Clear後も過去の個体と重複しないよう、Clearではリセットしない。
+    std::uint64_t nextInstanceId_ = 1;
 };

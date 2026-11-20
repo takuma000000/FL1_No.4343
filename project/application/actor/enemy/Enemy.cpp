@@ -15,6 +15,7 @@ Enemy::Enemy() = default;
 Enemy::~Enemy() = default;
 
 void Enemy::Initialize(
+    std::uint64_t instanceId,
     EnemyType type,
     const EnemyData& data,
     const Vector3& position,
@@ -22,6 +23,8 @@ void Enemy::Initialize(
     TKM::DirectXCommon* dxCommon,
     TKM::Camera* camera
 ) {
+    // 識別情報と、敵データから決まる初期状態を保存する。
+    instanceId_ = instanceId;
     type_ = type;
     data_ = data;
     position_ = position;
@@ -32,7 +35,8 @@ void Enemy::Initialize(
 
     didAttackThisFrame_ = false;
 
-    // Object3dは描画だけを担当し、ゲームの値はEnemy側で管理する。
+    // Object3dは描画だけを担当し、座標やHPなどのゲーム状態は
+    // Enemy側で管理する。
     object3d_ = std::make_unique<TKM::Object3d>();
     object3d_->Initialize(object3dCommon, dxCommon);
     object3d_->SetModel(data_.modelName);
@@ -43,7 +47,8 @@ void Enemy::Initialize(
 }
 
 void Enemy::Update(float deltaTime, const Vector3& targetPosition) {
-    // 攻撃を行ったかどうかのフラグをリセットする。
+    // 前フレームの攻撃結果を残さない。
+    // 死亡済みでも必ずリセットできるよう、生存判定より先に行う。
     didAttackThisFrame_ = false;
 
     // 死亡後は移動やObject3dの更新を行わない。
@@ -51,15 +56,15 @@ void Enemy::Update(float deltaTime, const Vector3& targetPosition) {
         return;
     }
 
-    // 次の攻撃までの待機時間を更新する
+    // 次の攻撃までの待機時間を更新する。
     UpdateAttackCooldown(deltaTime);
 
     // ターゲットが索敵範囲内にいる場合だけ追跡する。
     if (IsWithinDetectionRange(targetPosition)) {
-        // 攻撃可能な状態であれば、攻撃を開始する。
+        // 攻撃範囲とクールタイムの条件を満たせば攻撃する。
         TryAttack(targetPosition);
 
-        // 攻撃可能な距離まで接近していない場合は、移動する。
+        // まだ攻撃範囲外なら、範囲の境界まで接近する。
         UpdateMovement(deltaTime, targetPosition);
     }
 
@@ -94,7 +99,8 @@ void Enemy::TakeDamage(int damage) {
 bool Enemy::IsWithinAttackRange(const Vector3& targetPosition) const {
     Vector3 difference = targetPosition - position_;
 
-    // 地上敵はXZ平面上の距離で判定する。
+    // 地上敵は高さを追跡しないためY軸を除外し、
+    // FlyingのみXYZの3次元距離を使用する。
     if (type_ != EnemyType::Flying) {
         difference.y = 0.0f;
     }
@@ -111,7 +117,7 @@ void Enemy::UpdateMovement(
 ) {
     Vector3 difference = targetPosition - position_;
 
-    // 地上敵はXZ平面上だけを移動する。
+    // 距離判定と同じ基準になるよう、地上敵はY軸方向へ移動しない。
     if (type_ != EnemyType::Flying) {
         difference.y = 0.0f;
     }
@@ -134,7 +140,8 @@ void Enemy::UpdateMovement(
     const float remainingDistance =
         distance - data_.attackRange;
 
-    // 1フレームの移動量を残り距離以下に制限する。
+    // フレーム落ちなどで移動量が大きくなっても通り越さないよう、
+    // 攻撃範囲までの残り距離を上限にする。
     const float requestedMoveDistance =
         data_.moveSpeed * (std::max)(0.0f, deltaTime);
 
@@ -149,7 +156,7 @@ void Enemy::UpdateMovement(
 bool Enemy::IsWithinDetectionRange(const Vector3& targetPosition) const {
     Vector3 difference = targetPosition - position_;
 
-    // 地上敵はXZ平面上の距離で判定する。
+    // 攻撃範囲判定と同じ距離基準を使用する。
     if (type_ != EnemyType::Flying) {
         difference.y = 0.0f;
     }

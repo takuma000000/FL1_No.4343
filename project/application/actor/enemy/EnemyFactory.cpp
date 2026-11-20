@@ -4,6 +4,7 @@
 #include "Object3dCommon.h"
 
 std::unique_ptr<Enemy> EnemyFactory::Create(
+    std::uint64_t instanceId,
     const std::string& enemyId,
     const EnemyDataCatalog& dataCatalog,
     const Vector3& position,
@@ -11,20 +12,15 @@ std::unique_ptr<Enemy> EnemyFactory::Create(
     TKM::Camera* camera,
     std::string& errorMessage
 ) {
-    //======================================================================
-    // エラー情報の初期化
-    //======================================================================
-
-    // 前回のエラー内容が残らないように初期化する
+    // 前回のエラー内容が残らないように初期化する。
     errorMessage.clear();
 
-    //======================================================================
+    //=============================================================
     // 敵データの取得
-    //======================================================================
+    //=============================================================
 
     // JSONから読み込み済みのCatalogを敵IDで検索する。
     const EnemyData* enemyData = dataCatalog.FindById(enemyId);
-
 
     // 未登録のIDではEnemyを生成できないため、
     // エラー内容を設定してnullptrを返す。
@@ -34,14 +30,16 @@ std::unique_ptr<Enemy> EnemyFactory::Create(
         return nullptr;
     }
 
-    //=========================================================
+    //=============================================================
     // Enemyの生成
-    //=========================================================
+    //=============================================================
+
     auto enemy = std::make_unique<Enemy>();
 
     // Catalogから取得したEnemyDataを使用して、
     // 種類・モデル・HP・速度などをEnemyへ設定する。
     enemy->Initialize(
+        instanceId,
         enemyData->type,
         *enemyData,
         position,

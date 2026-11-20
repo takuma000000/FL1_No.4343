@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
 
 #include "EnemyData.h"
@@ -27,7 +28,15 @@ public:
     /// <summary>
     /// 敵を初期化する。
     /// </summary>
+    /// <param name="instanceId">生成された敵個体を識別するID</param>
+    /// <param name="type">敵の行動種別</param>
+    /// <param name="data">JSONから読み込んだ敵の設定データ</param>
+    /// <param name="position">生成時の座標</param>
+    /// <param name="object3dCommon">Object3dの共通機能</param>
+    /// <param name="dxCommon">DirectXの共通機能</param>
+    /// <param name="camera">描画に使用するカメラ</param>
     void Initialize(
+        std::uint64_t instanceId,
         EnemyType type,
         const EnemyData& data,
         const Vector3& position,
@@ -104,6 +113,12 @@ public:
     /// <returns>攻撃が発生した場合はtrue</returns>
     bool DidAttackThisFrame() const { return didAttackThisFrame_; }
 
+    /// <summary>
+    /// 敵のインスタンスIDを取得する。
+    /// </summary>
+    /// <returns>敵のインスタンスID</returns>
+    std::uint64_t GetInstanceId() const { return instanceId_; }
+
     //============================================================
     // Setter
     //============================================================
@@ -145,14 +160,27 @@ private:
     void TryAttack(const Vector3& targetPosition);
 
 private:
-    // 描画対象。Enemyが所有権を持つ。
+    //============================================================
+    // 描画
+    //============================================================
+
+    // Enemyが描画オブジェクトの所有権を持つ。
     std::unique_ptr<TKM::Object3d> object3d_;
 
-    // 敵の種類と調整用パラメータ。
+    //============================================================
+    // 識別情報・設定値
+    //============================================================
+
+    // JSON上の種類IDとは別に、生成された個体を識別するID。
+    std::uint64_t instanceId_ = 0;
+
     EnemyType type_ = EnemyType::Normal;
     EnemyData data_{};
 
-    // ゲーム中に変化する値。
+    //============================================================
+    // 実行中に変化する状態
+    //============================================================
+
     Vector3 position_{ 0.0f, 0.0f, 0.0f };
     int currentHp_ = 0;
 
@@ -163,4 +191,5 @@ private:
     // 攻撃を行ったかどうかのフラグ。
     // 攻撃を行った場合は、次のフレームでfalseに戻す。
     bool didAttackThisFrame_ = false;
+
 };

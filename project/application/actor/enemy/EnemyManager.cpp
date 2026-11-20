@@ -37,8 +37,9 @@ bool EnemyManager::Initialize(
     camera_ = camera;
     dataCatalog_ = std::move(dataCatalog);
 
-    // シーン再初期化時に、前回の敵が残らないようにする。
+    // 再初期化時に、以前の敵や未処理イベントを残さない。
     Clear();
+
     return true;
 }
 
@@ -48,73 +49,84 @@ void EnemyManager::SetCamera(TKM::Camera* camera) {
     }
 
     camera_ = camera;
+
+    // カメラ切り替えを、すでに生成済みの敵にも反映する。
     for (const auto& enemy : enemies_) {
         enemy->SetCamera(camera_);
     }
 }
 
 bool EnemyManager::Spawn(
-	const std::string& enemyId,
-	const Vector3& position,
-	std::string& errorMessage
+    const std::string& enemyId,
+    const Vector3& position,
+    std::string& errorMessage
 ) {
-	// 前回のエラー内容が残らないように初期化する。
-	errorMessage.clear();
+    // 前回のエラー内容が残らないように初期化する。
+    errorMessage.clear();
 
-	// Releaseビルドではassertが無効になるため、
-	// 実際のポインタ確認も行う。
-	if (!dxCommon_) {
-		errorMessage =
-			"EnemyManagerが初期化されていません: dxCommon is null";
+    // Releaseビルドではassertが無効になるため、
+    // 実際のポインタ確認も行う。
+    if (!dxCommon_) {
+        errorMessage =
+            "EnemyManagerが初期化されていません: dxCommon is null";
 
-		return false;
-	}
+        return false;
+    }
 
-	if (!camera_) {
-		errorMessage =
-			"EnemyManagerが初期化されていません: camera is null";
+    if (!camera_) {
+        errorMessage =
+            "EnemyManagerが初期化されていません: camera is null";
 
-		return false;
-	}
+        return false;
+    }
 
-	if (!dataCatalog_) {
-		errorMessage =
-			"EnemyManagerが初期化されていません: dataCatalog is null";
+    if (!dataCatalog_) {
+        errorMessage =
+            "EnemyManagerが初期化されていません: dataCatalog is null";
 
-		return false;
-	}
+        return false;
+    }
 
-	std::unique_ptr<Enemy> enemy =
-		EnemyFactory::Create(
-			enemyId,
-			*dataCatalog_,
-			position,
-			dxCommon_,
-			camera_,
-			errorMessage
-		);
+    // IDは生成成功時だけ消費する。生成失敗時には同じIDを再利用する。
+    std::unique_ptr<Enemy> enemy =
+        EnemyFactory::Create(
+            nextInstanceId_,
+            enemyId,
+            *dataCatalog_,
+            position,
+            dxCommon_,
+            camera_,
+            errorMessage
+        );
 
-	if (!enemy) {
-		return false;
-	}
+    // 生成に失敗した場合は、エラー内容を呼び出し側へ返す。
+    if (!enemy) {
+        return false;
+    }
 
-	enemies_.push_back(
-		std::move(enemy)
-	);
+    // 生成に成功したため、次の個体用IDへ進める。
+    ++nextInstanceId_;
 
-	return true;
+    // 生成に成功したEnemyを管理下に置く。
+    enemies_.push_back(
+        std::move(enemy)
+    );
+
+    return true;
 }
 
 void EnemyManager::Update(
     float deltaTime,
-    const Vector3& targetPosition) {
+    const Vector3& targetPosition
+) {
 
     // 前フレームの攻撃情報を残さないように初期化する。
     attackEvents_.clear();
 
-    // 管理中の敵を更新し、発生した攻撃を収集する。
+    //=============================================================
+    // 敵の更新と攻撃イベントの収集
+    //=============================================================
     for (const auto& enemy : enemies_) {
-
         enemy->Update(deltaTime, targetPosition);
 
         // このフレームに攻撃していない敵は無視する。
@@ -122,9 +134,10 @@ void EnemyManager::Update(
             continue;
         }
 
-        // 外部でダメージ処理などを行えるように、
-        // 攻撃した敵の情報を値として保存する。
+        // Enemyへの参照を残すと、敵削除後に無効になる。
+        // そのため、外部処理に必要な情報は値として保存する。
         EnemyAttackEvent attackEvent{};
+        attackEvent.enemyInstanceId = enemy->GetInstanceId();
         attackEvent.enemyId = enemy->GetData().id;
         attackEvent.enemyPosition = enemy->GetPosition();
         attackEvent.damage = enemy->GetData().attackPower;
@@ -134,7 +147,11 @@ void EnemyManager::Update(
         );
     }
 
-    // HPが0になった敵を更新後にまとめて破棄する。
+    //=============================================================
+    // 死亡した敵の破棄
+    //=============================================================
+
+    // HPが0になった敵を、全Enemyの更新後にまとめて破棄する。
     // イテレート中にeraseしないことで、参照の無効化を防ぐ。
     std::erase_if(
         enemies_,
@@ -155,8 +172,8 @@ void EnemyManager::Draw() {
 }
 
 void EnemyManager::Clear() {
-
     // 管理中の敵と、未処理の攻撃イベントを破棄する。
+    // nextInstanceId_は、過去の個体とのID重複を防ぐため維持する。
     enemies_.clear();
     attackEvents_.clear();
 }
