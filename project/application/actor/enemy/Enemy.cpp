@@ -1,8 +1,10 @@
 #include "Enemy.h"
 
 #include <algorithm>
+#include <cstdint>
 
 #include "Camera.h"
+#include "CollisionManager.h"
 #include "DirectXCommon.h"
 #include "MyMath.h"
 #include "Object3d.h"
@@ -11,7 +13,11 @@
 // Object3dの完全な型が見えているこのファイルで、
 // コンストラクターとデストラクターを定義する。
 Enemy::Enemy() = default;
-Enemy::~Enemy() = default;
+Enemy::~Enemy() {
+    if (!colliderId_.empty()) {
+        TKM::CollisionManager::GetInstance()->Unregister(colliderId_);
+    }
+}
 
 void Enemy::Initialize(
     EnemyType type,
@@ -21,6 +27,11 @@ void Enemy::Initialize(
     TKM::DirectXCommon* dxCommon,
     TKM::Camera* camera
 ) {
+    auto* collisionManager = TKM::CollisionManager::GetInstance();
+    if (!colliderId_.empty()) {
+        collisionManager->Unregister(colliderId_);
+    }
+
     type_ = type;
     data_ = data;
     position_ = position;
@@ -39,6 +50,9 @@ void Enemy::Initialize(
     object3d_->SetTranslate(position_);
     object3d_->SetCamera(camera);
     object3d_->Update();
+
+    colliderId_ = "Enemy_" + std::to_string(reinterpret_cast<std::uintptr_t>(this));
+    collisionManager->RegisterAABB(colliderId_, object3d_.get(), TKM::CollisionCategory::Enemy);
 }
 
 void Enemy::Update(float deltaTime, const Vector3& targetPosition) {

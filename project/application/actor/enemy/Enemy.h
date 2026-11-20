@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 #include "EnemyData.h"
 #include "EnemyType.h"
@@ -142,6 +143,7 @@ private:
 private:
     // 描画対象。Enemyが所有権を持つ。
     std::unique_ptr<TKM::Object3d> object3d_;
+    std::string colliderId_;
 
     // 敵の種類と調整用パラメータ。
     EnemyType type_ = EnemyType::Normal;
