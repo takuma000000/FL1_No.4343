@@ -1,12 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="engine\scene\layout\SceneLayout.cpp">
-      <Filter>engine\scene</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\scene\layout\SceneLayoutData.cpp">
-      <Filter>engine\scene</Filter>
-    </ClCompile>
     <ClCompile Include="engine\effect\post\ComicPipeline.cpp">
       <Filter>engine\effect\post</Filter>
     </ClCompile>
@@ -203,12 +197,6 @@
 	<ClInclude Include="engine\scene\SceneTransition.h">
 		<Filter>engine\scene</Filter>
 	</ClInclude>
-    <ClInclude Include="engine\scene\layout\SceneLayout.h">
-      <Filter>engine\scene</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\scene\layout\SceneLayoutData.h">
-      <Filter>engine\scene</Filter>
-    </ClInclude>
     <ClInclude Include="engine\effect\post\PostEffectPreview.h">
       <Filter>engine\effect\post</Filter>
     </ClInclude>

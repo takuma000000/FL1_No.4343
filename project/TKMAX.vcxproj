@@ -119,8 +119,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
 	<ClCompile Include="engine\imgui\SpriteGizmo.cpp" />
 	<ClCompile Include="engine\io\SpriteSave.cpp" />
 	<ClCompile Include="application\controller\CollisionSettings.cpp" />
-    <ClCompile Include="engine\scene\layout\SceneLayout.cpp" />
-    <ClCompile Include="engine\scene\layout\SceneLayoutData.cpp" />
     <ClCompile Include="engine\effect\post\ComicPipeline.cpp" />
     <ClCompile Include="engine\effect\post\PostEffectEditor.cpp" />
     <ClCompile Include="engine\effect\particle\ParticleEffectSettings.cpp" />
@@ -228,8 +226,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
 	<ClInclude Include="engine\io\SpriteSave.h" />
 	<ClInclude Include="application\controller\CollisionSettings.h" />
 	<ClInclude Include="engine\3d\collision\CollisionCategory.h" />
-    <ClInclude Include="engine\scene\layout\SceneLayout.h" />
-    <ClInclude Include="engine\scene\layout\SceneLayoutData.h" />
     <ClInclude Include="engine\effect\post\PostEffectPreview.h" />
     <ClInclude Include="engine\effect\post\PostEffectEditor.h" />
     <ClInclude Include="engine\effect\particle\ParticleEffectSettings.h" />
