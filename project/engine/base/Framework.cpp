@@ -58,8 +58,10 @@ namespace TKM {
 		Object3dCommon::GetInstance()->Initialize(dxCommon_.get());
 		// SpriteCommonを初期化
 		TKM::SpriteCommon::GetInstance()->Initialize(dxCommon_.get());
+#ifdef _DEBUG
 		// デバッグ用ライン描画を初期化
 		LineRenderer::GetInstance()->Initialize(dxCommon_.get());
+#endif
 
 		// DeltaTimeの計測を初期化
 		DeltaTimeManager::GetInstance()->Initialize();

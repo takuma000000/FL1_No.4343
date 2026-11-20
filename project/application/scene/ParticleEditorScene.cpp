@@ -38,6 +38,7 @@ void ParticleEditorScene::Update() {
 	particles->Update(editor_.IsPaused() ? 0.0f : -1.0f);
 }
 void ParticleEditorScene::Draw3D() {
+#ifdef _DEBUG
 	if (showGrid_) {
 		auto* lines = TKM::LineRenderer::GetInstance();
 		lines->BeginFrame();
@@ -51,5 +52,6 @@ void ParticleEditorScene::Draw3D() {
 		lines->AddLine({ 0, 0, 0 }, { 0, 3, 0 }, { 0, 1, 0, 1 });
 		lines->Draw(TKM::CameraManager::GetInstance()->GetActiveCamera()->GetViewProjectionMatrix());
 	}
+#endif
 	TKM::ParticleManager::GetInstance()->Draw();
 }

@@ -96,6 +96,7 @@ namespace TKM {
 		srvManager_->PreDraw();
 		sceneManager_->Draw3D();
 
+#ifdef _DEBUG
 		// 登録されているコライダーのラインを描画予約する
 		if (auto* activeCamera =
 			CameraManager::GetInstance()->GetActiveCamera()) {
@@ -103,6 +104,7 @@ namespace TKM {
 				activeCamera->GetViewProjectionMatrix()
 			);
 		}
+#endif
 
 		// ② Swapchain に切り替え
 		dxCommon_->BeginDrawToSwapchain();
@@ -111,8 +113,10 @@ namespace TKM {
 		srvManager_->PreDraw();
 		dxCommon_->DrawPostEffectToSwapchain();
 
+#ifdef _DEBUG
 		// 予約したグリッド・当たり判定ラインは、ポスト処理後にまとめて描画する。
 		LineRenderer::GetInstance()->Flush();
+#endif
 
 		// ④ UI(Sprite)を Swapchain に直描き（ポスト対象外）
 		srvManager_->PreDraw();
