@@ -2,7 +2,7 @@
   "id": "BasicVirus",
   "type": "Normal",
   "displayName": "ベーシックウイルス",
-  "modelName": "weekestEnemy/weekestEnemy.obj",
+  "modelName": "1stEnemy/1stEnemy.obj",
 
   "status": {
     "maxHp": 3,
