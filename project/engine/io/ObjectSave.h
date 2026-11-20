@@ -64,10 +64,18 @@ namespace TKM {
 		/// <returns>保存できた場合はtrue</returns>
 		bool SaveSettings();
 		/// <summary>
+		/// 指定したオブジェクトだけを保存します。
+		/// </summary>
+		bool SaveSettings(const std::string& id);
+		/// <summary>
 		/// 保存したオブジェクト設定を読み込みます。
 		/// </summary>
 		/// <returns>読み込めた場合はtrue</returns>
 		bool LoadSettings();
+		/// <summary>
+		/// 指定したオブジェクトだけを最後の保存状態へ戻します。
+		/// </summary>
+		bool LoadSettings(const std::string& id);
 
 		// Setter===================================
 		/// <summary>

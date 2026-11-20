@@ -8,6 +8,8 @@ void ModelCatalog::LoadModelCatalogs(TKM::DirectXCommon* dxCommon) {
 	static constexpr const char* kFiles[] = {
 		"sphere.obj",
 		"plane.obj",
+		"player/player.obj",
+		"playerBullet/playerBullet.obj",
 	};
 
 	auto* mm = TKM::ModelManager::GetInstance();

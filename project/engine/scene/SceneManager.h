@@ -2,6 +2,7 @@
 #include "BaseScene.h"
 #include "DirectXCommon.h"
 #include "AbstractSceneFactory.h"
+#include "SceneTransition.h"
 #include <memory>
 #include <string>
 
@@ -20,6 +21,11 @@ namespace TKM {
 		/// SceneManagerを破棄します。
 		/// </summary>
 		~SceneManager();
+
+		/// <summary>
+		/// シーン管理とシーン遷移表示を初期化します。
+		/// </summary>
+		void Initialize(TKM::DirectXCommon* dxCommon);
 
 		//=============================================================
 		// 更新・描画
@@ -45,6 +51,11 @@ namespace TKM {
 		/// </summary>
 		void DrawSprite();
 
+		/// <summary>
+		/// シーン切り替えのフェードを描画します。
+		/// </summary>
+		void DrawTransition();
+
 		//=============================================================
 		// シーン制御
 		//=============================================================
@@ -65,6 +76,13 @@ namespace TKM {
 		/// </summary>
 		/// <param name="sceneName">切り替え先のシーン名</param>
 		void ChangeScene(const std::string& sceneName);
+
+		/// <summary>
+		/// シーン切り替えフェードの片道時間を秒単位で設定します。
+		/// </summary>
+		void SetFadeDuration(float duration) {
+			sceneTransition_.SetDuration(duration);
+		}
 
 		//=============================================================
 		// Setter
@@ -106,5 +124,16 @@ namespace TKM {
 		//=============================================================
 
 		bool quitRequested_ = false; // アプリ終了要求フラグ
+
+		//=============================================================
+		// シーン遷移
+		//=============================================================
+
+		SceneTransition sceneTransition_;
+
+		/// <summary>
+		/// 保留中のシーンへ実際に切り替えます。
+		/// </summary>
+		void SwitchScene();
 	};
 }

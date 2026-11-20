@@ -2,6 +2,9 @@
 #include <cassert>
 #include <fstream>
 #include <algorithm>
+#include <cstring>
+#include <filesystem>
+#include <utility>
 
 namespace TKM {
 
@@ -93,6 +96,10 @@ namespace TKM {
 	//============================
 	// LoadSound
 	//============================
+	bool AudioManager::LoadSound(const std::string& filename) {
+		return LoadSound(filename, filename);
+	}
+
 	bool AudioManager::LoadSound(const std::string& key, const std::string& filename) {
 		// 初期化漏れ対策として、未初期化ならここで初期化する
 		if (!initialized_) {
@@ -104,12 +111,23 @@ namespace TKM {
 			return false;
 		}
 
-		// resources/audio配下のファイルとして扱う
-		std::string fullPath = "resources/audio/" + filename;
+		// 相対ファイル名とresources/audio/...の両方に対応する
+		std::string normalized = filename;
+		std::replace(normalized.begin(), normalized.end(), '\\', '/');
+		std::filesystem::path path = std::filesystem::path(normalized).lexically_normal();
+		const std::string genericPath = path.generic_string();
+		if (!path.is_absolute() && genericPath.rfind("resources/audio/", 0) != 0) {
+			path = std::filesystem::path("resources/audio") / path;
+		}
 
-		// WAVファイルを読み込んで管理マップへ登録する
-		SoundData soundData = LoadWaveFile(fullPath);
-		soundMap_[key] = soundData;
+		// 読み込み失敗時は登録しない。パス修正後の再試行も可能にする。
+		SoundData soundData = LoadWaveFile(path.string());
+		if (soundData.buffer_.empty()) {
+			const std::string message = "Audio load failed (PCM WAV required): " + path.string() + "\n";
+			OutputDebugStringA(message.c_str());
+			return false;
+		}
+		soundMap_.emplace(key, std::move(soundData));
 
 		return true;
 	}
@@ -126,7 +144,9 @@ namespace TKM {
 		// 指定キーの音声データを探す
 		auto it = soundMap_.find(key);
 		if (it == soundMap_.end()) {
-			return;
+			// 未登録の文字列はファイルパスとして扱う（Catalogへの登録は不要）
+			if (!LoadSound(key)) { return; }
+			it = soundMap_.find(key);
 		}
 
 		SoundData& soundData = it->second;
@@ -134,7 +154,7 @@ namespace TKM {
 		// 再生用のSourceVoiceを作成する
 		IXAudio2SourceVoice* sourceVoice = nullptr;
 		HRESULT hr = xAudio2_->CreateSourceVoice(&sourceVoice, &soundData.wfex_);
-		assert(SUCCEEDED(hr));
+		if (!SUCCEEDED(hr) || !sourceVoice) { return; }
 
 		// 個別音量を0.0f～1.0fに収める
 		float v = volume;
@@ -243,40 +263,52 @@ namespace TKM {
 	SoundData AudioManager::LoadWaveFile(const std::string& filename) {
 		// WAVファイルをバイナリで開く
 		std::ifstream file(filename, std::ios_base::binary);
-		assert(file.is_open());
+		if (!file) { return {}; }
+		file.seekg(0, std::ios_base::end);
+		const auto fileSize = file.tellg();
+		file.seekg(0, std::ios_base::beg);
 
 		// RIFFヘッダを読み込む
-		RiffHeader riff;
+		RiffHeader riff = {};
 		file.read(reinterpret_cast<char*>(&riff), sizeof(riff));
 
 		// RIFF形式か確認する
-		assert(strncmp(riff.chunk_.id_, "RIFF", 4) == 0);
+		if (!file || strncmp(riff.chunk_.id_, "RIFF", 4) != 0) { return {}; }
 
 		// WAVE形式か確認する
-		assert(strncmp(riff.type_, "WAVE", 4) == 0);
+		if (strncmp(riff.type_, "WAVE", 4) != 0) { return {}; }
 
 		// fmtチャンクを読み込む
 		FormatChunk format = {};
 		file.read(reinterpret_cast<char*>(&format.chunk_), sizeof(ChunkHeader));
 
 		// fmtチャンクであることを確認する
-		assert(strncmp(format.chunk_.id_, "fmt ", 4) == 0);
+		if (!file || strncmp(format.chunk_.id_, "fmt ", 4) != 0) { return {}; }
+		// PCMのfmtは16または18バイト。構造体の外へ書き込ませない。
+		if (format.chunk_.size_ != 16 && format.chunk_.size_ != 18) { return {}; }
 
 		// WAVフォーマット情報を読み込む
 		file.read(reinterpret_cast<char*>(&format.fmt_), format.chunk_.size_);
 
 		// このAudioManagerではPCM形式のみ対応する
-		assert(format.fmt_.wFormatTag == WAVE_FORMAT_PCM);
+		if (!file || format.fmt_.wFormatTag != WAVE_FORMAT_PCM
+			|| format.fmt_.nChannels == 0 || format.fmt_.nSamplesPerSec == 0
+			|| format.fmt_.nBlockAlign == 0 || format.fmt_.wBitsPerSample == 0) {
+			return {};
+		}
 
 		// dataチャンクを探す
-		ChunkHeader data;
+		ChunkHeader data = {};
 		while (true) {
 			file.read(reinterpret_cast<char*>(&data), sizeof(data));
 
 			// dataチャンクが見つからないまま終端に来たら異常
 			if (file.eof() || !file) {
-				assert(false);
+				return {};
 			}
+
+			// サイズ不正・途中で切れたファイルでは確保や読み飛ばしをしない
+			if (data.size_ < 0 || data.size_ > fileSize - file.tellg()) { return {}; }
 
 			// dataチャンクを見つけたら探索終了
 			if (strncmp(data.id_, "data", 4) == 0) {
@@ -284,12 +316,13 @@ namespace TKM {
 			}
 
 			// data以外のチャンクはサイズ分だけ読み飛ばす
-			file.seekg(data.size_, std::ios_base::cur);
+			file.seekg(static_cast<std::streamoff>(data.size_) + (data.size_ & 1), std::ios_base::cur);
 		}
 
 		// 音声データ本体を読み込む
 		std::vector<BYTE> buffer(data.size_);
 		file.read(reinterpret_cast<char*>(buffer.data()), data.size_);
+		if (!file) { return {}; }
 		file.close();
 
 		// SoundDataにフォーマット情報とバッファを詰める

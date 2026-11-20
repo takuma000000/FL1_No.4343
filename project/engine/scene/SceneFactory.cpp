@@ -3,11 +3,14 @@
 #include "GameScene.h"
 #include "GameClearScene.h"
 #include "GameOverScene.h"
+#include "ParticleEditorScene.h"
 
 namespace TKM {
 	std::unique_ptr<TKM::BaseScene> SceneFactory::CreateScene(const std::string& sceneName) {
 		// シーン名に応じてシーンを生成して返す
-		if (sceneName == "TITLE") {
+		if (sceneName == "PARTICLE_EDITOR") {
+			return std::make_unique<ParticleEditorScene>(dxCommon_, srvManager_);
+		} else if (sceneName == "TITLE") {
 			return std::make_unique<TitleScene>(dxCommon_, srvManager_);
 		} else if (sceneName == "GAME") { // "GAME"というシーン名でゲーム本編シーンを生成
 			return std::make_unique<GameScene>(dxCommon_, srvManager_);

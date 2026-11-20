@@ -1,8 +1,5 @@
 #include "GameClearScene.h"
 
-#include "AudioCatalog.h"
-#include "TextureCatalog.h"
-#include "ModelCatalog.h"
 
 #include "AudioManager.h"
 #include "TextureManager.h"
@@ -22,9 +19,6 @@ void GameClearScene::Initialize() {
 	assert(srvManager_ != nullptr && "srvManager is nullptr in GameClearScene::Initialize");
 
 	/// ──────────────── 各種初期化処理 ───────────────
-	AudioCatalog::LoadResultAudios();
-	TextureCatalog::LoadTextureCatalogs();
-	ModelCatalog::LoadModelCatalogs(dxCommon_);
 
 	InitializeObjects();
 	InitializeSprite();

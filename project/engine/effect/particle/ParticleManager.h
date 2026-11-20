@@ -7,6 +7,9 @@
 #include <numbers>
 #include "ModelTypes.h"
 #include "Transform.h"
+#include "ParticleEffectSettings.h"
+#include <list>
+#include <unordered_map>
 
 //=============================================================
 // ParticleManagerクラス
@@ -69,6 +72,12 @@ namespace TKM {
 			Vector4 color_;
 			float lifeTime_;
 			float currentTime_;
+			// 保存エフェクトだけで使う。従来のSpawner粒子の挙動は維持する。
+			bool usesEffectSettings_ = false;
+			Vector3 emissionOrigin_{}; // 生まれた位置を中心に演出全体を拡大する
+			Vector3 gravity_{};
+			float startSize_ = 1.0f, endSize_ = 1.0f;
+			Vector4 startColor_{}, endColor_{};
 		};
 
 		// パーティクルグループ構造体
@@ -80,6 +89,7 @@ namespace TKM {
 			uint32_t kNumInstance_;
 			ParticleForGPU* instancingData_;
 			ParticleType type_;
+			float effectScale_ = 1.0f; // ゲーム内での演出全体の拡大率（保存設定とは独立）
 		};
 
 		//=============================================================
@@ -106,8 +116,7 @@ namespace TKM {
 		/// <summary>
 		/// ParticleManagerを更新します。
 		/// </summary>
-		/// <param name="dt">経過時間</param>
-		void Update(float dt);
+		void Update(float deltaTime = -1.0f); // 0なら時間を進めず描画行列だけ更新
 
 		/// <summary>
 		/// ParticleManagerを描画します。
@@ -170,6 +179,11 @@ namespace TKM {
 		/// </summary>
 		/// <param name="name">グループ名</param>
 		void ClearGroup(const std::string& name);
+
+		// 保存エフェクトとプレビューで共用する。既存グループのGPUバッファは再利用。
+		bool PrepareEffectGroup(const std::string& name, const ParticleEffectSettings& settings);
+		void EmitEffect(const std::string& name, const ParticleEffectSettings& settings, const Vector3& position);
+		void SetEffectScale(const std::string& name, float multiplier);
 
 		/// <summary>
 		/// パーティクルグループを取得します。
@@ -321,6 +335,7 @@ namespace TKM {
 		std::unordered_map<std::string, ParticleGroup> particleGroups_; // パーティクルグループ一覧
 
 		const uint32_t kNumMaxInstance_ = 512; // 最大インスタンス数
+		static constexpr size_t kMaxEffectGroups = 128; // 既存分を含む描画グループ数の上限
 
 		Matrix4x4 billboardMatrix_ = MyMath::MakeIdentity4x4(); // ビルボード行列
 
@@ -332,7 +347,6 @@ namespace TKM {
 
 		const int32_t kClientWidth_ = 1280;   // クライアント幅
 		const int32_t kClientHeight_ = 720;   // クライアント高さ
-		const float kDeltaTime_ = 1.0f / 60.0f; // Δt
 
 		uint32_t numInstance_ = 0; // 描画するインスタンス数
 

@@ -1,8 +1,5 @@
 #include "TitleScene.h"
 
-#include "AudioCatalog.h"
-#include "TextureCatalog.h"
-#include "ModelCatalog.h"
 
 #include "AudioManager.h"
 #include "TextureManager.h"
@@ -24,9 +21,6 @@ void TitleScene::Initialize() {
 	assert(srvManager_ != nullptr && "srvManager is nullptr in TitleScene::Initialize");
 
 	/// ──────────────── 各種初期化処理 ───────────────
-	AudioCatalog::LoadTitleAudios();
-	TextureCatalog::LoadTextureCatalogs();
-	ModelCatalog::LoadModelCatalogs(dxCommon_);
 
 	InitializeObjects();
 	InitializeSprite();

@@ -1,6 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="engine\effect\particle\ParticleEffectSettings.cpp">
+      <Filter>engine\effect\particle</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\effect\particle\ParticleEffects.cpp">
+      <Filter>engine\effect\particle</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\effect\particle\ParticleEditor.cpp">
+      <Filter>engine\effect\particle</Filter>
+    </ClCompile>
+    <ClCompile Include="application\scene\ParticleEditorScene.cpp">
+      <Filter>application\scene</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\2d\Sprite.cpp">
       <Filter>engine\2d</Filter>
@@ -119,6 +131,9 @@
     <ClCompile Include="engine\effect\line\LineRenderer.cpp">
       <Filter>engine\effect\line</Filter>
     </ClCompile>
+    <ClCompile Include="engine\3d\camera\FollowCamera.cpp">
+      <Filter>engine\3d\camera</Filter>
+    </ClCompile>
     <ClCompile Include="engine\3d\camera\Camera.cpp">
       <Filter>engine\3d\camera</Filter>
     </ClCompile>
@@ -145,24 +160,54 @@
     <ClCompile Include="engine\effect\post\SmokeVolume3D.cpp" />
     <ClCompile Include="engine\effect\post\LaserBeam3D.cpp" />
     <ClCompile Include="application\effect\ParticleGroupsCatalog.cpp" />
-    <ClCompile Include="application\catalog\TextureCatalog.cpp" />
-    <ClCompile Include="application\catalog\ModelCatalog.cpp" />
     <ClCompile Include="engine\3d\camera\manager\CameraManager.cpp" />
     <ClCompile Include="engine\state\StateMachine.cpp" />
     <ClCompile Include="application\effect\ParticleSpawner.cpp" />
     <ClCompile Include="engine\effect\post\TrailRibbonRenderer.cpp" />
     <ClCompile Include="engine\effect\post\NoiseEffect.cpp" />
     <ClCompile Include="engine\3d\BarrierCommon.cpp" />
-    <ClCompile Include="application\catalog\AudioCatalog.cpp" />
     <ClCompile Include="engine\effect\post\MotionBlurEffect.cpp" />
     <ClCompile Include="engine\effect\post\SpeedLineEffect.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
-    <ClCompile Include="player.cpp" />
+    <ClCompile Include="application\actor\enemy\Enemy.cpp" />
+    <ClCompile Include="application\actor\enemy\EnemyManager.cpp" />
+    <ClCompile Include="application\actor\enemy\EnemyFactory.cpp" />
+    <ClCompile Include="application\actor\enemy\EnemyType.cpp" />
+    <ClCompile Include="application\actor\enemy\EnemyAttribute.cpp" />
+    <ClCompile Include="application\actor\enemy\data\EnemyDataLoader.cpp" />
+    <ClCompile Include="application\actor\enemy\data\EnemyDataCatalog.cpp" />
+    <ClCompile Include="application\actor\Player.cpp" />
     <ClCompile Include="engine\io\ObjectSave.cpp" />
     <ClCompile Include="engine\imgui\ObjectEditor.cpp" />
     <ClCompile Include="application\controller\ObjectSettings.cpp" />
+    <ClCompile Include="engine\func\common\DeltaTimeManager.cpp" />
+    <ClCompile Include="engine\3d\collision\AABBCollider.cpp" />
+    <ClCompile Include="engine\3d\collision\CollisionManager.cpp" />
+	<ClCompile Include="application\controller\CollisionSettings.cpp" />
+	<ClCompile Include="application\controller\SpriteSettings.cpp" />
+	<ClCompile Include="engine\scene\SceneTransition.cpp">
+		<Filter>engine\scene</Filter>
+	</ClCompile>
+	<ClCompile Include="engine\imgui\SpriteEditor.cpp" />
+	<ClCompile Include="engine\imgui\SpriteGizmo.cpp" />
+	<ClCompile Include="engine\io\SpriteSave.cpp" />
   </ItemGroup>
   <ItemGroup>
+	<ClInclude Include="engine\scene\SceneTransition.h">
+		<Filter>engine\scene</Filter>
+	</ClInclude>
+    <ClInclude Include="engine\effect\particle\ParticleEffectSettings.h">
+      <Filter>engine\effect\particle</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\effect\particle\ParticleEffects.h">
+      <Filter>engine\effect\particle</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\effect\particle\ParticleEditor.h">
+      <Filter>engine\effect\particle</Filter>
+    </ClInclude>
+    <ClInclude Include="application\scene\ParticleEditorScene.h">
+      <Filter>application\scene</Filter>
+    </ClInclude>
     <ClInclude Include="engine\2d\Sprite.h">
       <Filter>engine\2d</Filter>
     </ClInclude>
@@ -307,6 +352,9 @@
     <ClInclude Include="engine\effect\line\LineRenderer.h">
       <Filter>engine\effect\line</Filter>
     </ClInclude>
+    <ClInclude Include="engine\3d\camera\FollowCamera.h">
+      <Filter>engine\3d\camera</Filter>
+    </ClInclude>
     <ClInclude Include="engine\3d\camera\Camera.h">
       <Filter>engine\3d\camera</Filter>
     </ClInclude>
@@ -340,8 +388,6 @@
     <ClInclude Include="engine\effect\post\LaserBeam3D.h" />
     <ClInclude Include="application\effect\ParticleGroupsCatalog.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="application\catalog\TextureCatalog.h" />
-    <ClInclude Include="application\catalog\ModelCatalog.h" />
     <ClInclude Include="engine\func\math\Transform.h" />
     <ClInclude Include="engine\3d\camera\manager\CameraManager.h" />
     <ClInclude Include="engine\state\IStateContext.h" />
@@ -352,13 +398,31 @@
     <ClInclude Include="externals\nlohmann\json.hpp" />
     <ClInclude Include="engine\effect\post\NoiseEffect.h" />
     <ClInclude Include="engine\3d\BarrierCommon.h" />
-    <ClInclude Include="application\catalog\AudioCatalog.h" />
     <ClInclude Include="engine\effect\post\MotionBlurEffect.h" />
     <ClInclude Include="engine\effect\post\SpeedLineEffect.h" />
-    <ClInclude Include="player.h" />
+    <ClInclude Include="application\actor\enemy\Enemy.h" />
+    <ClInclude Include="application\actor\enemy\EnemyData.h" />
+    <ClInclude Include="application\actor\enemy\EnemyType.h" />
+    <ClInclude Include="application\actor\enemy\EnemyManager.h" />
+    <ClInclude Include="application\actor\enemy\EnemyFactory.h" />
+    <ClInclude Include="application\actor\enemy\EnemyAttribute.h" />
+    <ClInclude Include="application\actor\enemy\data\EnemyDataLoader.h" />
+    <ClInclude Include="application\actor\enemy\data\EnemyDataCatalog.h" />
+    <ClInclude Include="application\actor\Player.h" />
     <ClInclude Include="engine\io\ObjectSave.h" />
     <ClInclude Include="engine\imgui\ObjectEditor.h" />
     <ClInclude Include="application\controller\ObjectSettings.h" />
+    <ClInclude Include="engine\func\common\DeltaTimeManager.h" />
+    <ClInclude Include="engine\3d\collision\Collider.h" />
+    <ClInclude Include="engine\3d\collision\AABBCollider.h" />
+    <ClInclude Include="engine\3d\collision\CollisionManager.h" />
+    <ClInclude Include="engine\3d\collision\CollisionCategory.h" />
+    <ClInclude Include="application\controller\CollisionSettings.h" />
+    <ClInclude Include="application\controller\SpriteSettings.h" />
+    <ClInclude Include="engine\imgui\SpriteEditor.h" />
+    <ClInclude Include="engine\imgui\SpriteGizmo.h" />
+    <ClInclude Include="engine\io\SpriteSave.h" />
+    <ClInclude Include="PlayerBullet.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
@@ -415,7 +479,7 @@
     <Filter Include="application\scene">
       <UniqueIdentifier>{f48ae6cb-3f7e-4f7e-9139-39692494a5ed}</UniqueIdentifier>
     </Filter>
-    <Filter Include="application\enemy">
+    <Filter Include="application\actor\enemy">
       <UniqueIdentifier>{25936b32-69c5-41c7-a4da-720ca181539d}</UniqueIdentifier>
     </Filter>
     <Filter Include="application\boss">
@@ -430,7 +494,7 @@
     <Filter Include="application\player\reticle">
       <UniqueIdentifier>{377c4e20-132f-4863-9c81-4fa6244f77f3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="application\enemy\manager">
+    <Filter Include="application\actor\enemy\manager">
       <UniqueIdentifier>{b5a17694-ede9-4458-b6f3-b5d3eef79bf8}</UniqueIdentifier>
     </Filter>
     <Filter Include="application\boss\manager">

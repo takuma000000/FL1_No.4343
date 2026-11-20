@@ -1,4 +1,5 @@
 #include "ParticleEmitter.h"
+#include "DeltaTimeManager.h"
 
 void ParticleEmitter::Initialize(std::string name, Vector3 pos){
 	this->name_ = name;
@@ -22,9 +23,15 @@ void ParticleEmitter::Update() {
 		return;
 	}
 
-	emitter_.frequencyTime_ += kDeltaTime_; // 経過時間を加算
-	if (emitter_.frequencyTime_ >= emitter_.frequency_) { // 発生間隔を超えたら
-		emitter_.frequencyTime_ -= emitter_.frequency_; // 経過時間をリセット
-		Emit(); // パーティクル発生
+	// 共通のDeltaTimeを取得
+	const float deltaTime =
+		TKM::DeltaTimeManager::GetInstance()->GetDeltaTime();
+
+	// 発生間隔の経過時間を進める
+	emitter_.frequencyTime_ += deltaTime;
+
+	if (emitter_.frequencyTime_ >= emitter_.frequency_) {
+		emitter_.frequencyTime_ -= emitter_.frequency_;
+		Emit();
 	}
 }

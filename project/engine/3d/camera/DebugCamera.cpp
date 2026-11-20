@@ -4,6 +4,10 @@
 #include <cmath>
 #include <algorithm>
 
+#ifdef USE_IMGUI
+#include "imgui.h"
+#endif
+
 namespace TKM {
 	void DebugCamera::Initialize(const Vector3& pos, const Vector3& target) {
 		pos_ = pos;
@@ -17,8 +21,9 @@ namespace TKM {
 			pitch_ = std::atan2f(toTarget.y, lenXZ);
 		}
 
+		// pitch_は上向きが正。回転行列のX角は下向きが正なので反転する。
 		SetTranslate(pos_); // カメラ位置セット
-		SetRotate({ pitch_, yaw_, 0.0f }); // カメラ回転セット
+		SetRotate({ -pitch_, yaw_, 0.0f }); // カメラ回転セット
 		Camera::Update();
 
 		// マウス初期位置
@@ -45,6 +50,25 @@ namespace TKM {
 		float dy = float(cur.y - prevMouse_.y);
 		prevMouse_ = cur;
 
+		// ===================== ImGui操作判定 =====================
+		bool canControlCamera = true; // ImGui操作中はカメラ操作を無効化する
+
+#ifdef USE_IMGUI
+		canControlCamera = !ImGui::GetIO().WantCaptureMouse; // ImGuiがマウス操作を奪っている場合はカメラ操作を無効化
+#endif
+
+		// ===================== 操作状態 =====================
+		isRotating_ =
+			canControlCamera
+			&& (GetAsyncKeyState(VK_RBUTTON) & 0x8000);
+
+		isPanning_ =
+			canControlCamera
+			&& (GetAsyncKeyState(VK_LBUTTON) & 0x8000);
+
+		// ホイール状態は毎フレーム判定し直す
+		isZooming_ = false;
+
 		// ===================== 向きベクトル計算 =====================
 		Vector3 forward;
 		forward.x = std::sinf(yaw_) * std::cosf(pitch_);
@@ -56,28 +80,34 @@ namespace TKM {
 
 		// ===================== マウスホイールで前後ズーム =====================
 		{
-			int wheel = input->GetWheel();  // -1, 0, 1 の想定
-			if (wheel != 0) {
-				const float wheelZoomSpeed = 1.0f; // ホイールズーム速度
-				pos_ = pos_ + forward * (wheel * wheelZoomSpeed);
+			int wheel = input->GetWheel();
 
-				// ここで一度使ったのでリセット（1フレーム分だけ有効）
+			if (wheel != 0) {
+				isZooming_ = canControlCamera;
+
+				if (isZooming_) {
+					const float wheelZoomSpeed = 1.0f;
+					pos_ = pos_
+						+ forward * (wheel * wheelZoomSpeed);
+				}
+
+				// ImGui操作中でも使用済みの入力はリセットする
 				input->SetWheel(0);
 			}
 		}
 
 		// ===================== 右ドラッグで回転 =====================
-		if (GetAsyncKeyState(VK_RBUTTON) & 0x8000) {
+		if (isRotating_) {
 			const float mouseRotateSpeed = 0.003f;
 			yaw_ += dx * mouseRotateSpeed;
-			pitch_ += dy * mouseRotateSpeed;
+			pitch_ -= dy * mouseRotateSpeed;
 
 			const float limit = 1.55f;
 			pitch_ = std::clamp(pitch_, -limit, limit);
 		}
 
-		// ===================== 左ドラッグで座標移動（パン） =====================
-		if (GetAsyncKeyState(VK_LBUTTON) & 0x8000) {
+		// ===================== 左ドラッグで座標移動 =====================
+		if (isPanning_) {
 			const float panSpeed = 0.02f;
 			pos_ = pos_
 				+ right * (-dx * panSpeed)
@@ -86,7 +116,7 @@ namespace TKM {
 
 		// ===================== カメラ更新 =====================
 		SetTranslate(pos_);
-		SetRotate({ pitch_, yaw_, 0.0f });
+		SetRotate({ -pitch_, yaw_, 0.0f });
 		Camera::Update();
 	}
 }
