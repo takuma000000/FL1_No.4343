@@ -82,22 +82,17 @@ void CollisionSettings::SyncEnemyColliders(const EnemyManager& enemyManager) {
 	auto* collisionManager = CollisionManager::GetInstance();
 	std::set<std::string> activeIds;
 	for (const auto& enemy : enemyManager.GetEnemies()) {
-		const auto* actor = enemy.get();
-		const auto id = "Enemy_" + std::to_string(reinterpret_cast<std::uintptr_t>(actor));
+		const auto* object = enemy->GetObject3d();
+		const auto id = "Enemy_" + std::to_string(reinterpret_cast<std::uintptr_t>(object));
 		if (!enemyColliderIds_.contains(id)) {
-			// 設定上の半径を使い、敵の座標を中心とするAABBを作る。
 			auto* collider = collisionManager->RegisterAABB(
 				id,
-				[actor]() { return actor->GetPosition(); },
-				[actor]() {
-					const float diameter = actor->GetCollisionRadius() * 2.0f;
-					return Vector3{ diameter, diameter, diameter };
-				}
+				object,
+				CollisionCategory::Enemy
 			);
 			if (!collider) {
 				continue;
 			}
-			collider->SetCategory(CollisionCategory::Enemy);
 		}
 		activeIds.insert(id);
 	}
