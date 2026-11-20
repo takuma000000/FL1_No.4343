@@ -6,6 +6,7 @@
 #include "ObjectSettings.h"
 #include "CollisionSettings.h"
 #include "SpriteSettings.h"
+#include "layout/SceneLayout.h"
 
 #include <memory>
 
@@ -102,6 +103,7 @@ private:
 	std::unique_ptr<TKM::Object3d> sphere_ = nullptr; // 球体
 
 	std::unique_ptr<Player> player_ = nullptr;
+	TKM::SceneLayout sceneLayout_;
 
 	//======================================================================
 	// 2Dスプライト

@@ -21,6 +21,8 @@ void GameScene::Initialize() {
 	spriteSettings_.Initialize();
 	InitializeCamera();
 	InitializeEnemies(); // カメラ初期化後に敵を生成する
+	sceneLayout_.Initialize(dxCommon_, TKM::CameraManager::GetInstance()->GetMainCamera());
+	sceneLayout_.Load("resources/layouts/layout.json");
 
 	/// ──────────────── パーティクル初期化 ───────────────
 	auto particleManager = TKM::ParticleManager::GetInstance();
@@ -35,6 +37,7 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Finalize() {
+	sceneLayout_.Clear();
 	/// ──────── 敵の終了処理 ────────
 	if (enemyManager_) {
 		enemyManager_->Clear();
@@ -69,7 +72,7 @@ void GameScene::Update() {
 #endif
 
 	/// ──────────────── カメラ更新 ───────────────
-	UpdateActiveCamera();
+	auto* activeCamera = UpdateActiveCamera();
 
 	/// ──────────────── 3Dオブジェクト更新 ───────────────
 	// Player内で移動→追従カメラ行列→オブジェクト行列の順に更新する
@@ -78,6 +81,8 @@ void GameScene::Update() {
 		// 移動後の位置を渡し、次に生まれる粒子をPlayerの位置から発生させる。
 		TKM::ParticleEffects::GetInstance()->SetPosition("player_aura", player_->GetPos());
 	}
+
+	sceneLayout_.Update(activeCamera); // Player追従で確定したカメラ行列を配置モデルへ適用
 
 	// テスト用Sphere更新
 	if (sphere_) {
@@ -112,6 +117,7 @@ void GameScene::Draw() {
 void GameScene::Draw3D() {
 	/// ──────────────── 3Dオブジェクト描画 ───────────────
 	Object3dCommon::GetInstance()->DrawSetCommon();
+	sceneLayout_.Draw();
 
 	// テスト用Sphere描画
 	if (sphere_) {
@@ -266,6 +272,7 @@ void GameScene::InitializeCamera() {
 
 void GameScene::ImGuiDebug() {
 #ifdef USE_IMGUI
+	sceneLayout_.ImGuiDebug();
 	// ──────────────── カメラ表示 ───────────────
 	// デバッグカメラの切り替え表示
 	TKM::CameraManager::GetInstance()->ImGuiDebug();

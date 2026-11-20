@@ -1,0 +1,67 @@
+{
+  "format": "TKMAX_SCENE_LAYOUT",
+  "version": 1,
+  "objects": [
+    {
+      "name": "SampleFloor",
+      "model": "plane.obj",
+      "position": [
+        0,
+        -3,
+        15
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ],
+      "scale": [
+        15,
+        15,
+        15
+      ],
+      "visible": true
+    },
+    {
+      "name": "SampleWall",
+      "model": "plane.obj",
+      "position": [
+        0,
+        5,
+        30
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        15,
+        8,
+        1
+      ],
+      "visible": true
+    }
+  ],
+  "markers": [
+    {
+      "name": "ExampleSpawn",
+      "tag": "player_start",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  ]
+}
