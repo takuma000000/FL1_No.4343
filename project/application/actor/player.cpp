@@ -32,6 +32,11 @@ void Player::Initialize(TKM::DirectXCommon* dxCommon) {
     object_->SetRotate(rotation_);
     object_->SetScale(size_);
     object_->Update();
+
+    auto warmupBullet = std::make_unique<PlayerBullet>();
+    warmupBullet->Initialize(dxCommon_, { 0.0f, -1000.0f, 0.0f }, { 0.0f, 0.0f, 0.0f });
+    warmupBullet->Update();
+
 }
 
 void Player::SetCamera(TKM::Camera* camera) {
